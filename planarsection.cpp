@@ -2276,7 +2276,9 @@ bool PlanarSection::CurveClockwise(const int c)
 void PlanarSection::SketchSymmetryTest()
 {
 
-    const float magic_ratio = 6.0f;
+    const float magic_ratio = 1.0f;
+    // original value was 6.0f
+    //const float magic_ratio = 6.0f;
 
     //get region1/region2 distances
     float dist_r1 = 0.0f;
@@ -2329,7 +2331,69 @@ void PlanarSection::SketchSymmetryTest()
     }
 
 
+
+
 }
+
+
+void PlanarSection::CreateLocalSymmetry()
+{
+
+    BezierCurve newCurve;
+
+    int sign = 1;
+    if(bez_curve[0].Point(0).x() < 0)
+        sign = -1;
+
+    // first half of curve
+
+    newCurve.AddPoint(bez_curve[0].Point(0));
+    newCurve.AddPoint(bez_curve[0].Point(1));
+
+    // forward walk for the first section
+    int index = 3;
+    while(sign*bez_curve[0].Point(index).x() > 0.0f && index<bez_curve[0].GetNumControlPoints()-2)
+    {
+        newCurve.AddPoint(bez_curve[0].Point(index-1));
+        newCurve.AddPoint(bez_curve[0].Point(index));
+        newCurve.AddPoint(bez_curve[0].Point(index+1));
+        index+=3;
+    }
+
+    // reverse the first section
+    for (int i=newCurve.GetNumControlPoints()-1; i>=0; i--)
+    {
+       newCurve.AddPoint(QVector2D(-newCurve.Point(i).x(), newCurve.Point(i).y()));
+    }
+
+    int lowerSectionLastPointIndex = newCurve.GetNumControlPoints()-1;
+
+    // reverse second last point
+    newCurve.AddPoint(QVector2D(-bez_curve[0].Point(bez_curve[0].GetNumControlPoints()-2).x(), bez_curve[0].Point(bez_curve[0].GetNumControlPoints()-2).y()));
+
+    // backward walk to get reversed last part
+    index = bez_curve[0].GetNumControlPoints()-4;
+    while(sign*bez_curve[0].Point(index).x() > 0.0f && index>2)
+    {
+        newCurve.AddPoint(bez_curve[0].Point(index+1));
+        newCurve.AddPoint(bez_curve[0].Point(index));
+        newCurve.AddPoint(bez_curve[0].Point(index-1));
+
+        index-=3;
+    }
+
+    // reverse the last section
+    for (int i=newCurve.GetNumControlPoints()-1; i>=lowerSectionLastPointIndex; i--)
+    {
+       newCurve.AddPoint(QVector2D(-newCurve.Point(i).x(), newCurve.Point(i).y()));
+    }
+
+    bez_curve[0] = newCurve;
+
+
+}
+
+
 
 void PlanarSection::DrawSketch()
 {    
