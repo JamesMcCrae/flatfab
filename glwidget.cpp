@@ -1736,7 +1736,7 @@ void GLWidget::keyReleaseEvent(QKeyEvent *event)
     case Qt::Key_Control:
         ctrl_held = false;
         break;
-        \
+
     case Qt::Key_Alt:
         alt_held = false;
         break;  
