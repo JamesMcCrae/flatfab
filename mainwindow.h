@@ -45,10 +45,7 @@ private slots:
     void Undo();
     void Redo();
     void Delete();
-    void Translate();
-    void TranslateNormal();
-    void Rotate();
-    void Scale();
+    void Transform();
     void CopyMirrorX();
     void CopyRotateY();
     void CopyMirrorZ();
@@ -138,10 +135,7 @@ private:
     QAction *undoAct;
     QAction *redoAct;
     QAction *deleteAct;
-    QAction *translateAct;
-    QAction *translateNormalAct;
-    QAction *rotateAct;
-    QAction *scaleAct;
+    QAction *transformAct;
     QAction *resketchCurveAct;
     QAction *addHoleBoundaryAct;
     QAction *removeHolesBoundaryAct;

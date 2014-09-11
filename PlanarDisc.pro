@@ -25,7 +25,8 @@ SOURCES += main.cpp\
     physics.cpp \
     physics_matrix3d.cpp \
     physics_vector3d.cpp \
-    tree.cpp
+    tree.cpp \
+    transformwidget.cpp
 
 HEADERS  += mainwindow.h \
     glwidget.h \
@@ -41,7 +42,8 @@ HEADERS  += mainwindow.h \
     physics.h \
     physics_matrix3d.h \
     physics_vector3d.h \
-    tree.h
+    tree.h \
+    transformwidget.h
 
 unix:!macx:LIBS += -lGLU
 

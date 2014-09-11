@@ -4,7 +4,7 @@ MainWindow::MainWindow()
 {   
 
     //title/window stuff
-    setWindowTitle("FlatFab (Release 0.4 Beta - July 31, 2014)");
+    setWindowTitle("FlatFab (Release 0.5 Beta - September 11, 2014)");
 
     //release 0.4 -
     //added "calibration shape" generation to make finding the right calibration setting a cinch
@@ -226,21 +226,9 @@ void MainWindow::createActions()
     deleteAct->setShortcut(QKeySequence::Delete);
     connect(deleteAct, SIGNAL(triggered()), this, SLOT(Delete()));
 
-    translateAct = new QAction(tr("&Translate"), this);
-    translateAct->setStatusTip(tr("Translate a planar section within the plane."));
-    connect(translateAct, SIGNAL(triggered()), this, SLOT(Translate()));
-
-    translateNormalAct = new QAction(tr("Translate Along Normal"), this);
-    translateNormalAct->setStatusTip(tr("Translate a planar section along its normal."));
-    connect(translateNormalAct, SIGNAL(triggered()), this, SLOT(TranslateNormal()));
-
-    rotateAct = new QAction(tr("&Rotate"), this);
-    rotateAct->setStatusTip(tr("Rotate a planar section within the plane."));
-    connect(rotateAct, SIGNAL(triggered()), this, SLOT(Rotate()));
-
-    scaleAct = new QAction(tr("&Scale"), this);
-    scaleAct->setStatusTip(tr("Scale a planar section within the plane."));
-    connect(scaleAct, SIGNAL(triggered()), this, SLOT(Scale()));
+    transformAct = new QAction(tr("&Transform"), this);
+    transformAct->setStatusTip(tr("Transform a planar section using translate/rotate/scale."));
+    connect(transformAct, SIGNAL(triggered()), this, SLOT(Transform()));
 
     snapMajorAxisAct = new QAction(tr("Snap To Major Axis"), this);
     snapMajorAxisAct->setStatusTip(tr("Snaps the planar section normal to one of the 3 major axes."));
@@ -497,10 +485,7 @@ void MainWindow::createMenus()
     editMenu->addAction(redoAct);
     editMenu->addAction(deleteAct);
     editMenu->addSeparator();
-    editMenu->addAction(translateAct);
-    editMenu->addAction(rotateAct);
-    editMenu->addAction(scaleAct);
-    editMenu->addAction(translateNormalAct);
+    editMenu->addAction(transformAct);
     editMenu->addSeparator();
     editMenu->addAction(copyMirrorXAct);
     editMenu->addAction(copyRotateYAct);
@@ -671,24 +656,9 @@ void MainWindow::Delete()
     glWidget.DeleteSelected();
 }
 
-void MainWindow::Translate()
+void MainWindow::Transform()
 {
-    glWidget.Translate();
-}
-
-void MainWindow::TranslateNormal()
-{
-    glWidget.TranslateNormal();
-}
-
-void MainWindow::Rotate()
-{
-    glWidget.Rotate();
-}
-
-void MainWindow::Scale()
-{
-    glWidget.Scale();
+    glWidget.Transform();
 }
 
 void MainWindow::CopyMirrorX()

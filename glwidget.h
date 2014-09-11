@@ -10,6 +10,7 @@
 #include "glutils.h"
 #include "physics.h"
 #include "tree.h"
+#include "transformwidget.h"
 
 enum GestureState { //states (all with LMB held down, from 1 onward)
     STATE_NONE,            //0.  Awaiting mouse drag
@@ -23,10 +24,7 @@ enum GestureState { //states (all with LMB held down, from 1 onward)
     STATE_RECURSIVE_SLOT,
     STATE_MANIP_WEIGHT,
     STATE_RESKETCH_CURVE,
-    STATE_TRANSLATE,    
-    STATE_ROTATE,
-    STATE_SCALE,
-    STATE_TRANSLATE_NORMAL,
+    STATE_TRANSFORM_WIDGET, //this state replaces TRANSLATE, ROTATE, SCALE, TRANSLATE_NORMAL
     STATE_ADD_HOLE,
     STATE_DIMENSIONING_FIRST,
     STATE_DIMENSIONING_SECOND
@@ -46,10 +44,7 @@ enum LastOperation {
     OP_ADD_HOLE,
     OP_DELETE_HOLES,
     OP_RESKETCH_CURVE,
-    OP_MANIP_TRANSLATE,
-    OP_MANIP_ROTATE,
-    OP_MANIP_SCALE,
-    OP_MANIP_TRANSLATE_NORMAL,
+    OP_MANIP_TRANSFORM,
     OP_MANIP_WEIGHT,
     OP_MANIP_CTRLPOINT,
     OP_MANIP_DIMENSIONING_TOOL,
@@ -123,6 +118,7 @@ protected:
 
     void ResetCamera();
     void UpdateCamera();
+
     void DrawGroundPlane();    
     void DrawSymmetryPlanes();
     void DrawSection(const int i);
@@ -138,6 +134,7 @@ protected:
     void DoPhysicsTest();
 
     int PickSection(const QVector2D & mouse_pos, const bool only_test_selected);
+    int PickTransformWidgetElement(const QVector2D & mouse_pos);
 
 signals:
     
@@ -195,10 +192,7 @@ public slots:
     void Undo(const LastOperation op);
     void Redo();
     void DeleteSelected();
-    void Translate();
-    void Rotate();
-    void Scale();
-    void TranslateNormal();
+    void Transform();
     void CopyMirrorX();
     void CopyRotateY();
     void CopyMirrorZ();
@@ -290,8 +284,10 @@ private:
     float cam_animate_duration;
     float cam_animate_angle;
     float cam_lookat_distance;
-
     PivotCamera cam;
+
+    //transform widget
+    TransformWidget transform_widget;
 
     //important quantity: metres per unit
     double metres_per_unit;

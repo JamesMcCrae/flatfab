@@ -872,6 +872,14 @@ void GLWidget::paintGL()
     */
 
 
+    //draw the transform widget
+    if (selected >= 0 && state == STATE_TRANSFORM_WIDGET) {
+        transform_widget.SetP(sections[selected].P());
+        transform_widget.SetX(sections[selected].T());
+        transform_widget.SetY(sections[selected].N());
+        transform_widget.SetZ(sections[selected].B());
+        transform_widget.DrawGL();
+    }
 
     //draw TNB frame
     if (do_show_tnb_frames) {
@@ -1026,20 +1034,8 @@ void GLWidget::DrawInfo()
         render_text += "State: RESKETCH_CURVE";
         break;
 
-    case STATE_TRANSLATE:
-        render_text += "State: TRANSLATE";
-        break;
-
-    case STATE_ROTATE:
-        render_text += "State: ROTATE";
-        break;
-
-    case STATE_SCALE:
-        render_text += "State: SCALE";
-        break;
-
-    case STATE_TRANSLATE_NORMAL:
-        render_text += "State: TRANSLATE_NORMAL";
+    case STATE_TRANSFORM_WIDGET:
+        render_text += "State: TRANSFORM_WIDGET";
         break;
 
     case STATE_ADD_HOLE:
@@ -1103,10 +1099,7 @@ b) when there are planes, attempt to select one
 
         switch (state) {
 
-        case STATE_TRANSLATE:
-        case STATE_ROTATE:
-        case STATE_SCALE:
-        case STATE_TRANSLATE_NORMAL:
+        case STATE_TRANSFORM_WIDGET:
 
             if (IsSectionSelected()){
 
@@ -1115,6 +1108,19 @@ b) when there are planes, attempt to select one
                 QVector3D anchor_3d;
                 sections[selected].MouseRayIntersect(mouse_pos, anchor_3d);
                 anchor_point = sections[selected].GetPoint2D(anchor_3d);
+
+                //figure out which widget element was clicked
+                const int index = PickTransformWidgetElement(mouse_pos);
+
+                if (index > 0) {
+                    transform_widget.SetState(TransformWidgetState(index));
+                    state = STATE_TRANSFORM_WIDGET;
+                }
+                else {
+                    transform_widget.SetState(NONE);
+                    state = STATE_NONE;
+                }
+
             }
             else {
                 state = STATE_NONE;
@@ -1255,98 +1261,103 @@ void GLWidget::mouseMoveEvent(QMouseEvent * event)
 
         switch (state) {
 
-        case STATE_TRANSLATE:
 
-            if (IsSectionSelected()){
-
-                QVector3D p;
-                sections[selected].MouseRayIntersect(mouse_pos, p);
-                QVector2D p_2d = sections[selected].GetPoint2D(p);
-
-                QVector2D new_p_2d = p_2d - anchor_point;
-                QVector3D new_p = sections[selected].GetPoint3D(new_p_2d);
-
-                sections[selected].SetP(new_p);
-                sections[selected].UpdateCurveTrisSlab();
-
-            }
-
-            break;
-
-        case STATE_ROTATE:
+        case STATE_TRANSFORM_WIDGET:
 
             if (IsSectionSelected()) {
 
-                sections[selected] = original_section;
+                QVector3D p = sections[selected].P();
+                QVector3D t = sections[selected].T();
+                QVector3D n = sections[selected].N();
+                QVector3D b = sections[selected].B();
+                QVector3D cursor_p;
 
-                QVector3D p;
-                sections[selected].MouseRayIntersect(mouse_pos, p);
-                QVector2D p_2d = sections[selected].GetPoint2D(p);
+                switch (transform_widget.GetState()) {
 
-                const float orig_tan = atan2f(anchor_point.y() , anchor_point.x());
-                const float cur_tan = atan2f(p_2d.y(), p_2d.x());
-
-                const float angle_rad = cur_tan - orig_tan;
-
-                sections[selected].Rotate(angle_rad);
-                sections[selected].UpdateCurveTrisSlab();
-
-            }
-
-            break;
-
-        case STATE_SCALE:
-
-            if (IsSectionSelected()){
-
-                sections[selected] = original_section;
-
-                QVector3D p;
-                sections[selected].MouseRayIntersect(mouse_pos, p);
-                QVector2D p_2d = sections[selected].GetPoint2D(p);
-
-                QVector3D plane_p_2d = original_section.GetPoint2D(original_section.P());
-
-                const float scale = (p_2d - plane_p_2d).length() / (anchor_point - plane_p_2d).length();
-
-                sections[selected].Scale(scale, scale);
-                sections[selected].UpdateCurveTrisSlab();
-
-            }
-
-            break;
-
-        case STATE_TRANSLATE_NORMAL:
-
-            if (IsSectionSelected()) {
-
-                const QVector3D t = sections[selected].T();
-                const QVector3D n = sections[selected].N();
-                const QVector3D b = sections[selected].B();
-                const QVector3D p = sections[selected].P();
-
-                PlanarSection trans_section;
-                trans_section.SetT(n);
-                trans_section.SetN(-t);
-                trans_section.SetB(b);
-                trans_section.SetP(p);
-
-                QVector3D isec1, isec2;
-                bool b1, b2;
-                b1 = trans_section.MouseRayIntersect(mouse_pos - mouse_diff, isec1);
-                b2 = trans_section.MouseRayIntersect(mouse_pos, isec2);
-
-                if (b1 && b2) {
-
-                    QVector2D isec1_2d = trans_section.GetPoint2D(isec1);
-                    QVector2D isec2_2d = trans_section.GetPoint2D(isec2);
-
-                    const float trans_amount = isec2_2d.x() - isec1_2d.x();
-
-                    sections[selected].SetP(p - n * trans_amount);
-                    sections[selected].UpdateCurveTrisSlab();
-
+                case TRANS_X:
+                {
+                    sections[selected].MouseRayIntersect(mouse_pos, cursor_p);
+                    const float dot_prod = QVector3D::dotProduct(t, (cursor_p - p));
+                    sections[selected].SetP(p + t * dot_prod);
                 }
+                    break;
+
+                case TRANS_Y:
+                {
+                    PlanarSection ps;
+                    ps.SetP(p);
+                    ps.SetN(t);
+                    ps.MouseRayIntersect(mouse_pos, cursor_p);
+                    float dot_prod = QVector3D::dotProduct(n, (cursor_p - p));
+                    sections[selected].SetP(p + n * dot_prod);
+                }
+                    break;
+
+                case TRANS_Z:
+                {
+                    sections[selected].MouseRayIntersect(mouse_pos, cursor_p);
+                    const float dot_prod = QVector3D::dotProduct(b, (cursor_p - p));
+                    sections[selected].SetP(p + b * dot_prod);
+                }
+                    break;
+
+                case ROT_X:
+                {
+                    PlanarSection ps;
+                    ps.SetP(p);
+                    ps.SetN(t);
+                    ps.MouseRayIntersect(mouse_pos, cursor_p);
+
+                    QVector3D new_n = (cursor_p - p).normalized();
+                    sections[selected].SetN(new_n);
+                    sections[selected].SetB(QVector3D::crossProduct(new_n, t).normalized());
+                }
+                    break;
+                case ROT_Y:
+                {
+                    sections[selected].MouseRayIntersect(mouse_pos, cursor_p);
+                    QVector3D new_b = (cursor_p - p).normalized();
+                    sections[selected].SetB(new_b);
+                    sections[selected].SetT(QVector3D::crossProduct(new_b, n).normalized());
+                }
+                    break;
+                case ROT_Z:
+                {
+                    PlanarSection ps;
+                    ps.SetP(p);
+                    ps.SetN(b);
+                    ps.MouseRayIntersect(mouse_pos, cursor_p);
+
+                    QVector3D new_t = (cursor_p - p).normalized();
+                    sections[selected].SetT(new_t);
+                    sections[selected].SetN(QVector3D::crossProduct(new_t, b).normalized());
+                }
+                    break;
+
+                case SCALE_X:
+                {
+                    sections[selected] = original_section;
+                    sections[selected].MouseRayIntersect(mouse_pos, cursor_p);
+                    const float dot_prod = QVector3D::dotProduct(t, (cursor_p - p));
+                    sections[selected].Scale(dot_prod, 1.0f);
+                }
+                    break;
+
+                case SCALE_Z:
+                {
+                    sections[selected] = original_section;
+                    sections[selected].MouseRayIntersect(mouse_pos, cursor_p);
+                    const float dot_prod = QVector3D::dotProduct(b, (cursor_p - p));
+                    sections[selected].Scale(1.0f, dot_prod);
+                }
+                    break;
+
+                default:
+                    break;
+                }
+
+                sections[selected].UpdateCurveTrisSlab();
+
             }
 
             break;
@@ -2026,6 +2037,27 @@ void GLWidget::DoStabilityTest()
         else {
             markers_col.push_back(QVector3D(1, 0.25, 0.25));
         }
+    }
+
+}
+
+int GLWidget::PickTransformWidgetElement(const QVector2D & mouse_pos)
+{
+
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    transform_widget.DrawSelectionGL();
+
+    unsigned char r, g, b;
+    int index;
+
+    GLutils::ReadPixelColor_BackBuffer(mouse_pos.x(), mouse_pos.y(), r, g, b);
+    GLutils::PixelColorToIndex(r, g, b, index);
+
+    if (index < NUM_STATES) {
+        return index;
+    }
+    else {
+        return -1;
     }
 
 }
@@ -2784,61 +2816,15 @@ void GLWidget::DeleteSelected()
 
 }
 
-void GLWidget::Translate()
+void GLWidget::Transform()
 {
-
     if (!IsSectionSelected()) {
         return;
     }
 
-    AddToUndoList(OP_MANIP_TRANSLATE);
+    AddToUndoList(OP_MANIP_TRANSFORM);
 
-    state = STATE_TRANSLATE;
-
-    //updateGL();
-}
-
-void GLWidget::Rotate()
-{
-
-    if (!IsSectionSelected()) {
-        return;
-    }
-
-    AddToUndoList(OP_MANIP_ROTATE);
-
-    state = STATE_ROTATE;
-
-    //updateGL();
-}
-
-void GLWidget::Scale()
-{
-
-    if (!IsSectionSelected()) {
-        return;
-    }
-
-    AddToUndoList(OP_MANIP_SCALE);
-
-    state = STATE_SCALE;
-
-    //updateGL();
-}
-
-void GLWidget::TranslateNormal()
-{
-
-    if (!IsSectionSelected()) {
-        return;
-    }
-
-    AddToUndoList(OP_MANIP_TRANSLATE_NORMAL);
-
-    state = STATE_TRANSLATE_NORMAL;
-
-    //updateGL();
-
+    state = STATE_TRANSFORM_WIDGET;
 }
 
 void GLWidget::CopyMirrorX()
