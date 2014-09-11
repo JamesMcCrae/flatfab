@@ -20,7 +20,7 @@
 //#include <GL/glut.h>
 #endif
 
-#if defined(__APPLE__) && defined(__MACH__)
+#if ( defined(__APPLE__) && defined(__MACH__) ) || defined(_WIN32)
 #include "Eigen/Dense"
 #else
 #include <Eigen/Dense>

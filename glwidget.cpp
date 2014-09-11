@@ -79,7 +79,7 @@ GLWidget::GLWidget() :
 
     animate_until = QDateTime::currentDateTime();
 
-    cam_animate_duration = 1500.0f;
+    cam_animate_duration = 800.0f;
     cam_animate_angle = 80.0f;
     //cam_animate_angle = 90.0f;
     cam_lookat_distance = 100.0f;
@@ -1632,6 +1632,11 @@ void GLWidget::mouseReleaseEvent(QMouseEvent *event)
                 }
                 else {
                     active_section.Update(0, section_error_tolerance);
+                }
+
+                if (sections.size() >= 1 && do_symmetry) {
+                    //do not do symmetry for the very first plane
+                    active_section.CreateLocalSymmetry();
                 }
 
                 //enforce above-ground control points

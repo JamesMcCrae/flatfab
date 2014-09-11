@@ -8,6 +8,8 @@ BezierCurve::BezierCurve() :
 {
 }
 
+// does this show up in the commit
+
 void BezierCurve::AddPoint(const QVector2D & v)
 {
     pts.push_back(v);

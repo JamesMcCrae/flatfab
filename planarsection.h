@@ -151,6 +151,7 @@ public:
 
     bool CurveClockwise(const int c);
     void SketchSymmetryTest();
+    void CreateLocalSymmetry();
 
     bool AddMouseRayIntersect(const int c, const QVector2D & v);
     bool MouseRayIntersect(const QVector2D & v, QVector3D & intersect);
