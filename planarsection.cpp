@@ -500,7 +500,9 @@ void PlanarSection::DrawCurveControlPointsHandleStyle(const float cam_width, con
         QVector3D point = p + (t * (pts[1].x())) + (b * (pts[1].y()));
         QVector3D nextPoint;
 
+//        glEnable(GL_BLEND);
         glLineWidth(1.5);
+//        glColor4f(1.0f,0.0f,.5f,.5f);
         glColor3f(1.0f,0.0f,.5f);
         glDisable(GL_DEPTH_TEST);
         glBegin(GL_LINES);
@@ -525,8 +527,8 @@ void PlanarSection::DrawCurveControlPointsHandleStyle(const float cam_width, con
 
         for (int i=0; i<pts.size() - 1; ++i) {
 
-            s = (i == bez_curve[c].SelectedPoint()) ? 0.015f * cam_width : 0.0075f * cam_width;
-            s = 0.0035f * cam_width;
+            s = (i == bez_curve[c].SelectedPoint()) ? 0.005f * cam_width : 0.0035f * cam_width;
+            //s = 0.0035f * cam_width;
 
             numSegs = (i == bez_curve[c].SelectedPoint()) ? 20 : 10;
 
@@ -534,20 +536,30 @@ void PlanarSection::DrawCurveControlPointsHandleStyle(const float cam_width, con
 
             if (i%3 == 0) {
 
-                if((i != bez_curve[c].SelectedPoint()))
-                    glColor3f(1.0f,0.5f,0.8f);
-                else
-                    glColor3f(0.0f,1.0f,0.8f);
+//                if(i == bez_curve[c].SelectedPoint())
+//                    s = 0.005f * cam_width;
+
+                glColor3f(1.0f,0.5f,0.8f);
+
+//                if((i != bez_curve[c].SelectedPoint()))
+//                    glColor4f(1.0f,0.5f,0.8f,.7f);
+//                else
+//                    glColor3f(1.0f,0.5f,0.8f);
                 GLutils::DrawDisc(point, point + (cam_pos - point).normalized()*.2, 0.0f, 1.5*s);
                 glColor3f(1.0f,0.0f,0.5f);
                 GLutils::DrawDisc(point, point + (cam_pos - point).normalized()*.2, 1.5*s, 2*s);
             }
             else
             {
-                if((i != bez_curve[c].SelectedPoint()))
-                    glColor3f(1.0f,0.0f,.5f);
-                else
-                    glColor3f(0.0f,1.0f,0.8f);
+//                if(i == bez_curve[c].SelectedPoint())
+//                    s = 0.0075f * cam_width;
+
+                glColor3f(1.0f,0.0f,.5f);
+
+//                if((i != bez_curve[c].SelectedPoint()))
+//                    glColor4f(1.0f,0.0f,.5f,.7f);
+//                else
+//                    glColor3f(1.0f,0.0f,.5f);
                 GLutils::DrawDisc(point, point + (cam_pos - point).normalized()*.2, 0, s);
             }
 

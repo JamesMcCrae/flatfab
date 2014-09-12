@@ -123,6 +123,7 @@ GLWidget::GLWidget() :
     //physics.Solve(100,20);
     //physics.PrintJointForce();
 
+
 }
 
 GLWidget::~GLWidget()
@@ -1111,7 +1112,8 @@ b) when there are planes, attempt to select one
 
                 QVector3D anchor_3d;
                 sections[selected].MouseRayIntersect(mouse_pos, anchor_3d);
-                anchor_point = sections[selected].GetPoint2D(anchor_3d);
+//                anchor_point = sections[selected].GetPoint2D(anchor_3d);
+                anchor_point = mouse_pos;
 
                 //figure out which widget element was clicked
                 const int index = PickTransformWidgetElement(mouse_pos);
@@ -1124,6 +1126,7 @@ b) when there are planes, attempt to select one
                     transform_widget.SetState(NONE);
                     state = STATE_NONE;
                 }
+
 
             }
             else {
@@ -1275,13 +1278,15 @@ void GLWidget::mouseMoveEvent(QMouseEvent * event)
                 QVector3D n = sections[selected].N();
                 QVector3D b = sections[selected].B();
                 QVector3D cursor_p;
+                QVector3D initial_cursor_p;
 
                 switch (transform_widget.GetState()) {
 
                 case TRANS_X:
                 {
                     sections[selected].MouseRayIntersect(mouse_pos, cursor_p);
-                    const float dot_prod = QVector3D::dotProduct(t, (cursor_p - p));
+                    sections[selected].MouseRayIntersect(anchor_point, initial_cursor_p);
+                    const float dot_prod = QVector3D::dotProduct(t, (cursor_p - initial_cursor_p));
                     sections[selected].SetP(p + t * dot_prod);
                 }
                     break;
@@ -1292,7 +1297,8 @@ void GLWidget::mouseMoveEvent(QMouseEvent * event)
                     ps.SetP(p);
                     ps.SetN(t);
                     ps.MouseRayIntersect(mouse_pos, cursor_p);
-                    float dot_prod = QVector3D::dotProduct(n, (cursor_p - p));
+                    ps.MouseRayIntersect(anchor_point, initial_cursor_p);
+                    float dot_prod = QVector3D::dotProduct(n, (cursor_p - initial_cursor_p));
                     sections[selected].SetP(p + n * dot_prod);
                 }
                     break;
@@ -1300,7 +1306,8 @@ void GLWidget::mouseMoveEvent(QMouseEvent * event)
                 case TRANS_Z:
                 {
                     sections[selected].MouseRayIntersect(mouse_pos, cursor_p);
-                    const float dot_prod = QVector3D::dotProduct(b, (cursor_p - p));
+                    sections[selected].MouseRayIntersect(anchor_point, initial_cursor_p);
+                    const float dot_prod = QVector3D::dotProduct(b, (cursor_p - initial_cursor_p));
                     sections[selected].SetP(p + b * dot_prod);
                 }
                     break;
@@ -1311,8 +1318,12 @@ void GLWidget::mouseMoveEvent(QMouseEvent * event)
                     ps.SetP(p);
                     ps.SetN(t);
                     ps.MouseRayIntersect(mouse_pos, cursor_p);
+                    ps.MouseRayIntersect(anchor_point, initial_cursor_p);
 
-                    QVector3D new_n = (cursor_p - p).normalized();
+                    QVector3D v1 = (initial_cursor_p - p).normalized();
+                    QVector3D v2 = (cursor_p - p).normalized();
+                    QVector3D new_n = GLutils::RotateVector(n,t,GLutils::SignedAngleBetweenRad(v1,v2,t));
+
                     sections[selected].SetN(new_n);
                     sections[selected].SetB(QVector3D::crossProduct(new_n, t).normalized());
                 }
@@ -1320,7 +1331,12 @@ void GLWidget::mouseMoveEvent(QMouseEvent * event)
                 case ROT_Y:
                 {
                     sections[selected].MouseRayIntersect(mouse_pos, cursor_p);
-                    QVector3D new_b = (cursor_p - p).normalized();
+                    sections[selected].MouseRayIntersect(anchor_point, initial_cursor_p);
+
+                    QVector3D v1 = (initial_cursor_p - p).normalized();
+                    QVector3D v2 = (cursor_p - p).normalized();
+                    QVector3D new_b = GLutils::RotateVector(b,n,GLutils::SignedAngleBetweenRad(v1,v2,n));
+
                     sections[selected].SetB(new_b);
                     sections[selected].SetT(QVector3D::crossProduct(new_b, n).normalized());
                 }
@@ -1331,8 +1347,12 @@ void GLWidget::mouseMoveEvent(QMouseEvent * event)
                     ps.SetP(p);
                     ps.SetN(b);
                     ps.MouseRayIntersect(mouse_pos, cursor_p);
+                    ps.MouseRayIntersect(anchor_point, initial_cursor_p);
 
-                    QVector3D new_t = (cursor_p - p).normalized();
+                    QVector3D v1 = (initial_cursor_p - p).normalized();
+                    QVector3D v2 = (cursor_p - p).normalized();
+                    QVector3D new_t = GLutils::RotateVector(t,b,GLutils::SignedAngleBetweenRad(v1,v2,b));
+
                     sections[selected].SetT(new_t);
                     sections[selected].SetN(QVector3D::crossProduct(new_t, b).normalized());
                 }
@@ -1340,19 +1360,19 @@ void GLWidget::mouseMoveEvent(QMouseEvent * event)
 
                 case SCALE_X:
                 {
-                    sections[selected] = original_section;
                     sections[selected].MouseRayIntersect(mouse_pos, cursor_p);
-                    const float dot_prod = QVector3D::dotProduct(t, (cursor_p - p));
-                    sections[selected].Scale(dot_prod, 1.0f);
+                    sections[selected].MouseRayIntersect(anchor_point, initial_cursor_p);
+                    const float dot_prod = QVector3D::dotProduct(t, (cursor_p - initial_cursor_p));
+                    sections[selected].Scale(1 + .5*dot_prod, 1.0f);
                 }
                     break;
 
                 case SCALE_Z:
                 {
-                    sections[selected] = original_section;
                     sections[selected].MouseRayIntersect(mouse_pos, cursor_p);
-                    const float dot_prod = QVector3D::dotProduct(b, (cursor_p - p));
-                    sections[selected].Scale(1.0f, dot_prod);
+                    sections[selected].MouseRayIntersect(anchor_point, initial_cursor_p);
+                    const float dot_prod = QVector3D::dotProduct(b, (cursor_p - initial_cursor_p));
+                    sections[selected].Scale(1.0f, 1 + .5*dot_prod);
                 }
                     break;
 
@@ -1361,6 +1381,7 @@ void GLWidget::mouseMoveEvent(QMouseEvent * event)
                 }
 
                 sections[selected].UpdateCurveTrisSlab();
+                anchor_point = mouse_pos;
 
             }
 
