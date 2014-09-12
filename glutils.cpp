@@ -1206,3 +1206,28 @@ void GLutils::GetSortedIntersectionPoints(const QList <QVector2D> & pts, const Q
     }
 
 }
+
+
+void GLutils::DrawDisc(const QVector3D & p1, const QVector3D & p2, const float inner_rad, const float outer_rad)
+{
+
+    const float line_len = (p2-p1).length();
+    const float theta_deg = GLutils::AngleBetweenDeg(QVector3D(0, 0, 1), (p2-p1) / line_len);
+    QVector3D axis = QVector3D::crossProduct(QVector3D(0, 0, 1), (p2-p1) / line_len);
+
+    glPushMatrix();
+
+    glTranslatef(p1.x(), p1.y(), p1.z());
+    if (theta_deg > 0.0f && theta_deg < 180.0f) {
+        glRotatef(theta_deg, axis.x(), axis.y(), axis.z());
+    }
+    else {
+        glRotatef(theta_deg, 1.0f, 0.0f, 0.0f);
+    }
+
+    gluDisk(quadric, inner_rad, outer_rad, draw_slices, 1);
+
+    glPopMatrix();
+
+}
+

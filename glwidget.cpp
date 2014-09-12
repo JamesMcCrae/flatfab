@@ -948,14 +948,14 @@ void GLWidget::paintGL()
 
         //if (state == STATE_NONE || state == STATE_MANIP_CTRLPOINT) {
         if (state != STATE_CURVE && state != STATE_RESKETCH_CURVE && state != STATE_CAM_TRANSLATE && state != STATE_DEADZONE) {
-            glColor3f(1.0, 0.4, 1.0);
-            sections[selected].DrawCurveControlPoints(cam.CamWidth());
+//            glColor3f(1.0, 0.4, 1.0);
+            sections[selected].DrawCurveControlPointsHandleStyle(cam.CamWidth(), cam.Eye());
 
-            glEnable(GL_LINE_STIPPLE);
-            glLineStipple(1, 0x00ff);
-            glColor3f(0.8, 0.8, 0.8);
-            sections[selected].DrawCurveControlPolygon();
-            glDisable(GL_LINE_STIPPLE);
+//            glEnable(GL_LINE_STIPPLE);
+//            glLineStipple(1, 0x00ff);
+//            glColor3f(0.8, 0.8, 0.8);
+//            sections[selected].DrawCurveControlPolygon();
+//            glDisable(GL_LINE_STIPPLE);
         }
 
         //glColor3f(0.3, 0.3, 0.9);
@@ -967,8 +967,12 @@ void GLWidget::paintGL()
         DrawTemplateImage();
     }
 
+
+    // grab control point 2D positions
+
+
     cam.DrawGL_Ortho();
-    DrawInfo();   
+//    DrawInfo();
 
 }
 
@@ -1691,7 +1695,8 @@ void GLWidget::mouseReleaseEvent(QMouseEvent *event)
 
         }
 
-        state = STATE_NONE;
+        if(state != STATE_TRANSFORM_WIDGET)
+            state = STATE_NONE;
         slot_end = slot_start;       
 
     }

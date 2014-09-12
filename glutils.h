@@ -98,6 +98,10 @@ public:
     static QVector3D GetOrthoVec(const QVector3D & v);
     static void GetModelviewMatrixFromVec(const QVector3D & z, const QVector3D & p, float modelview[16]);
 
+
+    static void DrawDisc(const QVector3D & p1, const QVector3D & p2, const float inner_rad, const float outer_rad);
+
+
 private:
 
     static void ReadPixelColor(const int x, const int y, unsigned char & r, unsigned char & g, unsigned char & b);

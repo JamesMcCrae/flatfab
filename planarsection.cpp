@@ -430,6 +430,7 @@ void PlanarSection::DrawCurveControlPolygon()
 
 }
 
+
 void PlanarSection::DrawCurveControlPoints(const float cam_width)
 {
 
@@ -456,6 +457,7 @@ void PlanarSection::DrawCurveControlPoints(const float cam_width)
                 glVertex3f(v3.x(), v3.y(), v3.z());
                 glVertex3f(v4.x(), v4.y(), v4.z());
 
+
             }
             else {
 
@@ -477,6 +479,114 @@ void PlanarSection::DrawCurveControlPoints(const float cam_width)
 
         }
         glEnd();
+
+    }
+
+}
+
+
+
+
+void PlanarSection::DrawCurveControlPointsHandleStyle(const float cam_width, const QVector3D cam_pos)
+{
+
+    for (int c=0; c<bez_curve.size(); ++c) {
+        const QList <QVector2D> & pts = bez_curve[c].Points();
+
+        float s;
+        int numSegs;
+
+        QVector3D lastPoint = p + (t * (pts[0].x())) + (b * (pts[0].y()));
+        QVector3D point = p + (t * (pts[1].x())) + (b * (pts[1].y()));
+        QVector3D nextPoint;
+
+        glLineWidth(1.5);
+        glColor3f(1.0f,0.0f,.5f);
+        glDisable(GL_DEPTH_TEST);
+        glBegin(GL_LINES);
+        for (int i=1; i<pts.size() - 1; ++i) {
+            nextPoint = p + (t * (pts[i+1].x())) + (b * (pts[i+1].y()));
+
+            if (i%3 == 1) {
+                glVertex3f(point.x(),point.y(),point.z());
+                glVertex3f(lastPoint.x(),lastPoint.y(),lastPoint.z());
+            }
+            else if(i%3 == 2) {
+                glVertex3f(point.x(),point.y(),point.z());
+                glVertex3f(nextPoint.x(),nextPoint.y(),nextPoint.z());
+            }
+            lastPoint = point;
+            point = nextPoint;
+
+        }
+        glEnd();
+        glEnable(GL_DEPTH_TEST);
+        glLineWidth(1);
+
+        for (int i=0; i<pts.size() - 1; ++i) {
+
+            s = (i == bez_curve[c].SelectedPoint()) ? 0.015f * cam_width : 0.0075f * cam_width;
+            s = 0.0035f * cam_width;
+
+            numSegs = (i == bez_curve[c].SelectedPoint()) ? 20 : 10;
+
+            point = p + (t * (pts[i].x())) + (b * (pts[i].y()));
+
+            if (i%3 == 0) {
+
+                if((i != bez_curve[c].SelectedPoint()))
+                    glColor3f(1.0f,0.5f,0.8f);
+                else
+                    glColor3f(0.0f,1.0f,0.8f);
+                GLutils::DrawDisc(point, point + (cam_pos - point).normalized()*.2, 0.0f, 1.5*s);
+                glColor3f(1.0f,0.0f,0.5f);
+                GLutils::DrawDisc(point, point + (cam_pos - point).normalized()*.2, 1.5*s, 2*s);
+            }
+            else
+            {
+                if((i != bez_curve[c].SelectedPoint()))
+                    glColor3f(1.0f,0.0f,.5f);
+                else
+                    glColor3f(0.0f,1.0f,0.8f);
+                GLutils::DrawDisc(point, point + (cam_pos - point).normalized()*.2, 0, s);
+            }
+
+
+        }
+
+
+
+//        const float s = (i == bez_curve[c].SelectedPoint()) ? 0.015f * cam_width : 0.0075f * cam_width;
+//        const int numSegs = (i == bez_curve[c].SelectedPoint()) ? 20 : 10;
+
+//        glEnable (GL_BLEND);
+//        glColor3f(1.0f,0.5f,0.8f);
+//        GLutils::DrawFan(p + (t * (pts[i].x())) + (b * (pts[i].y())), s, 10);
+//        glDisable (GL_BLEND);
+//        glColor3f(1.0f,0.0f,.5f);
+//        GLutils::DrawCircle(p + (t * (pts[i].x())) + (b * (pts[i].y())), s, numSegs);
+
+
+
+
+
+
+//        for (int i=3; i<pts.size(); i+=3) {
+
+//            s = (i == bez_curve[c].SelectedPoint()) ? 0.015f * cam_width : 0.0075f * cam_width;
+//            numSegs = (i == bez_curve[c].SelectedPoint()) ? 20 : 10;
+
+
+//            glEnable (GL_BLEND);
+//            glColor3f(1.0f,0.5f,0.8f);
+//            GLutils::DrawFan(p + (t * (pts[i].x())) + (b * (pts[i].y())), s, 10);
+//            glDisable (GL_BLEND);
+//            glColor3f(1.0f,0.0f,.5f);
+//            GLutils::DrawCircle(p + (t * (pts[i].x())) + (b * (pts[i].y())), s, numSegs);
+
+
+//        }
+//        glEnd();
 
     }
 

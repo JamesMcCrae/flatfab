@@ -85,6 +85,7 @@ public:
     void DrawForPicking(const int pickval);
     void DrawCurve();
     void DrawCurveControlPoints(const float cam_width);
+    void DrawCurveControlPointsHandleStyle(const float cam_width, const QVector3D cam_pos);
     void DrawCurveControlPolygon();
     void DrawTris();
     void DrawSlab();
