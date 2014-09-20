@@ -32,8 +32,8 @@ void TransformWidget::DrawGL()
 
     //rotate x
     glColor3f(1,0,0);
-//    GLutils::DrawRing(p - x*0.05f, p + x*0.05f, 0.45f, 0.55f);
-    GLutils::DrawSemiRing(p - x*0.05f, p + x*0.05f, 0.0f, M_PI, 0.45f, 0.55f, .5f, 10);
+    GLutils::DrawRing(p - x*0.05f, p + x*0.05f, 0.45f, 0.55f);
+//    GLutils::DrawSemiRing(p - x*0.05f, p + x*0.05f, 0.0f, M_PI, 0.45f, 0.55f, .5f, 10);
 
     //rotate y
     glColor3f(0,1,0);
