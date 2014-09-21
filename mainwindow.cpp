@@ -86,10 +86,82 @@ void MainWindow::ShowAppWidgets()
     //main widget/window layout
     this->removeDockWidget(bottomDockWidget);
 
-    addDockWidget(Qt::LeftDockWidgetArea, dockWidget);
+    //addDockWidget(Qt::LeftDockWidgetArea, dockWidget);
+    createSideBar();
     setCentralWidget(&glWidget);
 
 }
+
+void MainWindow::createSideBar()
+{
+    openDock[0] = new QAction(QIcon(":/images/copy.png"), tr("&Edit and Transform"), this);
+    //openEdit->setShortcuts(QKeySequence::Open);
+    //openDock[0]->setStatusTip(tr("Edit and Transform"));
+    openDock[0]->setCheckable(true);
+    connect(openDock[0], SIGNAL(triggered()), this, SLOT(openEditWidget()));
+
+    openDock[1] = new QAction(QIcon(":/images/open.png"), tr("&Generate"), this);
+    //openEdit->setShortcuts(QKeySequence::Open);
+    //openDock[1]->setStatusTip(tr("Generate"));
+    openDock[1]->setCheckable(true);
+    connect(openDock[1], SIGNAL(triggered()), this, SLOT(openGenerateWidget()));
+
+    openDock[2] = new QAction(QIcon(":/images/cut.png"), tr("&Guides"), this);
+    //openEdit->setShortcuts(QKeySequence::Open);
+    //openDock[2]->setStatusTip(tr("Guides"));
+    openDock[2]->setCheckable(true);
+    connect(openDock[2], SIGNAL(triggered()), this, SLOT(openGuidesWidget()));
+
+    openDock[3] = new QAction(QIcon(":/images/cut.png"), tr("&Physics"), this);
+    //openEdit->setShortcuts(QKeySequence::Open);
+    //openDock[3]->setStatusTip(tr("Physics"));
+    openDock[3]->setCheckable(true);
+    connect(openDock[3], SIGNAL(triggered()), this, SLOT(openPhysicsWidget()));
+
+    openDock[4] = new QAction(QIcon(":/images/cut.png"), tr("&Views"), this);
+    //openEdit->setShortcuts(QKeySequence::Open);
+    //openDock[4]->setStatusTip(tr("Views"));
+    openDock[4]->setCheckable(true);
+    connect(openDock[4], SIGNAL(triggered()), this, SLOT(openViewsWidget()));
+
+    //mainToolGroup->setExclusive(true);
+
+
+
+    mainToolBar = new QToolBar(tr("Tools"));
+    for(int i = 0; i < 4; i++)
+    {
+        mainToolBar->addAction(openDock[i]);
+        mainToolBar->widgetForAction(openDock[i])->setMinimumSize(QSize(100,75));
+        mainToolBar->addSeparator();
+    }
+    mainToolBar->addAction(openDock[4]);
+    mainToolBar->widgetForAction(openDock[4])->setMinimumSize(QSize(100,75));
+
+    mainToolBar->setMovable(false);
+    mainToolBar->setContextMenuPolicy(Qt::ContextMenuPolicy::PreventContextMenu);
+    mainToolBar->setToolButtonStyle(Qt::ToolButtonStyle::ToolButtonTextUnderIcon);
+
+    addToolBar(Qt::ToolBarArea::LeftToolBarArea, mainToolBar);
+
+    QVBoxLayout *layout = new QVBoxLayout;
+
+    for(int i = 0; i < 5; i++)
+    {
+        QWidget *widget = new QWidget(this);
+        widget->setLayout(layout);
+
+        docks[i] = new QDockWidget(this);
+        docks[i]->setWidget(widget);
+        docks[i]->setFeatures(QDockWidget::NoDockWidgetFeatures);
+
+        addDockWidget(Qt::DockWidgetArea::LeftDockWidgetArea,docks[i]);
+        docks[i]->setVisible(false);
+    }
+
+
+}
+
 
 void MainWindow::SendTrackRequest()
 {
@@ -912,3 +984,73 @@ void MainWindow::SetMultisampling(const int i)
     glf.setSamples(i);
     QGLFormat::setDefaultFormat(glf);
 }
+
+
+
+// UI slots
+
+void MainWindow::openEditWidget()
+{
+    for(int i = 0; i < 5; i++)
+    {
+        if(i != 0)
+        {
+            docks[i]->setVisible(false);
+            openDock[i]->setChecked(false);
+        }
+    }
+    docks[0]->toggleViewAction()->trigger();
+}
+
+void MainWindow::openGenerateWidget()
+{
+    for(int i = 0; i < 5; i++)
+    {
+        if(i != 1)
+        {
+            docks[i]->setVisible(false);
+            openDock[i]->setChecked(false);
+        }
+    }
+    docks[1]->toggleViewAction()->trigger();
+}
+
+void MainWindow::openGuidesWidget()
+{
+    for(int i = 0; i < 5; i++)
+    {
+        if(i != 2)
+        {
+            docks[i]->setVisible(false);
+            openDock[i]->setChecked(false);
+        }
+    }
+    docks[2]->toggleViewAction()->trigger();
+}
+
+void MainWindow::openPhysicsWidget()
+{
+    for(int i = 0; i < 5; i++)
+    {
+        if(i != 3)
+        {
+            docks[i]->setVisible(false);
+            openDock[i]->setChecked(false);
+        }
+    }
+    docks[3]->toggleViewAction()->trigger();
+}
+
+void MainWindow::openViewsWidget()
+{
+    for(int i = 0; i < 5; i++)
+    {
+        if(i != 4)
+        {
+            docks[i]->setVisible(false);
+            openDock[i]->setChecked(false);
+        }
+    }
+    docks[4]->toggleViewAction()->trigger();
+}
+

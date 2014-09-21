@@ -100,6 +100,14 @@ private slots:
     void PhysicsAddExternalMass();
     void PhysicsRemoveExternalMasses();
 
+    // New UI features
+
+    void openEditWidget();
+    void openGenerateWidget();
+    void openGuidesWidget();
+    void openPhysicsWidget();
+    void openViewsWidget();
+
 private:   
 
     void createActions();
@@ -195,6 +203,14 @@ private:
     QDockWidget * bottomDockWidget;
 
     QWebView * webView;
+
+
+    // New UI features
+
+    void createSideBar();
+    QToolBar *mainToolBar;
+    QAction *openDock[5];
+    QDockWidget *docks[5];
 
 
 };
