@@ -139,10 +139,10 @@ void MainWindow::createSideBar()
     mainToolBar->widgetForAction(openDock[4])->setMinimumSize(QSize(100,75));
 
     mainToolBar->setMovable(false);
-    mainToolBar->setContextMenuPolicy(Qt::ContextMenuPolicy::PreventContextMenu);
-    mainToolBar->setToolButtonStyle(Qt::ToolButtonStyle::ToolButtonTextUnderIcon);
+    mainToolBar->setContextMenuPolicy(Qt::PreventContextMenu);
+    mainToolBar->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
 
-    addToolBar(Qt::ToolBarArea::LeftToolBarArea, mainToolBar);
+    addToolBar(Qt::LeftToolBarArea, mainToolBar);
 
     QVBoxLayout *layout = new QVBoxLayout;
 
@@ -155,7 +155,7 @@ void MainWindow::createSideBar()
         docks[i]->setWidget(widget);
         docks[i]->setFeatures(QDockWidget::NoDockWidgetFeatures);
 
-        addDockWidget(Qt::DockWidgetArea::LeftDockWidgetArea,docks[i]);
+        addDockWidget(Qt::LeftDockWidgetArea,docks[i]);
         docks[i]->setVisible(false);
     }
 

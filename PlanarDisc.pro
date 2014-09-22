@@ -50,7 +50,7 @@ unix:!macx:LIBS += -lGLU
 unix:!macx:QMAKE_RPATHDIR += ./libs
 
 # program icon (for Windows, anyway) Chris - can you figure out how to do it for Mac - perhaps the same/similar means?
-#win32:RC_FILE = flatfab.rc
+win32:RC_FILE = flatfab.rc
 
-RESOURCES += \
-    flatfab.rc
+#RESOURCES += \
+#    flatfab.rc
