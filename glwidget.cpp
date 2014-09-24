@@ -123,6 +123,12 @@ GLWidget::GLWidget() :
     //physics.Solve(100,20);
     //physics.PrintJointForce();
 
+    editWidget = NULL;
+    genWidget = NULL;
+    guidesWidget = NULL;
+    physicsWidget = NULL;
+    viewsWidget = NULL;
+
 
 }
 
@@ -775,6 +781,9 @@ QWidget * GLWidget::GetEditWidget()
 //    radial_groupbox->setLayout(radial_layout);
 //    editWidgetLayout->addRow(radial_groupbox);
 
+    editWidget = new QTabWidget();
+    editWidget->setMinimumWidth(200);
+
     return editWidget;
 
 }
@@ -931,7 +940,8 @@ QWidget * GLWidget::GetGenerateWidget()
 
 
 
-    genWidget = new QWidget();
+    genWidget = new QTabWidget();
+    genWidget->setMinimumWidth(200);
     genWidget->setLayout(generateWidgetLayout);
 
     return genWidget;
@@ -942,6 +952,9 @@ QWidget * GLWidget::GetGuidesWidget()
     if (guidesWidget != NULL) {
         return guidesWidget;
     }
+
+    guidesWidget = new QTabWidget();;
+    guidesWidget->setMinimumWidth(200);
 
     return guidesWidget;
 }
@@ -1002,8 +1015,10 @@ QWidget * GLWidget::GetPhysicsWidget()
     phys_groupbox->setLayout(phys_layout);
     physWidgetLayout->addRow(phys_groupbox);
 
-    physicsWidget = new QWidget();
+    physicsWidget = new QTabWidget();
+    physicsWidget->setMinimumWidth(200);
     physicsWidget->setLayout(physWidgetLayout);
+
 
 
     return physicsWidget;
@@ -1087,7 +1102,8 @@ QWidget * GLWidget::GetViewsWidget()
     viewrot_groupbox->setLayout(viewrot_layout);
     viewsWidgetLayout->addRow(viewrot_groupbox);
 
-    viewsWidget = new QWidget();
+    viewsWidget = new QTabWidget();
+    viewsWidget->setMinimumWidth(200);
     viewsWidget->setLayout(viewsWidgetLayout);
 
     return viewsWidget;

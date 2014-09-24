@@ -156,6 +156,7 @@ void MainWindow::createSideBar()
 //        QWidget *widget = new QWidget(this);
 //        widget->setLayout(layout);
 
+
         docks[i] = new QDockWidget(this);
         docks[i]->setWidget(widgets[i]);
         docks[i]->setFeatures(QDockWidget::NoDockWidgetFeatures);
@@ -163,6 +164,11 @@ void MainWindow::createSideBar()
         addDockWidget(Qt::LeftDockWidgetArea,docks[i]);
         docks[i]->setVisible(false);
     }
+    docks[0]->setWindowTitle("Editing Sections");
+    docks[1]->setWindowTitle("Generate Sections");
+    docks[2]->setWindowTitle("Guides and Dimensions");
+    docks[3]->setWindowTitle("Physical Simulation");
+    docks[4]->setWindowTitle("Views");
 
 
 }

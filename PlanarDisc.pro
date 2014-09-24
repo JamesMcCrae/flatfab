@@ -54,3 +54,6 @@ win32:RC_FILE = flatfab.rc
 
 #RESOURCES += \
 #    flatfab.rc
+
+RESOURCES += \
+    resources.qrc
