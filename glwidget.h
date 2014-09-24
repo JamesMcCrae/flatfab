@@ -75,6 +75,13 @@ public:
     ~GLWidget();
     
     QWidget * GetSideWidget();
+
+    QWidget * GetEditWidget();
+    QWidget * GetGenerateWidget();
+    QWidget * GetGuidesWidget();
+    QWidget * GetPhysicsWidget();
+    QWidget * GetViewsWidget();
+
     CPhysics & GetPhysics();
 
     void keyPressEvent(QKeyEvent *event);
@@ -267,6 +274,13 @@ private:
     void QVector3DToArray(const QVector3D & p, double array[3]);
 
     QTabWidget * sideWidget;
+
+    QWidget *editWidget;
+    QWidget *genWidget;
+    QWidget *guidesWidget;
+    QWidget *physicsWidget;
+    QWidget *viewsWidget;
+
     QTimer animate_timer;
     QDateTime animate_until;    
     int animate_frames;

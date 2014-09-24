@@ -86,7 +86,7 @@ void MainWindow::ShowAppWidgets()
     //main widget/window layout
     this->removeDockWidget(bottomDockWidget);
 
-    //addDockWidget(Qt::LeftDockWidgetArea, dockWidget);
+    addDockWidget(Qt::RightDockWidgetArea, dockWidget);
     createSideBar();
     setCentralWidget(&glWidget);
 
@@ -94,33 +94,33 @@ void MainWindow::ShowAppWidgets()
 
 void MainWindow::createSideBar()
 {
-    openDock[0] = new QAction(QIcon(":/images/copy.png"), tr("&Edit and Transform"), this);
+    openDock[0] = new QAction(QIcon(":/images/copy.png"), tr("&Edit"), this);
     //openEdit->setShortcuts(QKeySequence::Open);
-    //openDock[0]->setStatusTip(tr("Edit and Transform"));
+    openDock[0]->setStatusTip(tr("Edit"));
     openDock[0]->setCheckable(true);
     connect(openDock[0], SIGNAL(triggered()), this, SLOT(openEditWidget()));
 
     openDock[1] = new QAction(QIcon(":/images/open.png"), tr("&Generate"), this);
     //openEdit->setShortcuts(QKeySequence::Open);
-    //openDock[1]->setStatusTip(tr("Generate"));
+    openDock[1]->setStatusTip(tr("Generate"));
     openDock[1]->setCheckable(true);
     connect(openDock[1], SIGNAL(triggered()), this, SLOT(openGenerateWidget()));
 
     openDock[2] = new QAction(QIcon(":/images/cut.png"), tr("&Guides"), this);
     //openEdit->setShortcuts(QKeySequence::Open);
-    //openDock[2]->setStatusTip(tr("Guides"));
+    openDock[2]->setStatusTip(tr("Guides"));
     openDock[2]->setCheckable(true);
     connect(openDock[2], SIGNAL(triggered()), this, SLOT(openGuidesWidget()));
 
     openDock[3] = new QAction(QIcon(":/images/cut.png"), tr("&Physics"), this);
     //openEdit->setShortcuts(QKeySequence::Open);
-    //openDock[3]->setStatusTip(tr("Physics"));
+    openDock[3]->setStatusTip(tr("Physics"));
     openDock[3]->setCheckable(true);
     connect(openDock[3], SIGNAL(triggered()), this, SLOT(openPhysicsWidget()));
 
     openDock[4] = new QAction(QIcon(":/images/cut.png"), tr("&Views"), this);
     //openEdit->setShortcuts(QKeySequence::Open);
-    //openDock[4]->setStatusTip(tr("Views"));
+    openDock[4]->setStatusTip(tr("Views"));
     openDock[4]->setCheckable(true);
     connect(openDock[4], SIGNAL(triggered()), this, SLOT(openViewsWidget()));
 
@@ -132,11 +132,11 @@ void MainWindow::createSideBar()
     for(int i = 0; i < 4; i++)
     {
         mainToolBar->addAction(openDock[i]);
-        mainToolBar->widgetForAction(openDock[i])->setMinimumSize(QSize(100,75));
+        mainToolBar->widgetForAction(openDock[i])->setMinimumSize(QSize(75,75));
         mainToolBar->addSeparator();
     }
     mainToolBar->addAction(openDock[4]);
-    mainToolBar->widgetForAction(openDock[4])->setMinimumSize(QSize(100,75));
+    mainToolBar->widgetForAction(openDock[4])->setMinimumSize(QSize(75,75));
 
     mainToolBar->setMovable(false);
     mainToolBar->setContextMenuPolicy(Qt::PreventContextMenu);
@@ -144,15 +144,20 @@ void MainWindow::createSideBar()
 
     addToolBar(Qt::LeftToolBarArea, mainToolBar);
 
-    QVBoxLayout *layout = new QVBoxLayout;
+    QWidget *widgets[5];
+    widgets[0] = glWidget.GetEditWidget();
+    widgets[1] = glWidget.GetGenerateWidget();
+    widgets[2] = glWidget.GetGuidesWidget();
+    widgets[3] = glWidget.GetPhysicsWidget();
+    widgets[4] = glWidget.GetViewsWidget();
 
     for(int i = 0; i < 5; i++)
     {
-        QWidget *widget = new QWidget(this);
-        widget->setLayout(layout);
+//        QWidget *widget = new QWidget(this);
+//        widget->setLayout(layout);
 
         docks[i] = new QDockWidget(this);
-        docks[i]->setWidget(widget);
+        docks[i]->setWidget(widgets[i]);
         docks[i]->setFeatures(QDockWidget::NoDockWidgetFeatures);
 
         addDockWidget(Qt::LeftDockWidgetArea,docks[i]);

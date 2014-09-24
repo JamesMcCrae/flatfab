@@ -134,6 +134,29 @@ GLWidget::~GLWidget()
         sideWidget = NULL;
     }
 
+
+    if (editWidget != NULL) {
+        delete editWidget;
+        editWidget = NULL;
+    }
+    if (genWidget != NULL) {
+        delete genWidget;
+        genWidget = NULL;
+    }
+    if (guidesWidget != NULL) {
+        delete guidesWidget;
+        guidesWidget = NULL;
+    }
+    if (physicsWidget != NULL) {
+        delete physicsWidget;
+        physicsWidget = NULL;
+    }
+    if (viewsWidget != NULL) {
+        delete viewsWidget;
+        viewsWidget = NULL;
+    }
+
+
     if (template_image_tex > 0) {
         glDeleteTextures(1, &template_image_tex);
         template_image_tex = 0;
@@ -704,6 +727,374 @@ void GLWidget::initializeGL()
     glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
 
 }
+
+QWidget * GLWidget::GetEditWidget()
+{
+    if (editWidget != NULL) {
+        return editWidget;
+    }
+
+
+//    // Radial group
+
+//    QPushButton * radialButton = new QPushButton("Make Radial");
+//    connect(radialButton, SIGNAL(clicked()), this, SLOT(DoGenerateMakeRadial());
+
+//    QSlider * radial_sectors_slider = new QSlider();
+//    radial_sectors_slider->setRange(1, 40);
+//    radial_sectors_slider->setOrientation(Qt::Horizontal);
+//    radial_sectors_slider->setValue(this->GetGenerateRadialSectors());
+//    connect(radial_sectors_slider, SIGNAL(valueChanged(int)), this, SLOT(SetGenerateRadialSectors(int)));
+
+//    for (int i=0; i<9; ++i) {
+//        radial_slider[i] = new QSlider();
+//        radial_slider[i]->setRange(1, 40);
+//        radial_slider[i]->setOrientation(Qt::Horizontal);
+//        radial_slider[i]->setValue(generate_radial_params[i] * 20);
+//        connect(radial_slider[i], SIGNAL(valueChanged(int)), this, SLOT(SetGenerateRadialParams()));
+//    }
+
+//    QGroupBox * radial_groupbox = new QGroupBox(tr("Radial Operations"));
+//    QGridLayout * radial_layout = new QGridLayout;
+//    radial_layout->addWidget(radialButton,0,0,1,3);
+//    radial_layout->addWidget(new QLabel("Sectors"), 0, 0);
+//    radial_layout->addWidget(radial_sectors_slider, 0, 1);
+//    radial_layout->addWidget(radial_sectors_label, 0, 2);
+//    radial_layout->addWidget(new QLabel("Point"), 1, 0);
+//    radial_layout->addWidget(new QLabel("Tangent1"), 1, 1);
+//    radial_layout->addWidget(new QLabel("Tangent2"), 1, 2);
+//    radial_layout->addWidget(radial_slider[0], 2, 0);
+//    radial_layout->addWidget(radial_slider[1], 2, 1);
+//    radial_layout->addWidget(radial_slider[2], 2, 2);
+//    radial_layout->addWidget(radial_slider[3], 3, 0);
+//    radial_layout->addWidget(radial_slider[4], 3, 1);
+//    radial_layout->addWidget(radial_slider[5], 3, 2);
+//    radial_layout->addWidget(radial_slider[6], 4, 0);
+//    radial_layout->addWidget(radial_slider[7], 4, 1);
+//    radial_layout->addWidget(radial_slider[8], 4, 2);
+//    radial_groupbox->setLayout(radial_layout);
+//    editWidgetLayout->addRow(radial_groupbox);
+
+    return editWidget;
+
+}
+
+QWidget * GLWidget::GetGenerateWidget()
+{
+    if (genWidget != NULL) {
+        return genWidget;
+    }
+
+    QFormLayout * generateWidgetLayout = new QFormLayout();
+
+
+
+    // Blend group
+
+    QPushButton * blendButton = new QPushButton("Blend");
+    connect(blendButton, SIGNAL(clicked()), this, SLOT(DoGenerateBlend()));
+
+    QSlider * num_blend_sections_slider = new QSlider();
+    num_blend_sections_slider->setRange(3, 40);
+    num_blend_sections_slider->setOrientation(Qt::Horizontal);
+    num_blend_sections_slider->setValue(GetGenerateBlendSections());
+    connect(num_blend_sections_slider, SIGNAL(valueChanged(int)), this, SLOT(SetGenerateBlendSections(int)));
+
+    QGroupBox * blend_groupbox = new QGroupBox(tr("Blend Operation"));
+    QGridLayout * blend_layout = new QGridLayout;
+    blend_layout->addWidget(blendButton,0,0,1,3);
+    blend_layout->addWidget(new QLabel("Sections"), 1, 0);
+    blend_layout->addWidget(num_blend_sections_slider, 1, 1);
+    blend_layout->addWidget(num_blend_sections_label, 1, 2);
+    blend_groupbox->setLayout(blend_layout);
+    generateWidgetLayout->addRow(blend_groupbox);
+
+
+
+    // Branch group
+
+    QPushButton * setRootButton = new QPushButton("Set Root");
+    connect(setRootButton, SIGNAL(clicked()), this, SLOT(DoGenerateBranchingSetRoot()));
+
+    QPushButton * branchButton = new QPushButton("Branch");
+    connect(branchButton, SIGNAL(clicked()), this, SLOT(DoGenerateBranching()));
+
+    QSlider * branching_scalechild_slider = new QSlider();
+    branching_scalechild_slider->setRange(1, 200);
+    branching_scalechild_slider->setOrientation(Qt::Horizontal);
+    branching_scalechild_slider->setValue(this->GetGenerateBranchingScaleChild()*100);
+    connect(branching_scalechild_slider, SIGNAL(valueChanged(int)), this, SLOT(SetGenerateBranchingScaleChild(int)));
+
+    QGroupBox * branch_groupbox = new QGroupBox(tr("Branching Operation"));
+    QGridLayout * branch_layout = new QGridLayout;
+    branch_layout->addWidget(setRootButton, 0, 0,1,3);
+    branch_layout->addWidget(branchButton, 0, 3,1,3);
+    branch_layout->addWidget(new QLabel("Child Scale"), 1, 0);
+    branch_layout->addWidget(branching_scalechild_slider, 1, 1,1,4);
+    branch_layout->addWidget(branching_scalechild_label, 1, 5);
+    branch_groupbox->setLayout(branch_layout);
+    generateWidgetLayout->addRow(branch_groupbox);
+
+
+
+    // Grid group
+
+    QPushButton * gridButton = new QPushButton("Grid");
+    connect(gridButton, SIGNAL(clicked()), this, SLOT(DoGenerateGrid()));
+
+    QSlider * grid_sizex_slider = new QSlider();
+    grid_sizex_slider->setRange(1, 50);
+    grid_sizex_slider->setValue(GetGenerateGridSizeX() * 10);
+    grid_sizex_slider->setOrientation(Qt::Horizontal);
+    connect(grid_sizex_slider, SIGNAL(valueChanged(int)), this, SLOT(SetGenerateGridSizeX(int)));
+
+    QSlider * grid_sizey_slider = new QSlider();
+    grid_sizey_slider->setRange(1, 50);
+    grid_sizey_slider->setOrientation(Qt::Horizontal);
+    grid_sizey_slider->setValue(GetGenerateGridSizeY() * 10);
+    connect(grid_sizey_slider, SIGNAL(valueChanged(int)), this, SLOT(SetGenerateGridSizeY(int)));
+
+    QSlider * grid_staplesize_slider = new QSlider();
+    grid_staplesize_slider->setRange(1, 40);
+    grid_staplesize_slider->setOrientation(Qt::Horizontal);
+    grid_staplesize_slider->setValue(GetGenerateGridStapleSize() * 20);
+    connect(grid_staplesize_slider, SIGNAL(valueChanged(int)), this, SLOT(SetGenerateGridStapleSize(int)));
+
+    QGroupBox * grid_groupbox = new QGroupBox(tr("Grid Operation"));
+    QGridLayout * grid_layout = new QGridLayout;
+    grid_layout->addWidget(gridButton, 0, 0, 1, 3);
+    grid_layout->addWidget(new QLabel("Cell Width"), 1, 0);
+    grid_layout->addWidget(grid_sizex_slider, 1, 1);
+    grid_layout->addWidget(grid_sizex_label, 1, 2);
+    grid_layout->addWidget(new QLabel("Cell Height"), 2, 0);
+    grid_layout->addWidget(grid_sizey_slider, 2, 1);
+    grid_layout->addWidget(grid_sizey_label, 2, 2);
+    grid_layout->addWidget(new QLabel("Staple Size"), 3, 0);
+    grid_layout->addWidget(grid_staplesize_slider, 3, 1);
+    grid_layout->addWidget(grid_staple_label, 3, 2);
+    grid_groupbox->setLayout(grid_layout);
+    generateWidgetLayout->addRow(grid_groupbox);
+
+
+
+    // Linear group
+
+    QPushButton * linearButton = new QPushButton("Linear");
+    connect(linearButton, SIGNAL(clicked()), this, SLOT(DoGenerateLinear()));
+
+    QSlider * linear_spacing_slider = new QSlider();
+    linear_spacing_slider->setRange(1, 50);
+    linear_spacing_slider->setOrientation(Qt::Horizontal);
+    linear_spacing_slider->setValue(GetGenerateLinearSpacing()*10);
+    connect(linear_spacing_slider, SIGNAL(valueChanged(int)), this, SLOT(SetGenerateLinearSpacing(int)));
+
+    QCheckBox * linear_scalex_checkbox = new QCheckBox("Scale X");
+    linear_scalex_checkbox ->setChecked(GetGenerateLinearScaleX());
+    connect(linear_scalex_checkbox , SIGNAL(toggled(bool)), this, SLOT(SetGenerateLinearScaleX(bool)));
+
+    QCheckBox * linear_scaley_checkbox = new QCheckBox("Scale Y");
+    linear_scaley_checkbox ->setChecked(GetGenerateLinearScaleY());
+    connect(linear_scaley_checkbox , SIGNAL(toggled(bool)), this, SLOT(SetGenerateLinearScaleY(bool)));
+
+    QGroupBox * linear_groupbox = new QGroupBox(tr("Linear Operation"));
+    QGridLayout * linear_layout = new QGridLayout;
+    linear_layout->addWidget(linearButton,0,0,1,4);
+    linear_layout->addWidget(new QLabel("Spacing"), 1, 0);
+    linear_layout->addWidget(linear_spacing_slider, 1, 1, 1, 2);
+    linear_layout->addWidget(linear_spacing_label, 1, 3);
+    linear_layout->addWidget(linear_scalex_checkbox, 2, 0, 1, 2);
+    linear_layout->addWidget(linear_scaley_checkbox, 2, 2, 1, 2);
+    linear_groupbox->setLayout(linear_layout);
+    generateWidgetLayout->addRow(linear_groupbox);
+
+
+
+    // Revolve group
+
+    QPushButton * revolveButton = new QPushButton("Revolve");
+    connect(revolveButton, SIGNAL(clicked()), this, SLOT(DoGenerateRevolve()));
+
+    QSlider * num_revolve_sections_slider = new QSlider();
+    num_revolve_sections_slider->setRange(2, 40);
+    num_revolve_sections_slider->setOrientation(Qt::Horizontal);
+    num_revolve_sections_slider->setValue(GetGenerateRevolveSections());
+    connect(num_revolve_sections_slider, SIGNAL(valueChanged(int)), this, SLOT(SetGenerateRevolveSections(int)));
+
+    QGroupBox * revolve_groupbox = new QGroupBox(tr("Revolve Operation"));
+    QGridLayout * revolve_layout = new QGridLayout;
+    revolve_layout->addWidget(revolveButton,0,0,1,3);
+    revolve_layout->addWidget(new QLabel("Sections"), 1, 0);
+    revolve_layout->addWidget(num_revolve_sections_slider, 1, 1);
+    revolve_layout->addWidget(num_revolve_sections_label, 1, 2);
+    revolve_groupbox->setLayout(revolve_layout);
+    generateWidgetLayout->addRow(revolve_groupbox);
+
+
+
+    genWidget = new QWidget();
+    genWidget->setLayout(generateWidgetLayout);
+
+    return genWidget;
+}
+
+QWidget * GLWidget::GetGuidesWidget()
+{
+    if (guidesWidget != NULL) {
+        return guidesWidget;
+    }
+
+    return guidesWidget;
+}
+
+QWidget * GLWidget::GetPhysicsWidget()
+{
+    if (physicsWidget != NULL) {
+        return physicsWidget;
+    }
+
+    QFormLayout * physWidgetLayout = new QFormLayout();
+
+//    QPushButton * showButton1 = new QPushButton("Deformed");
+//    connect(showButton1, SIGNAL(clicked()), this, SLOT());
+
+//    QGroupBox * show_groupbox = new QGroupBox(tr("Display"));
+//    QGridLayout *show_layout = new QGridLayout;
+//    show_layout->setSpacing(0);
+//    show_layout->setHorizontalSpacing(0);
+//    show_layout->addWidget(viewisobtn1, 0, 0);
+//    show_layout->addWidget(viewisobtn2, 0, 1);
+//    show_layout->addWidget(viewisobtn3, 0, 2);
+//    show_layout->addWidget(viewisobtn4, 0, 3);
+//    show_layout->addWidget(viewxbtn, 1, 0);
+//    show_layout->addWidget(viewybtn, 1, 1);
+//    show_layout->addWidget(viewzbtn, 1, 2);
+//    show_layout->addWidget(viewpartbtn, 1, 3);
+//    show_groupbox->setLayout(show_layout);
+//    mainWidgetLayout->addRow(show_groupbox);
+
+
+    QDoubleSpinBox * new_weight_spinbox = new QDoubleSpinBox();
+    new_weight_spinbox->setRange(0.001, 50);
+    new_weight_spinbox->setDecimals(3);
+    new_weight_spinbox->setSingleStep(0.1);
+    new_weight_spinbox->setValue(physics_new_weight_mass);
+    connect(new_weight_spinbox, SIGNAL(valueChanged(double)), this, SLOT(SetPhysicsNewWeightMass(double)));
+
+    QDoubleSpinBox * density_spinbox = new QDoubleSpinBox();
+    density_spinbox->setRange(10, 2000);
+    density_spinbox->setDecimals(1);
+    density_spinbox->setSingleStep(10);
+    density_spinbox->setValue(physics_material_density);
+    connect(density_spinbox, SIGNAL(valueChanged(double)), this, SLOT(SetPhysicsMaterialDensity(double)));
+
+    QDoubleSpinBox * stress_spinbox = new QDoubleSpinBox();
+    stress_spinbox->setRange(1, 500);
+    stress_spinbox->setDecimals(2);
+    stress_spinbox->setSingleStep(1);
+    stress_spinbox->setValue(physics_max_stress / 1000000.0);
+    connect(stress_spinbox, SIGNAL(valueChanged(double)), this, SLOT(SetPhysicsMaximumStress(double)));
+
+    QGroupBox * phys_groupbox = new QGroupBox(tr("Physical Values"));
+    QFormLayout *phys_layout = new QFormLayout;
+    phys_layout->addRow(new QLabel("Weight (kg)"), new_weight_spinbox);
+    phys_layout->addRow(new QLabel("Density (kg/m^3)"), density_spinbox);
+    phys_layout->addRow(new QLabel("Stress (MPa)"), stress_spinbox);
+    phys_groupbox->setLayout(phys_layout);
+    physWidgetLayout->addRow(phys_groupbox);
+
+    physicsWidget = new QWidget();
+    physicsWidget->setLayout(physWidgetLayout);
+
+
+    return physicsWidget;
+}
+
+QWidget * GLWidget::GetViewsWidget()
+{
+    if (viewsWidget != NULL) {
+        return viewsWidget;
+    }
+
+    QFormLayout * viewsWidgetLayout = new QFormLayout();
+
+    //views
+    const int viewbtnwidth = 50;
+    QPushButton * viewisobtn1 = new QPushButton("Iso1");
+    viewisobtn1->setMaximumWidth(viewbtnwidth);
+    connect(viewisobtn1, SIGNAL(clicked()), this, SLOT(SetViewIso1()));
+    QPushButton * viewisobtn2 = new QPushButton("Iso2");
+    viewisobtn2->setMaximumWidth(viewbtnwidth);
+    connect(viewisobtn2, SIGNAL(clicked()), this, SLOT(SetViewIso2()));
+    QPushButton * viewisobtn3 = new QPushButton("Iso3");
+    viewisobtn3->setMaximumWidth(viewbtnwidth);
+    connect(viewisobtn3, SIGNAL(clicked()), this, SLOT(SetViewIso3()));
+    QPushButton * viewisobtn4 = new QPushButton("Iso4");
+    viewisobtn4->setMaximumWidth(viewbtnwidth);
+    connect(viewisobtn4, SIGNAL(clicked()), this, SLOT(SetViewIso4()));
+
+    QPushButton * viewxbtn = new QPushButton("X");
+    viewxbtn->setMaximumWidth(viewbtnwidth);
+    connect(viewxbtn, SIGNAL(clicked()), this, SLOT(SetViewX()));
+    QPushButton * viewybtn = new QPushButton("Y");
+    viewybtn->setMaximumWidth(viewbtnwidth);
+    connect(viewybtn, SIGNAL(clicked()), this, SLOT(SetViewY()));
+    QPushButton * viewzbtn = new QPushButton("Z");
+    viewzbtn->setMaximumWidth(viewbtnwidth);
+    connect(viewzbtn, SIGNAL(clicked()), this, SLOT(SetViewZ()));
+    QPushButton * viewpartbtn = new QPushButton("Part");
+    viewpartbtn->setMaximumWidth(viewbtnwidth);
+    connect(viewpartbtn, SIGNAL(clicked()), this, SLOT(SetViewPart()));
+
+
+    QGroupBox * view_groupbox = new QGroupBox(tr("Views"));
+    QGridLayout *view_layout = new QGridLayout;
+    view_layout->setSpacing(0);
+    view_layout->setHorizontalSpacing(0);
+    view_layout->addWidget(viewisobtn1, 0, 0);
+    view_layout->addWidget(viewisobtn2, 0, 1);
+    view_layout->addWidget(viewisobtn3, 0, 2);
+    view_layout->addWidget(viewisobtn4, 0, 3);
+    view_layout->addWidget(viewxbtn, 1, 0);
+    view_layout->addWidget(viewybtn, 1, 1);
+    view_layout->addWidget(viewzbtn, 1, 2);
+    view_layout->addWidget(viewpartbtn, 1, 3);
+    view_groupbox->setLayout(view_layout);
+    viewsWidgetLayout->addRow(view_groupbox);
+
+
+
+    QSlider * rotation_slider = new QSlider();
+    rotation_slider->setRange(1, 30);
+    rotation_slider->setOrientation(Qt::Horizontal);
+    rotation_slider->setValue(cam_animate_duration / 100.0f);
+    connect(rotation_slider, SIGNAL(valueChanged(int)), this, SLOT(SetRotationDuration(int)));
+
+    QSlider * rotation_angle_slider = new QSlider();
+    rotation_angle_slider->setRange(0, 90);
+    rotation_angle_slider->setOrientation(Qt::Horizontal);
+    rotation_angle_slider->setValue(cam_animate_angle);
+    connect(rotation_angle_slider, SIGNAL(valueChanged(int)), this, SLOT(SetRotationAngle(int)));
+
+    rotate_label = new QLabel(QString::number(rotation_slider->value()*100) + QString(" ms"));
+    rotate_angle_label = new QLabel(QString::number(rotation_angle_slider->value()) + QString(" degrees"));
+
+    QGroupBox * viewrot_groupbox = new QGroupBox(tr("View Rotation"));
+    QGridLayout *viewrot_layout = new QGridLayout;
+    viewrot_layout->addWidget(rotation_slider, 0, 1);
+    viewrot_layout->addWidget(rotate_label, 0, 0);
+    viewrot_layout->addWidget(rotation_angle_slider, 1, 1);
+    viewrot_layout->addWidget(rotate_angle_label, 1, 0);
+    viewrot_groupbox->setLayout(viewrot_layout);
+    viewsWidgetLayout->addRow(viewrot_groupbox);
+
+    viewsWidget = new QWidget();
+    viewsWidget->setLayout(viewsWidgetLayout);
+
+    return viewsWidget;
+}
+
+
+
 
 void GLWidget::paintGL()
 {         
