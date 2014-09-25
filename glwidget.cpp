@@ -851,7 +851,7 @@ QWidget * GLWidget::GetEditWidget()
     editWidgetLayout->addRow(radial_groupbox);
 
     editWidget = new QTabWidget();
-    editWidget->setMinimumWidth(200);
+    editWidget->setMinimumWidth(225);
     editWidget->setLayout(editWidgetLayout);
 
     return editWidget;
@@ -1011,7 +1011,7 @@ QWidget * GLWidget::GetGenerateWidget()
 
 
     genWidget = new QTabWidget();
-    genWidget->setMinimumWidth(200);
+    genWidget->setMinimumWidth(225);
     genWidget->setLayout(generateWidgetLayout);
 
     return genWidget;
@@ -1150,7 +1150,7 @@ QWidget * GLWidget::GetGuidesWidget()
 
 
     guidesWidget = new QTabWidget();
-    guidesWidget->setMinimumWidth(200);
+    guidesWidget->setMinimumWidth(225);
     guidesWidget->setLayout(guidesWidgetLayout);
 
     return guidesWidget;
@@ -1273,7 +1273,7 @@ QWidget * GLWidget::GetPhysicsWidget()
     physWidgetLayout->addRow(phys_groupbox);
 
     physicsWidget = new QTabWidget();
-    physicsWidget->setMinimumWidth(200);
+    physicsWidget->setMinimumWidth(225);
     physicsWidget->setLayout(physWidgetLayout);
 
 
@@ -1360,7 +1360,7 @@ QWidget * GLWidget::GetViewsWidget()
     viewsWidgetLayout->addRow(viewrot_groupbox);
 
     viewsWidget = new QTabWidget();
-    viewsWidget->setMinimumWidth(200);
+    viewsWidget->setMinimumWidth(225);
     viewsWidget->setLayout(viewsWidgetLayout);
 
     return viewsWidget;

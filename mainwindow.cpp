@@ -30,6 +30,11 @@ MainWindow::MainWindow()
     //web view stuff
     webView = new QWebView(this);
     webView->setGeometry(0,0,800,400);
+
+    // --- does nothing for some reason
+    webView->settings()->setFontFamily(QWebSettings::SansSerifFont, "Arial");
+    // ---
+
     webView->load(QUrl("http://flatfab.com/splash.html"));
 
     webView->show();
@@ -55,6 +60,10 @@ void MainWindow::ShowWelcomePage()
     QPushButton *button1 = new QPushButton("New FlatFab");
     QPushButton *button2 = new QPushButton("Open FlatFab...");
     QPushButton *button3 = new QPushButton("Quit");
+
+    button1->setMinimumHeight(40);
+    button2->setMinimumHeight(40);
+    button3->setMinimumHeight(40);
 
     connect(button1, SIGNAL(clicked()), this, SLOT(NewPlaneSketch()));
     connect(button2, SIGNAL(clicked()), this, SLOT(LoadPlaneSketch()));
