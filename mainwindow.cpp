@@ -164,7 +164,7 @@ void MainWindow::createSideBar()
         addDockWidget(Qt::LeftDockWidgetArea,docks[i]);
         docks[i]->setVisible(false);
     }
-    docks[0]->setWindowTitle("Editing Sections");
+    docks[0]->setWindowTitle("Edit Selected Section");
     docks[1]->setWindowTitle("Generate Sections");
     docks[2]->setWindowTitle("Guides and Dimensions");
     docks[3]->setWindowTitle("Physical Simulation");

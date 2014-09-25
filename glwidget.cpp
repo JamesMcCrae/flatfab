@@ -740,49 +740,119 @@ QWidget * GLWidget::GetEditWidget()
         return editWidget;
     }
 
+    QFormLayout * editWidgetLayout = new QFormLayout();
 
-//    // Radial group
 
-//    QPushButton * radialButton = new QPushButton("Make Radial");
-//    connect(radialButton, SIGNAL(clicked()), this, SLOT(DoGenerateMakeRadial());
+    QPushButton * transformButton = new QPushButton("Transform");
+    connect(transformButton, SIGNAL(clicked()), this, SLOT(Transform()));
+    transformButton->setMinimumHeight(40);
 
-//    QSlider * radial_sectors_slider = new QSlider();
-//    radial_sectors_slider->setRange(1, 40);
-//    radial_sectors_slider->setOrientation(Qt::Horizontal);
-//    radial_sectors_slider->setValue(this->GetGenerateRadialSectors());
-//    connect(radial_sectors_slider, SIGNAL(valueChanged(int)), this, SLOT(SetGenerateRadialSectors(int)));
+    editWidgetLayout->addWidget(transformButton);
 
-//    for (int i=0; i<9; ++i) {
-//        radial_slider[i] = new QSlider();
-//        radial_slider[i]->setRange(1, 40);
-//        radial_slider[i]->setOrientation(Qt::Horizontal);
-//        radial_slider[i]->setValue(generate_radial_params[i] * 20);
-//        connect(radial_slider[i], SIGNAL(valueChanged(int)), this, SLOT(SetGenerateRadialParams()));
-//    }
+    QPushButton * snapButton = new QPushButton("Snap to Major Axis");
+    connect(snapButton, SIGNAL(clicked()), this, SLOT(SnapToMajorAxis()));
 
-//    QGroupBox * radial_groupbox = new QGroupBox(tr("Radial Operations"));
-//    QGridLayout * radial_layout = new QGridLayout;
-//    radial_layout->addWidget(radialButton,0,0,1,3);
-//    radial_layout->addWidget(new QLabel("Sectors"), 0, 0);
-//    radial_layout->addWidget(radial_sectors_slider, 0, 1);
-//    radial_layout->addWidget(radial_sectors_label, 0, 2);
-//    radial_layout->addWidget(new QLabel("Point"), 1, 0);
-//    radial_layout->addWidget(new QLabel("Tangent1"), 1, 1);
-//    radial_layout->addWidget(new QLabel("Tangent2"), 1, 2);
-//    radial_layout->addWidget(radial_slider[0], 2, 0);
-//    radial_layout->addWidget(radial_slider[1], 2, 1);
-//    radial_layout->addWidget(radial_slider[2], 2, 2);
-//    radial_layout->addWidget(radial_slider[3], 3, 0);
-//    radial_layout->addWidget(radial_slider[4], 3, 1);
-//    radial_layout->addWidget(radial_slider[5], 3, 2);
-//    radial_layout->addWidget(radial_slider[6], 4, 0);
-//    radial_layout->addWidget(radial_slider[7], 4, 1);
-//    radial_layout->addWidget(radial_slider[8], 4, 2);
-//    radial_groupbox->setLayout(radial_layout);
-//    editWidgetLayout->addRow(radial_groupbox);
+    editWidgetLayout->addWidget(snapButton);
+
+    QPushButton * resketchButton = new QPushButton("Re-sketch Boundary");
+    connect(resketchButton, SIGNAL(clicked()), this, SLOT(ResketchCurve()));
+
+    editWidgetLayout->addWidget(resketchButton);
+
+    QPushButton * deleteButton = new QPushButton("Delete Section");
+    deleteButton->setPalette(QPalette(QColor(64, 250, 66)));
+    connect(deleteButton, SIGNAL(clicked()), this, SLOT(DeleteSelected()));
+
+    editWidgetLayout->addWidget(deleteButton);
+
+
+
+    // Copy group
+
+    QPushButton * copyButton1 = new QPushButton("Duplicate");
+    connect(copyButton1, SIGNAL(clicked()), this, SLOT(CopyDuplicate()));
+
+    QPushButton * copyButton2 = new QPushButton("Mirror X");
+    connect(copyButton2, SIGNAL(clicked()), this, SLOT(CopyMirrorX()));
+
+    QPushButton * copyButton3 = new QPushButton("Rotate Y");
+    connect(copyButton3, SIGNAL(clicked()), this, SLOT(CopyRotateY()));
+
+    QPushButton * copyButton4 = new QPushButton("Mirror Z");
+    connect(copyButton4, SIGNAL(clicked()), this, SLOT(CopyMirrorZ()));
+
+    QGroupBox * copy_groupbox = new QGroupBox(tr("Copy Selected Section"));
+    QGridLayout * copy_layout = new QGridLayout;
+    copy_layout->addWidget(copyButton1,0,0);
+    copy_layout->addWidget(copyButton2,0,1);
+    copy_layout->addWidget(copyButton3,1,0);
+    copy_layout->addWidget(copyButton4,1,1);
+    copy_groupbox->setLayout(copy_layout);
+    editWidgetLayout->addRow(copy_groupbox);
+
+
+    // Hole group
+
+    QPushButton * holeButton1 = new QPushButton("Add Hole");
+    connect(holeButton1, SIGNAL(clicked()), this, SLOT(AddHoleBoundary()));
+
+    QPushButton * holeButton2 = new QPushButton("Remove All Holes");
+    connect(holeButton2, SIGNAL(clicked()), this, SLOT(RemoveHolesBoundary()));
+    holeButton2->setPalette(QPalette(QColor(64, 250, 66)));
+
+    QGroupBox * hole_groupbox = new QGroupBox(tr("Section Holes"));
+    QGridLayout * hole_layout = new QGridLayout;
+    hole_layout->addWidget(holeButton1,0,0);
+    hole_layout->addWidget(holeButton2,1,0);
+    hole_groupbox->setLayout(hole_layout);
+    editWidgetLayout->addRow(hole_groupbox);
+
+
+
+
+    // Radial group
+
+    QPushButton * radialButton = new QPushButton("Make Radial");
+    connect(radialButton, SIGNAL(clicked()), this, SLOT(DoGenerateMakeRadial()));
+
+    QSlider * radial_sectors_slider = new QSlider();
+    radial_sectors_slider->setRange(1, 40);
+    radial_sectors_slider->setOrientation(Qt::Horizontal);
+    radial_sectors_slider->setValue(this->GetGenerateRadialSectors());
+    connect(radial_sectors_slider, SIGNAL(valueChanged(int)), this, SLOT(SetGenerateRadialSectors(int)));
+
+    for (int i=0; i<9; ++i) {
+        radial_slider[i] = new QSlider();
+        radial_slider[i]->setRange(1, 40);
+        radial_slider[i]->setOrientation(Qt::Horizontal);
+        radial_slider[i]->setValue(generate_radial_params[i] * 20);
+        connect(radial_slider[i], SIGNAL(valueChanged(int)), this, SLOT(SetGenerateRadialParams()));
+    }
+
+    QGroupBox * radial_groupbox = new QGroupBox(tr("Radial Operations"));
+    QGridLayout * radial_layout = new QGridLayout;
+    radial_layout->addWidget(radialButton,0,0,1,3);
+    radial_layout->addWidget(new QLabel("Sectors"), 1, 0);
+    radial_layout->addWidget(radial_sectors_slider, 1, 1);
+    radial_layout->addWidget(radial_sectors_label, 1, 2);
+    radial_layout->addWidget(new QLabel("Point"), 2, 0);
+    radial_layout->addWidget(new QLabel("Tangent1"), 2, 1);
+    radial_layout->addWidget(new QLabel("Tangent2"), 2, 2);
+    radial_layout->addWidget(radial_slider[0], 3, 0);
+    radial_layout->addWidget(radial_slider[1], 3, 1);
+    radial_layout->addWidget(radial_slider[2], 3, 2);
+    radial_layout->addWidget(radial_slider[3], 4, 0);
+    radial_layout->addWidget(radial_slider[4], 4, 1);
+    radial_layout->addWidget(radial_slider[5], 4, 2);
+    radial_layout->addWidget(radial_slider[6], 5, 0);
+    radial_layout->addWidget(radial_slider[7], 5, 1);
+    radial_layout->addWidget(radial_slider[8], 5, 2);
+    radial_groupbox->setLayout(radial_layout);
+    editWidgetLayout->addRow(radial_groupbox);
 
     editWidget = new QTabWidget();
     editWidget->setMinimumWidth(200);
+    editWidget->setLayout(editWidgetLayout);
 
     return editWidget;
 
@@ -953,8 +1023,135 @@ QWidget * GLWidget::GetGuidesWidget()
         return guidesWidget;
     }
 
-    guidesWidget = new QTabWidget();;
+    QFormLayout * guidesWidgetLayout = new QFormLayout();
+
+    QPushButton * dimensioningToolButton = new QPushButton("Dimensioning Tool");
+    connect(dimensioningToolButton, SIGNAL(clicked()), this, SLOT(StartDimensioningTool()));
+    dimensioningToolButton->setMinimumHeight(40);
+    guidesWidgetLayout->addRow(dimensioningToolButton);
+
+
+    QDoubleSpinBox * thick_spinbox = new QDoubleSpinBox();
+    thick_spinbox->setRange(0.001, 0.5);
+    thick_spinbox->setDecimals(4);
+    thick_spinbox->setSingleStep(0.001);
+    thick_spinbox->setValue(slab_thickness);
+    //thick_spinbox->setFocusPolicy(Qt::ClickFocus);
+    connect(thick_spinbox, SIGNAL(valueChanged(double)), this, SLOT(SetSlabThickness(double)));
+
+    QSlider * calibration_slider = new QSlider();
+    calibration_slider->setRange(50, 100);
+    calibration_slider->setOrientation(Qt::Horizontal);
+    calibration_slider->setValue(calibration_factor * 100.0f);
+    connect(calibration_slider, SIGNAL(valueChanged(int)), this, SLOT(SetCalibrationFactor(int)));
+
+    QSlider * quality_slider = new QSlider();
+    quality_slider->setRange(1, 30);
+    quality_slider->setOrientation(Qt::Horizontal);
+    quality_slider->setValue(quality_samples);
+    connect(quality_slider, SIGNAL(valueChanged(int)), this, SLOT(SetQualitySamples(int)));
+
+
+    QGroupBox * dim_groupbox = new QGroupBox(tr("Dimensions"));
+    QGridLayout *dim_layout = new QGridLayout;
+    QRadioButton *radio_inch = new QRadioButton(tr("&inch"));
+    radio_inch->setChecked(true);
+    connect(radio_inch, SIGNAL(clicked()), this, SLOT(SetUnitsToInches()));
+    QRadioButton *radio_cm = new QRadioButton(tr("&cm"));
+    connect(radio_cm, SIGNAL(clicked()), this, SLOT(SetUnitsToCentimetres()));
+    dim_layout->addWidget(new QLabel("Units"), 0, 0);
+    dim_layout->addWidget(radio_inch, 0, 1);
+    dim_layout->addWidget(radio_cm, 0, 2);
+    dim_layout->addWidget(new QLabel("Thickness"), 1, 0);
+    dim_layout->addWidget(thick_spinbox, 1, 1, 1, 2);
+    dim_layout->addWidget(new QLabel("Calibration"), 2, 0);
+    dim_layout->addWidget(calibration_slider, 2, 1);
+    dim_layout->addWidget(calibration_label, 2, 2);
+    dim_layout->addWidget(new QLabel("Quality"), 3, 0);
+    dim_layout->addWidget(quality_slider, 3, 1);
+    dim_layout->addWidget(quality_label, 3, 2);
+    dim_groupbox->setLayout(dim_layout);
+    guidesWidgetLayout->addRow(dim_groupbox);
+
+
+
+
+    QPushButton * loadObjButton = new QPushButton("Load OBJ Template");
+    connect(loadObjButton, SIGNAL(clicked()), this, SLOT(LoadTemplateOBJ()));
+
+    QCheckBox * magnetic_cuts_checkbox = new QCheckBox("Magnetic Cuts");
+    magnetic_cuts_checkbox->setChecked(do_magnetic_cuts);
+    connect(magnetic_cuts_checkbox, SIGNAL(toggled(bool)), this, SLOT(SetDoMagneticCuts(bool)));
+
+
+    QGroupBox * template_groupbox = new QGroupBox(tr("3D Template"));
+    QVBoxLayout *template_layout = new QVBoxLayout;
+    template_layout->addWidget(loadObjButton);
+    template_layout->addWidget(magnetic_cuts_checkbox);
+    template_groupbox->setLayout(template_layout);
+    guidesWidgetLayout->addRow(template_groupbox);
+
+
+
+    QPushButton * loadImageButton = new QPushButton("Load Image Template");
+    connect(loadImageButton, SIGNAL(clicked()), this, SLOT(LoadTemplateImage()));
+
+    QSlider * imagex_spinbox = new QSlider();
+    imagex_spinbox->setRange(-250, 250);
+    imagex_spinbox->setValue(template_pos.x() * 20.0f);
+    imagex_spinbox->setOrientation(Qt::Horizontal);
+    connect(imagex_spinbox, SIGNAL(valueChanged(int)), this, SLOT(SetTemplateImageX(int)));
+
+    QSlider * imagey_spinbox = new QSlider();
+    imagey_spinbox->setRange(-250, 250);
+    imagey_spinbox->setValue(template_pos.y() * 20.0f);
+    imagey_spinbox->setOrientation(Qt::Horizontal);
+    connect(imagey_spinbox, SIGNAL(valueChanged(int)), this, SLOT(SetTemplateImageY(int)));
+
+    QSlider * imagerotate_spinbox = new QSlider();
+    imagerotate_spinbox->setRange(0, 360);
+    imagerotate_spinbox->setValue(template_rotation);
+    imagerotate_spinbox->setOrientation(Qt::Horizontal);
+    connect(imagerotate_spinbox, SIGNAL(valueChanged(int)), this, SLOT(SetTemplateImageRotate(int)));
+
+    QSlider * imagescale_spinbox = new QSlider();
+    imagescale_spinbox->setRange(1, 200);
+    imagescale_spinbox->setValue(template_scale * 20.0f);
+    imagescale_spinbox->setOrientation(Qt::Horizontal);
+    connect(imagescale_spinbox, SIGNAL(valueChanged(int)), this, SLOT(SetTemplateImageScale(int)));
+
+    QCheckBox * imageflipx_checkbox = new QCheckBox("Horizontal Flip");
+    imageflipx_checkbox->setChecked(template_flipx);
+    connect(imageflipx_checkbox, SIGNAL(toggled(bool)), this, SLOT(SetTemplateImageFlipX(bool)));
+
+    QGroupBox * image_groupbox = new QGroupBox(tr("Image Template"));
+    QGridLayout *image_layout = new QGridLayout;
+    image_layout->addWidget(loadImageButton, 0, 0, 1, 2);
+    image_layout->addWidget(imageflipx_checkbox, 1, 0, 1, 2);
+    image_layout->addWidget(new QLabel("X"), 2, 0);
+    image_layout->addWidget(imagex_spinbox, 2, 1);
+    image_layout->addWidget(new QLabel("Y"), 3, 0);
+    image_layout->addWidget(imagey_spinbox, 3, 1);
+    image_layout->addWidget(new QLabel("Rotate"), 4, 0);
+    image_layout->addWidget(imagerotate_spinbox, 4, 1);
+    image_layout->addWidget(new QLabel("Scale"), 5, 0);
+    image_layout->addWidget(imagescale_spinbox, 5, 1);
+    image_groupbox->setLayout(image_layout);
+    guidesWidgetLayout->addRow(image_groupbox);
+
+
+    QPushButton * toggleTemplatesButton = new QPushButton("Show Templates");
+    toggleTemplatesButton->setCheckable(true);
+    toggleTemplatesButton->setChecked(do_show_templates);
+    toggleTemplatesButton->setMinimumHeight(40);
+    connect(toggleTemplatesButton, SIGNAL(clicked()), this, SLOT(ToggleDrawTemplates()));
+
+    guidesWidgetLayout->addRow(toggleTemplatesButton);
+
+
+    guidesWidget = new QTabWidget();
     guidesWidget->setMinimumWidth(200);
+    guidesWidget->setLayout(guidesWidgetLayout);
 
     return guidesWidget;
 }
@@ -967,23 +1164,83 @@ QWidget * GLWidget::GetPhysicsWidget()
 
     QFormLayout * physWidgetLayout = new QFormLayout();
 
+    QPushButton * testPhysicsButton = new QPushButton("Test Physics");
+    testPhysicsButton->setCheckable(true);
+    testPhysicsButton->setMinimumHeight(40);
+    connect(testPhysicsButton, SIGNAL(clicked()), this, SLOT(ToggleDoPhysicsTest()) );
+    physWidgetLayout->addRow(testPhysicsButton);
+
+
+    QPushButton * weightButton1 = new QPushButton("Add Weight");
+    connect(weightButton1, SIGNAL(clicked()), this, SLOT(DoPhysicsAddWeight()));
+
+    QPushButton * weightButton2 = new QPushButton("Remove All");
+    connect(weightButton2, SIGNAL(clicked()), this, SLOT(DoPhysicsRemoveWeights()));
+    weightButton2->setPalette(QPalette(QColor(64, 250, 66)));
+
+    QGroupBox * weight_groupbox = new QGroupBox(tr("Weights"));
+    QGridLayout *weight_layout = new QGridLayout;
+    weight_layout->addWidget(weightButton1, 0, 0);
+    weight_layout->addWidget(weightButton2, 1, 0);
+    weight_groupbox->setLayout(weight_layout);
+    physWidgetLayout->addRow(weight_groupbox);
+
+
 //    QPushButton * showButton1 = new QPushButton("Deformed");
-//    connect(showButton1, SIGNAL(clicked()), this, SLOT());
+//    connect(showButton1, SIGNAL(clicked()), this, SLOT(ToggleDrawDeformed()));
+
+//    QPushButton * showButton2 = new QPushButton("Skeleton");
+//    connect(showButton2, SIGNAL(clicked()), this, SLOT(ToggleDrawSkeleton()));
+
+//    QPushButton * showButton3 = new QPushButton("Forces");
+//    connect(showButton3, SIGNAL(clicked()), this, SLOT(ToggleDrawForce()));
+
+//    QPushButton * showButton4 = new QPushButton("Section");
+//    connect(showButton4, SIGNAL(clicked()), this, SLOT(ToggleDrawSection()));
+
+//    QPushButton * showButton5 = new QPushButton("Moments");
+//    connect(showButton5, SIGNAL(clicked()), this, SLOT(ToggleDrawMoments()));
 
 //    QGroupBox * show_groupbox = new QGroupBox(tr("Display"));
-//    QGridLayout *show_layout = new QGridLayout;
-//    show_layout->setSpacing(0);
-//    show_layout->setHorizontalSpacing(0);
-//    show_layout->addWidget(viewisobtn1, 0, 0);
-//    show_layout->addWidget(viewisobtn2, 0, 1);
-//    show_layout->addWidget(viewisobtn3, 0, 2);
-//    show_layout->addWidget(viewisobtn4, 0, 3);
-//    show_layout->addWidget(viewxbtn, 1, 0);
-//    show_layout->addWidget(viewybtn, 1, 1);
-//    show_layout->addWidget(viewzbtn, 1, 2);
-//    show_layout->addWidget(viewpartbtn, 1, 3);
+//    QFormLayout *show_layout = new QFormLayout;
+
+//    show_layout->addWidget(showButton3, 0, 0,1,2);
+//    show_layout->addWidget(showButton1, 1, 0);
+//    show_layout->addWidget(showButton2, 1, 1);
+//    show_layout->addWidget(showButton4, 2, 0);
+//    show_layout->addWidget(showButton5, 2, 1);
 //    show_groupbox->setLayout(show_layout);
-//    mainWidgetLayout->addRow(show_groupbox);
+//    physWidgetLayout->addRow(show_groupbox);
+
+
+
+    QCheckBox * deformed_checkbox = new QCheckBox("Deformed");
+    connect(deformed_checkbox, SIGNAL(toggled(bool)), this, SLOT(SetDrawDeformed(bool)));
+
+    QCheckBox * skeleton_checkbox = new QCheckBox("Skeleton");
+    connect(skeleton_checkbox, SIGNAL(toggled(bool)), this, SLOT(SetDrawSkeleton(bool)));
+
+    QCheckBox * forces_checkbox = new QCheckBox("Forces");
+    connect(forces_checkbox, SIGNAL(toggled(bool)), this, SLOT(SetDrawForce(bool)));
+
+    QCheckBox * section_checkbox = new QCheckBox("Section");
+    connect(section_checkbox, SIGNAL(toggled(bool)), this, SLOT(SetDrawSection(bool)));
+
+    QCheckBox * moment_checkbox = new QCheckBox("Section Moments");
+    connect(moment_checkbox, SIGNAL(toggled(bool)), this, SLOT(SetDrawSectionMoment(bool)));
+
+
+
+    QGroupBox * show_groupbox = new QGroupBox(tr("Display"));
+    QGridLayout *show_layout = new QGridLayout;
+
+    show_layout->addWidget(forces_checkbox, 0, 0);
+    show_layout->addWidget(deformed_checkbox, 0, 1);
+    show_layout->addWidget(skeleton_checkbox, 1, 0);
+    show_layout->addWidget(section_checkbox, 1, 1);
+    show_layout->addWidget(moment_checkbox, 2, 0, 1, 2);
+    show_groupbox->setLayout(show_layout);
+    physWidgetLayout->addRow(show_groupbox);
 
 
     QDoubleSpinBox * new_weight_spinbox = new QDoubleSpinBox();
@@ -2948,6 +3205,15 @@ void GLWidget::SetDoStabilityTest(const bool b)
 void GLWidget::SetDoPhysicsTest(const bool b)
 {
     do_physics_test = b;
+
+    DoPhysicsTest();
+
+    //updateGL();
+}
+
+void GLWidget::ToggleDoPhysicsTest()
+{
+    do_physics_test = !do_physics_test;
 
     DoPhysicsTest();
 
@@ -6081,3 +6347,63 @@ void GLWidget::DoGenerateSurfaceFacets()
     UpdateDraw();
 
 }
+
+
+void GLWidget::ToggleDrawDeformed()
+{
+    physics.SetDrawDeformed(!physics.GetDrawDeformed());
+}
+
+void GLWidget::ToggleDrawSkeleton()
+{
+    physics.SetDrawSkeleton(!physics.GetDrawSkeleton());
+}
+
+void GLWidget::ToggleDrawForce()
+{
+    physics.SetDrawForce(!physics.GetDrawForce());
+}
+
+void GLWidget::ToggleDrawSection()
+{
+    physics.SetDrawSection(!physics.GetDrawSection());
+}
+
+void GLWidget::ToggleDrawMoments()
+{
+    physics.SetDrawSectionMoment(!physics.GetDrawSectionMoment());
+}
+
+void GLWidget::ToggleDrawTemplates()
+{
+    do_show_templates = !do_show_templates;
+}
+
+
+
+void GLWidget::SetDrawDeformed(bool b)
+{
+    physics.SetDrawDeformed(b);
+}
+
+void GLWidget::SetDrawSkeleton(bool b)
+{
+    physics.SetDrawSkeleton(b);
+}
+
+void GLWidget::SetDrawForce(bool b)
+{
+    physics.SetDrawForce(b);
+}
+
+void GLWidget::SetDrawSection(bool b)
+{
+    physics.SetDrawSection(b);
+}
+
+void GLWidget::SetDrawSectionMoment(bool b)
+{
+    physics.SetDrawSectionMoment(b);
+}
+
+

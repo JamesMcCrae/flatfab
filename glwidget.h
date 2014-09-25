@@ -173,6 +173,7 @@ public slots:
     void SetDoLocalSymmetry(const bool b);
     void SetDoCyclesTest(const bool b);
     void SetDoStabilityTest(const bool b);
+    void ToggleDoPhysicsTest();
     void SetDoPhysicsTest(const bool b);
     void SetDoConnectedTest(const bool b);
     void SetShowTNBFrames(const bool b);
@@ -194,7 +195,15 @@ public slots:
     void SetGenerateRevolveSections(const int i);
     void SetGenerateBranchingScaleChild(const int i);
     void SetGenerateRadialParams();
-    void SetGenerateRadialSectors(const int i);   
+    void SetGenerateRadialSectors(const int i);
+
+    void ToggleDrawDeformed();
+    void ToggleDrawSkeleton();
+    void ToggleDrawForce();
+    void ToggleDrawSection();
+    void ToggleDrawMoments();
+
+    void ToggleDrawTemplates();
 
     void Undo(const LastOperation op);
     void Redo();
@@ -245,6 +254,13 @@ public slots:
     void SetPhysicsNewWeightMass(const double d);
     void SetPhysicsMaterialDensity(const double d);
     void SetPhysicsMaximumStress(const double d);
+
+    void SetDrawDeformed(bool b);
+    void SetDrawSkeleton(bool b);
+    void SetDrawForce(bool b);
+    void SetDrawSection(bool b);
+    void SetDrawSectionMoment(bool b);
+
     
 private:
 
