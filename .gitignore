@@ -5,8 +5,6 @@ Eigen/Cholesky
 
 Eigen/CholmodSupport
 
-*.txt
-
 Eigen/Core
 
 Eigen/Dense
@@ -516,3 +514,7 @@ Eigen/SVD
 Eigen/UmfPackSupport
 
 *.user
+
+*.txt
+
+!icons/icon-license.txt
