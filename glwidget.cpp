@@ -1178,10 +1178,19 @@ QWidget * GLWidget::GetPhysicsWidget()
     connect(weightButton2, SIGNAL(clicked()), this, SLOT(DoPhysicsRemoveWeights()));
     weightButton2->setPalette(QPalette(QColor(64, 250, 66)));
 
+    QDoubleSpinBox * new_weight_spinbox = new QDoubleSpinBox();
+    new_weight_spinbox->setRange(0.001, 50);
+    new_weight_spinbox->setDecimals(3);
+    new_weight_spinbox->setSingleStep(0.1);
+    new_weight_spinbox->setValue(physics_new_weight_mass);
+    connect(new_weight_spinbox, SIGNAL(valueChanged(double)), this, SLOT(SetPhysicsNewWeightMass(double)));
+
     QGroupBox * weight_groupbox = new QGroupBox(tr("Weights"));
     QGridLayout *weight_layout = new QGridLayout;
-    weight_layout->addWidget(weightButton1, 0, 0);
-    weight_layout->addWidget(weightButton2, 1, 0);
+    weight_layout->addWidget(weightButton1, 0, 0, 1, 2);
+    weight_layout->addWidget(weightButton2, 1, 0, 1, 2);
+    weight_layout->addWidget(new QLabel("Weight (kg)"),2,0);
+    weight_layout->addWidget(new_weight_spinbox,2,1);
     weight_groupbox->setLayout(weight_layout);
     physWidgetLayout->addRow(weight_groupbox);
 
@@ -1243,13 +1252,6 @@ QWidget * GLWidget::GetPhysicsWidget()
     physWidgetLayout->addRow(show_groupbox);
 
 
-    QDoubleSpinBox * new_weight_spinbox = new QDoubleSpinBox();
-    new_weight_spinbox->setRange(0.001, 50);
-    new_weight_spinbox->setDecimals(3);
-    new_weight_spinbox->setSingleStep(0.1);
-    new_weight_spinbox->setValue(physics_new_weight_mass);
-    connect(new_weight_spinbox, SIGNAL(valueChanged(double)), this, SLOT(SetPhysicsNewWeightMass(double)));
-
     QDoubleSpinBox * density_spinbox = new QDoubleSpinBox();
     density_spinbox->setRange(10, 2000);
     density_spinbox->setDecimals(1);
@@ -1266,7 +1268,6 @@ QWidget * GLWidget::GetPhysicsWidget()
 
     QGroupBox * phys_groupbox = new QGroupBox(tr("Physical Values"));
     QFormLayout *phys_layout = new QFormLayout;
-    phys_layout->addRow(new QLabel("Weight (kg)"), new_weight_spinbox);
     phys_layout->addRow(new QLabel("Density (kg/m^3)"), density_spinbox);
     phys_layout->addRow(new QLabel("Stress (MPa)"), stress_spinbox);
     phys_groupbox->setLayout(phys_layout);

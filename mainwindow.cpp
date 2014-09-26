@@ -103,31 +103,53 @@ void MainWindow::ShowAppWidgets()
 
 void MainWindow::createSideBar()
 {
-    openDock[0] = new QAction(QIcon(":/images/copy.png"), tr("&Edit"), this);
+    QIcon icon[5];
+    icon[0].addFile(":/icons/edit-normal.png", QSize(), QIcon::Normal, QIcon::Off);
+    icon[0].addFile(":/icons/edit-hover.png", QSize(),QIcon::Active);
+    icon[0].addFile(":/icons/edit-checked.png", QSize(), QIcon::Normal, QIcon::On);
+
+    openDock[0] = new QAction(icon[0], tr("&Edit"), this);
     //openEdit->setShortcuts(QKeySequence::Open);
     openDock[0]->setStatusTip(tr("Edit"));
     openDock[0]->setCheckable(true);
     connect(openDock[0], SIGNAL(triggered()), this, SLOT(openEditWidget()));
 
-    openDock[1] = new QAction(QIcon(":/images/open.png"), tr("&Generate"), this);
+    icon[1].addFile(":/icons/generate-normal.png", QSize(), QIcon::Normal, QIcon::Off);
+    icon[1].addFile(":/icons/generate-hover.png", QSize(),QIcon::Active);
+    icon[1].addFile(":/icons/generate-checked.png", QSize(), QIcon::Normal, QIcon::On);
+
+    openDock[1] = new QAction(icon[1], tr("&Generate"), this);
     //openEdit->setShortcuts(QKeySequence::Open);
     openDock[1]->setStatusTip(tr("Generate"));
     openDock[1]->setCheckable(true);
     connect(openDock[1], SIGNAL(triggered()), this, SLOT(openGenerateWidget()));
 
-    openDock[2] = new QAction(QIcon(":/images/cut.png"), tr("&Guides"), this);
+    icon[2].addFile(":/icons/guides-normal.png", QSize(), QIcon::Normal, QIcon::Off);
+    icon[2].addFile(":/icons/guides-hover.png", QSize(),QIcon::Active);
+    icon[2].addFile(":/icons/guides-checked.png", QSize(), QIcon::Normal, QIcon::On);
+
+    openDock[2] = new QAction(icon[2], tr("&Guides"), this);
     //openEdit->setShortcuts(QKeySequence::Open);
     openDock[2]->setStatusTip(tr("Guides"));
     openDock[2]->setCheckable(true);
     connect(openDock[2], SIGNAL(triggered()), this, SLOT(openGuidesWidget()));
 
-    openDock[3] = new QAction(QIcon(":/images/cut.png"), tr("&Physics"), this);
+    icon[3].addFile(":/icons/physics-normal.png", QSize(), QIcon::Normal, QIcon::Off);
+    icon[3].addFile(":/icons/physics-hover.png", QSize(),QIcon::Active);
+    icon[3].addFile(":/icons/physics-checked.png", QSize(), QIcon::Normal, QIcon::On);
+
+    openDock[3] = new QAction(icon[3], tr("&Physics"), this);
     //openEdit->setShortcuts(QKeySequence::Open);
     openDock[3]->setStatusTip(tr("Physics"));
     openDock[3]->setCheckable(true);
     connect(openDock[3], SIGNAL(triggered()), this, SLOT(openPhysicsWidget()));
 
-    openDock[4] = new QAction(QIcon(":/images/cut.png"), tr("&Views"), this);
+    icon[4].addFile(":/icons/views-normal.png", QSize(), QIcon::Normal, QIcon::Off);
+    icon[4].addFile(":/icons/views-hover.png", QSize(),QIcon::Active);
+    icon[4].addFile(":/icons/views-checked.png", QSize(), QIcon::Normal, QIcon::On);
+
+
+    openDock[4] = new QAction(icon[4], tr("&Views"), this);
     //openEdit->setShortcuts(QKeySequence::Open);
     openDock[4]->setStatusTip(tr("Views"));
     openDock[4]->setCheckable(true);
@@ -150,6 +172,7 @@ void MainWindow::createSideBar()
     mainToolBar->setMovable(false);
     mainToolBar->setContextMenuPolicy(Qt::PreventContextMenu);
     mainToolBar->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
+    mainToolBar->setIconSize(QSize(76,76));
 
     addToolBar(Qt::LeftToolBarArea, mainToolBar);
 

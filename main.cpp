@@ -94,18 +94,14 @@ int main(int argc, char *argv[])
 
     qApp->setPalette(lightPalette);
 
-    qApp->setStyleSheet(
-                        "QToolButton {color: #aaa; font-size: 10px;}"
+    qApp->setStyleSheet("QToolButton {color: #aaa; font-size: 10px;}"
                         "QToolButton::hover {color: #22c024;}"
                         "QToolButton::checked { background-color: #22c024; color: #fff;}"
                         "QToolButton::checked::hover { background-color: #fff; color: #22c024;}"
-                        "QWidget {font-family:'Arial','Sans-Serif'; font-size: 12px;}"
+//                        "QWidget {font-family:'Arial','Sans-Serif'; font-size: 12px;}"
                         "QGroupBox::title {subcontrol-origin: margin; subcontrol-position: top center; padding: 0 3px; }"
                         "QMenuBar::item{ color: #888;}"
-                        "QWidget::title{ font-weight: bold color: #888;}"
-
-                        /*"QTabWidget::pane{ margin-top:0px; border: 1px solid #ddd; background-color: white; padding: 20px}"
-                        "QTabBar::tab{ border: 1px solid #ddd;}"*/);
+);
 
     // ----------
 

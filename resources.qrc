@@ -1,5 +1,20 @@
 <RCC>
     <qresource prefix="/">
         <file>stylesheet.qss</file>
+        <file>icons/edit-normal.png</file>
+        <file>icons/edit-checked.png</file>
+        <file>icons/edit-hover.png</file>
+        <file>icons/views-checked.png</file>
+        <file>icons/views-hover.png</file>
+        <file>icons/views-normal.png</file>
+        <file>icons/generate-checked.png</file>
+        <file>icons/generate-hover.png</file>
+        <file>icons/generate-normal.png</file>
+        <file>icons/guides-checked.png</file>
+        <file>icons/guides-hover.png</file>
+        <file>icons/guides-normal.png</file>
+        <file>icons/physics-checked.png</file>
+        <file>icons/physics-hover.png</file>
+        <file>icons/physics-normal.png</file>
     </qresource>
 </RCC>
