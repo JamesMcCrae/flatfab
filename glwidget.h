@@ -318,6 +318,7 @@ private:
 
     //transform widget
     TransformWidget transform_widget;
+    bool transforming;
 
     //important quantity: metres per unit
     double metres_per_unit;

@@ -129,6 +129,7 @@ GLWidget::GLWidget() :
     physicsWidget = NULL;
     viewsWidget = NULL;
 
+    transforming = false;
 
 }
 
@@ -1460,7 +1461,7 @@ void GLWidget::paintGL()
 
     //this stuff changes, not for display list
     if (state == STATE_CURVE) {
-        glColor3f(0.25f, 0.5f, 0.25f);
+        glColor3f(0.25f, 0.60f, 0.25f);
         active_section.DrawTris();
     }
 
@@ -1539,7 +1540,7 @@ void GLWidget::paintGL()
 
 
     //draw the transform widget
-    if (selected >= 0 && state == STATE_TRANSFORM_WIDGET) {
+    if (selected >= 0 && transforming) {
         transform_widget.SetP(sections[selected].P());
         transform_widget.SetX(sections[selected].T());
         transform_widget.SetY(sections[selected].N());
@@ -1763,119 +1764,131 @@ b) when there are planes, attempt to select one
 
     UpdateCamera();
 
-    mouse_pos = QVector2D(event->x(), height() - event->y());
+    mouse_pos = QVector2D(event->x(), height() - event->y()); 
 
     if (event->button() == Qt::LeftButton) {
 
-        switch (state) {
+        if(ctrl_held || shift_held || alt_held)
+            state = STATE_ORBIT;
+        else
+        {
 
-        case STATE_TRANSFORM_WIDGET:
 
-            if (IsSectionSelected()){
+            switch (state) {
 
-                original_section = sections[selected];
+            case STATE_TRANSFORM_WIDGET:
 
-                QVector3D anchor_3d;
-                sections[selected].MouseRayIntersect(mouse_pos, anchor_3d);
-//                anchor_point = sections[selected].GetPoint2D(anchor_3d);
-                anchor_point = mouse_pos;
+                if (IsSectionSelected()){
 
-                //figure out which widget element was clicked
-                const int index = PickTransformWidgetElement(mouse_pos);
+                    original_section = sections[selected];
 
-                if (index > 0) {
-                    transform_widget.SetState(TransformWidgetState(index));
-                    state = STATE_TRANSFORM_WIDGET;
+                    QVector3D anchor_3d;
+                    sections[selected].MouseRayIntersect(mouse_pos, anchor_3d);
+    //                anchor_point = sections[selected].GetPoint2D(anchor_3d);
+                    anchor_point = mouse_pos;
+
+                    //figure out which widget element was clicked
+                    const int index = PickTransformWidgetElement(mouse_pos);
+
+                    if (index > 0) {
+                        transform_widget.SetState(TransformWidgetState(index));
+                        state = STATE_TRANSFORM_WIDGET;
+                    }
+                    else if(PickSection(mouse_pos, false) >= 0 ) {
+                        transform_widget.SetState(NONE);
+                        state = STATE_NONE;
+                        mousePressEvent(event);
+                    }
+                    else{
+                        state = STATE_ORBIT;
+                    }
+
+
                 }
                 else {
-                    transform_widget.SetState(NONE);
                     state = STATE_NONE;
                 }
 
+                break;
 
-            }
-            else {
-                state = STATE_NONE;
-            }
+            case STATE_RESKETCH_CURVE:
+                break;
 
-            break;
-
-        case STATE_RESKETCH_CURVE:
-            break;
-
-        case STATE_ADD_HOLE:
+            case STATE_ADD_HOLE:
 
 
-            if (IsSectionSelected()){
-                sections[selected].AddNewCurve();
-            }
+                if (IsSectionSelected()){
+                    sections[selected].AddNewCurve();
+                }
 
-            break;
+                break;
 
-        default:
+            default:
 
-            if (sections.empty()) {
+                if (sections.empty()) {
 
-                active_section = PlanarSection();
-                SetupPlanarSection(active_section);
+                    active_section = PlanarSection();
+                    SetupPlanarSection(active_section);
 
-                active_section.SetP(cam.LookAt());
-                active_section.SetN(-cam.ViewDir());
-                active_section.SetT(cam.GetRightVector());
-                active_section.SetB(cam.Up());                
+                    active_section.SetP(cam.LookAt());
+                    active_section.SetN(-cam.ViewDir());
+                    active_section.SetT(cam.GetRightVector());
+                    active_section.SetB(cam.Up());
 
-                active_section.SketchSetEditing(true);
+                    active_section.SketchSetEditing(true);
 
-                state = STATE_CURVE;
-
-            }
-            else {
-
-                const int section_clicked = PickSection(mouse_pos, false);
-
-                if (section_clicked >= 0) {
-
-                    QVector3D p;
-                    sections[section_clicked].MouseRayIntersect(mouse_pos, p);
-
-                    if (state == STATE_RECURSIVE_SETUP_SLOT) {
-                        //modify properties of base section
-                        recursive_slot_start = p;
-                        recursive_slot_end = p;
-                        state = STATE_RECURSIVE_SLOT;
-                    }
-                    else if (state == STATE_DIMENSIONING_FIRST) {
-                        dimensiontool_start = p;
-                        dimensiontool_end = p;
-                        state = STATE_DIMENSIONING_SECOND;
-                    }
-                    else {
-
-                        active_section = PlanarSection();
-                        SetupPlanarSection(active_section);
-                        active_section.SetP(p);
-                        active_section.SetN(sections[section_clicked].T());
-                        active_section.SetT(sections[section_clicked].B());
-                        active_section.SetB(sections[section_clicked].N());
-
-                        slot_start = p;
-                        slot_end = p;
-                        state = STATE_SLOT;
-                    }
-
-                    if (section_clicked != selected) {
-                        SetSelected(section_clicked);
-                        UpdateDraw();
-                    }
+                    state = STATE_CURVE;
 
                 }
                 else {
-                    state = STATE_ORBIT;
+
+                    const int section_clicked = PickSection(mouse_pos, false);
+
+                    if (section_clicked >= 0) {
+
+                        QVector3D p;
+                        sections[section_clicked].MouseRayIntersect(mouse_pos, p);
+
+                        if (state == STATE_RECURSIVE_SETUP_SLOT) {
+                            //modify properties of base section
+                            recursive_slot_start = p;
+                            recursive_slot_end = p;
+                            state = STATE_RECURSIVE_SLOT;
+                        }
+                        else if (state == STATE_DIMENSIONING_FIRST) {
+                            dimensiontool_start = p;
+                            dimensiontool_end = p;
+                            state = STATE_DIMENSIONING_SECOND;
+                        }
+                        else {
+
+                            active_section = PlanarSection();
+                            SetupPlanarSection(active_section);
+                            active_section.SetP(p);
+                            active_section.SetN(sections[section_clicked].T());
+                            active_section.SetT(sections[section_clicked].B());
+                            active_section.SetB(sections[section_clicked].N());
+
+                            slot_start = p;
+                            slot_end = p;
+                            state = STATE_SLOT;
+                        }
+
+                        if (section_clicked != selected) {
+                            SetSelected(section_clicked);
+                            UpdateDraw();
+                        }
+
+                    }
+                    else {
+                        state = STATE_ORBIT;
+                    }
+
                 }
 
-            }
+                break;
 
-            break;
+            }
 
         }
 
@@ -1916,7 +1929,10 @@ b) when there are planes, attempt to select one
             }
         }
 
-    }   
+    }
+
+    if(state != STATE_ORBIT && state != STATE_TRANSFORM_WIDGET)
+        transforming = false;
 
 }
 
@@ -2381,6 +2397,9 @@ void GLWidget::mouseReleaseEvent(QMouseEvent *event)
 
         }
 
+        if(state == STATE_ORBIT && transforming)
+            state = STATE_TRANSFORM_WIDGET;
+
         if(state != STATE_TRANSFORM_WIDGET)
             state = STATE_NONE;
         slot_end = slot_start;       
@@ -2603,7 +2622,7 @@ void GLWidget::DrawSection(const int i)
             glColor3f(0.5f, 0.25f, 0.25f);
         }
         else {
-            glColor3f(0.25f, 0.5f, 0.25f);
+            glColor3f(0.25f, 0.60f, 0.25f);
         }
     }
 
@@ -2622,7 +2641,8 @@ void GLWidget::DrawSection(const int i)
         sections[i].DrawSlabCurves();
     }
 
-    sections[i].DrawWeights();
+    if(do_physics_test)
+        sections[i].DrawWeights();
 
 }
 
@@ -3209,6 +3229,8 @@ void GLWidget::SetDoPhysicsTest(const bool b)
 
     DoPhysicsTest();
 
+    update_sections_disp_list = true;
+
     //updateGL();
 }
 
@@ -3216,7 +3238,10 @@ void GLWidget::ToggleDoPhysicsTest()
 {
     do_physics_test = !do_physics_test;
 
-    DoPhysicsTest();
+    if(do_physics_test)
+        DoPhysicsTest();
+
+    update_sections_disp_list = true;
 
     //updateGL();
 }
@@ -3518,6 +3543,13 @@ void GLWidget::DeleteSelected()
 
 void GLWidget::Transform()
 {
+    if(state == STATE_TRANSFORM_WIDGET)
+    {
+        state = STATE_NONE;
+        transforming = false;
+        return;
+    }
+
     if (!IsSectionSelected()) {
         return;
     }
@@ -3525,6 +3557,7 @@ void GLWidget::Transform()
     AddToUndoList(OP_MANIP_TRANSFORM);
 
     state = STATE_TRANSFORM_WIDGET;
+    transforming = true;
 }
 
 void GLWidget::CopyMirrorX()
