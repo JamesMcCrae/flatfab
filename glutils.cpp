@@ -1248,7 +1248,7 @@ void GLutils::DrawSemiRing(const QVector3D & p1, const QVector3D & p2, float sta
         glRotatef(theta_deg, 1.0f, 0.0f, 0.0f);
     }
 
-    DrawArc(0,0,0,outer_rad, start_angle, arc_angle, segNumber);
+    DrawArc(0,0,0, inner_rad, outer_rad, start_angle, arc_angle, segNumber);
 
 
 
@@ -1260,7 +1260,7 @@ void GLutils::DrawSemiRing(const QVector3D & p1, const QVector3D & p2, float sta
 // This is from the website: http://slabode.exofire.net/circle_draw.shtml
 // The author has released it to the public
 
-void GLutils::DrawArc(float cx, float cy, float cz, float r, float start_angle, float arc_angle, int num_segments)
+void GLutils::DrawArc(float cx, float cy, float cz, float innerR, float outerR, float start_angle, float arc_angle, int num_segments)
 {
 
     float theta = arc_angle / float(num_segments - 1);//theta is now calculated from the arc angle instead, the - 1 bit comes from the fact that the arc is open
@@ -1270,13 +1270,15 @@ void GLutils::DrawArc(float cx, float cy, float cz, float r, float start_angle, 
     float radial_factor = cosf(theta);
 
 
-    float x = r * cosf(start_angle);//we now start at the start angle
-    float y = r * sinf(start_angle);
+    float x = cosf(start_angle);//we now start at the start angle
+    float y = sinf(start_angle);
 
-    glBegin(GL_LINE_STRIP);//since the arc is not a closed curve, this is a strip now
+    glBegin(GL_TRIANGLE_STRIP);//since the arc is not a closed curve, this is a strip now
     for(int ii = 0; ii < num_segments; ii++)
     {
-        glVertex3f(x + cx, y + cy, cz);
+        glVertex3f(innerR*x + cx, innerR*y + cy, cz);
+
+        glVertex3f(outerR*x + cx, outerR*y + cy, cz);
 
         float tx = -y;
         float ty = x;

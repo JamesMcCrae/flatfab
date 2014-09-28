@@ -2232,6 +2232,11 @@ void GLWidget::mouseMoveEvent(QMouseEvent * event)
 
             active_section.AddMouseRayIntersect(0, mouse_pos);
 
+//            if (sections.size() >= 1 && do_symmetry) {
+//                //do not do symmetry for the very first plane
+//                active_section.SketchSymmetryTest();
+//            }
+
             //if we have a template, do snapping
             if (do_show_templates && !template_cut.empty()) {
                 active_section.SnapSketchToTemplateCut(template_cut, template_cut_snap_distance_3d);
@@ -2240,6 +2245,19 @@ void GLWidget::mouseMoveEvent(QMouseEvent * event)
             else {
                 active_section.Update(0, section_error_tolerance);
             }
+
+
+//            if (sections.size() >= 1 && do_symmetry) {
+//                //do not do symmetry for the very first plane
+//                active_section.CreateLocalSymmetry();
+
+
+//                //enforce above-ground control points
+//                active_section.UpdateCurveTrisSlab();
+
+
+//            }
+
 
             break;
 
@@ -2326,6 +2344,27 @@ void GLWidget::mouseReleaseEvent(QMouseEvent *event)
             break;       
 
         case STATE_RESKETCH_CURVE:
+
+            if (sections.size() >= 2 && do_symmetry) {
+                //do not do symmetry for the very first plane
+                sections[selected].SketchSymmetryTest();
+            }
+
+            //at the curve step, the gesture is considered "completed"
+            if (!template_cut.empty()) {
+                sections[selected].Update(0, section_error_tolerance_template);
+            }
+            else {
+                sections[selected].Update(0, section_error_tolerance);
+            }
+
+            if (sections.size() >= 2 && do_symmetry) {
+                //do not do symmetry for the very first plane
+                sections[selected].CreateLocalSymmetry();
+            }
+
+            sections[selected].SetCtrlPointsAboveXZPlane();
+            sections[selected].UpdateCurveTrisSlab();
 
             break;
 
@@ -2615,7 +2654,13 @@ void GLWidget::DrawSection(const int i)
 {   
 
     if (i == selected) {
-        glColor3f(0.35f, 0.45f, 0.6f);
+        if( state == STATE_RESKETCH_CURVE)
+        {
+            glEnable(GL_BLEND);
+            glColor4f(0.35f, 0.45f, 0.6f, 0.5f);
+        }
+        else
+            glColor3f(0.35f, 0.45f, 0.6f);
     }
     else {
         if (sections[i].PartOfCycle() || !sections[i].Connected()) {
@@ -2643,6 +2688,11 @@ void GLWidget::DrawSection(const int i)
 
     if(do_physics_test)
         sections[i].DrawWeights();
+
+    if( state == STATE_RESKETCH_CURVE)
+    {
+        glDisable(GL_BLEND);
+    }
 
 }
 
