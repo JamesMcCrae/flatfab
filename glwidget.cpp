@@ -1268,9 +1268,11 @@ QWidget * GLWidget::GetPhysicsWidget()
     connect(stress_spinbox, SIGNAL(valueChanged(double)), this, SLOT(SetPhysicsMaximumStress(double)));
 
     QGroupBox * phys_groupbox = new QGroupBox(tr("Physical Values"));
-    QFormLayout *phys_layout = new QFormLayout;
-    phys_layout->addRow(new QLabel("Density (kg/m^3)"), density_spinbox);
-    phys_layout->addRow(new QLabel("Stress (MPa)"), stress_spinbox);
+    QGridLayout *phys_layout = new QGridLayout;
+    phys_layout->addWidget(new QLabel("Density (kg/m^3)"),0,0,1,2);
+    phys_layout->addWidget(density_spinbox,0,2);
+    phys_layout->addWidget(new QLabel("Stress (MPa)"),1,0,1,2);
+    phys_layout->addWidget(stress_spinbox,1,2);
     phys_groupbox->setLayout(phys_layout);
     physWidgetLayout->addRow(phys_groupbox);
 

@@ -100,6 +100,8 @@ private slots:
     void PhysicsAddExternalMass();
     void PhysicsRemoveExternalMasses();
 
+    void closeDialog();
+
     // New UI features
 
     void openEditWidget();
@@ -211,6 +213,9 @@ private:
     QToolBar *mainToolBar;
     QAction *openDock[5];
     QDockWidget *docks[5];
+
+    void createQuickToolBar();
+    QToolBar *quickToolBar;
 
 
 };

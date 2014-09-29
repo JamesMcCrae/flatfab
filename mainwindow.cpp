@@ -95,9 +95,79 @@ void MainWindow::ShowAppWidgets()
     //main widget/window layout
     this->removeDockWidget(bottomDockWidget);
 
-    addDockWidget(Qt::RightDockWidgetArea, dockWidget);
+    //addDockWidget(Qt::RightDockWidgetArea, dockWidget);
     createSideBar();
+    createQuickToolBar();
     setCentralWidget(&glWidget);
+
+//    QMessageBox::information(this, tr("QMessageBox::information()"),
+//                             "Camera Controls\n"
+//                             " - left-click + ctrl (command on Mac OSX): orbit\n"
+//                             " - left-click + alt: zoom\n"
+//                             " - left-click + shift: dolly\n");
+
+    QMessageBox mb(this);
+    mb.setPalette(QPalette(QColor(230,230,230), QColor(255,255,255)));
+    //mb.setStyleSheet("");
+
+    mb.setMinimumSize(500, 300);
+    //mb.setWindowFlags( Qt::Tool | Qt::FramelessWindowHint );
+    mb.setTextFormat(Qt::RichText);
+    mb.setWindowTitle ( "Getting Started" );
+    mb.setText("<p><font size='6'><b>Getting Started</b></font></p>"
+
+                "<p>Start by drawing your first shape with the left mouse button held<br></p>"
+
+               "<p><font size='4'><b>Create a New Section</b></font>"
+               "<table> <td>-<br>-</td>  <td>Left click on a section and drag to the section edge to form a slit<br>"
+               "Now draw the new section while holding the left mouse button</td></table><br></p>"
+
+               "<p><font size='4'><b>Selecting a Section</b></font>"
+               "<table> <td>-<br>-</td>  <td>Sections must be selected to perform editing operation<br>"
+               "Click on a section with the left or right mouse button to select it</td></table><br></p>"
+
+               "<p><font size='4'><b>Editing Section Control Points</b></font>"
+               "<table> <td>-<td>  <td>Right click and drag the control points to modify the section shape</td></table><br></p>"
+
+               "<p><font size='4'><b>Camera Controls</b></font>"
+               "<table> <tr><td><b>orbit</b><br><b>zoom</b><br><b>dolly</b></td>"
+               "<td>left-click + ctrl (command on Mac OSX)<br>"
+               "left-click + alt<br>"
+               "left-click + shift</td> </table>");
+
+    mb.setStandardButtons(QMessageBox::Ok);
+    //mb1.setVisible(true);
+    mb.exec();
+
+
+
+}
+
+void MainWindow::closeDialog()
+{
+
+}
+
+void MainWindow::createQuickToolBar()
+{
+    quickToolBar = new QToolBar(tr("Quick Settings"));
+    quickToolBar->setMovable(false);
+    quickToolBar->setWindowFlags(Qt::Tool | Qt::FramelessWindowHint);
+    quickToolBar->setStyleSheet("QToolButton {color: #aaa; font-size: 10px;}"
+                                "QToolButton::checked { background-color: #fff;}"
+                                "QToolBar {position:absolute; top:10px; right:10px;}");
+
+    QAction *setLocalSymmetry = new QAction(QIcon(":/icons/appbar.transform.flip.horizontal.png"), "Local Symmetry", this);
+    setLocalSymmetry->setStatusTip(tr("Local Symmetry"));
+    setLocalSymmetry->setCheckable(true);
+    setLocalSymmetry->setChecked(true);
+    connect(setLocalSymmetry, SIGNAL(triggered()), this, SLOT(ToggleLocalSymmetry()));
+
+
+    quickToolBar->addAction(setLocalSymmetry);
+
+    addToolBar(Qt::RightToolBarArea, quickToolBar);
+
 
 }
 
