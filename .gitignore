@@ -518,3 +518,5 @@ Eigen/UmfPackSupport
 *.txt
 
 !icons/icon-license.txt
+
+!example_models/*.txt
