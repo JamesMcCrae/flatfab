@@ -2506,7 +2506,7 @@ void GLWidget::keyReleaseEvent(QKeyEvent *event)
         alt_held = false;
         break;  
 
-    case Qt::Key_Backspace:
+    case Qt::Key_Minus:
 
         if (IsSectionSelected()) {
 
@@ -2525,7 +2525,8 @@ void GLWidget::keyReleaseEvent(QKeyEvent *event)
         }
         break;
 
-    case Qt::Key_Insert:
+    case Qt::Key_Equal:
+    case Qt::Key_Plus:
 
         if (IsSectionSelected()) {
 

@@ -338,8 +338,9 @@ void MainWindow::createActions()
 
     deleteAct = new QAction(tr("&Delete"), this);
     deleteAct->setStatusTip(tr("Delete selected planar section."));
-    deleteAct->setShortcut(QKeySequence::Delete);
+    deleteAct->setShortcut(Qt::Key_Backspace);
     connect(deleteAct, SIGNAL(triggered()), this, SLOT(Delete()));
+    addAction(deleteAct);
 
     transformAct = new QAction(tr("&Transform"), this);
     transformAct->setStatusTip(tr("Transform a planar section using translate/rotate/scale."));
