@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui opengl widgets webkitwidgets
+QT       += core gui opengl widgets webkit network webkitwidgets
 
 TARGET = FlatFab
 TEMPLATE = app
