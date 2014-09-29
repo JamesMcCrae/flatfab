@@ -608,8 +608,8 @@ void MainWindow::createMenus()
     editMenu->addAction(copyMirrorZAct);
     editMenu->addAction(copyDuplicateAct);
     //editMenu->addSeparator();
-    editMenu->addAction(createSurfacePatchesAct);
-    editMenu->addAction(deleteSurfacePatchesAct);
+//    editMenu->addAction(createSurfacePatchesAct);
+//    editMenu->addAction(deleteSurfacePatchesAct);
     editMenu->addSeparator();
     editMenu->addAction(addHoleBoundaryAct);
     editMenu->addAction(removeHolesBoundaryAct);
@@ -651,10 +651,10 @@ void MainWindow::createMenus()
     generateMenu->addAction(generateLinearAct);
     generateMenu->addAction(generateMakeCircleAct);
     generateMenu->addAction(generateMakeRadialAct);
-    generateMenu->addAction(generateMakeRadialHoleAct);
+//    generateMenu->addAction(generateMakeRadialHoleAct);
     generateMenu->addAction(generateMakeRectangleAct);    
     generateMenu->addAction(generateRevolveAct);
-    generateMenu->addAction(generateSurfaceFacetsAct);
+//    generateMenu->addAction(generateSurfaceFacetsAct);
 
     physicsMenu = menuBar()->addMenu(tr("&Physics"));
     physicsMenu->addAction(testPhysicsAct);
