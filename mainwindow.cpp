@@ -4,7 +4,11 @@ MainWindow::MainWindow()
 {   
 
     //title/window stuff
-    setWindowTitle("FlatFab (Release 0.5 Beta - September 11, 2014)");
+    setWindowTitle("FlatFab (Release 0.5 Beta - September 30, 2014)");
+    //release 0.5 -
+    //ui improvements including
+    //- new tool sidebar
+    //- new transform widget
 
     //release 0.4 -
     //added "calibration shape" generation to make finding the right calibration setting a cinch
