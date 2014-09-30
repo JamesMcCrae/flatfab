@@ -101,7 +101,10 @@ public:
 
     static void DrawDisc(const QVector3D & p1, const QVector3D & p2, const float inner_rad, const float outer_rad);
     static void DrawArc(float cx, float cy, float cz, float innerR, float outerR, float start_angle, float arc_angle, int num_segments);
-    static void DrawSemiRing(const QVector3D & p1, const QVector3D & p2, float start_angle, float arc_angle, const float inner_rad, const float outer_rad, float thickness, int segNumber);
+    static void DrawSemiRing(const QVector3D & p1, const QVector3D & p2, float start_angle, float arc_angle, const float inner_rad, const float outer_rad, int segNumber);
+    static void DrawArcLineStrip(float cx, float cy, float cz, float radius, float start_angle, float arc_angle, int num_segments, const float thickness);
+    static void DrawArcLineStrip(QVector3D c, QVector3D dir, QVector3D axis, float arc_angle, int num_segments, float thickness, bool dashed = false);
+    static void DrawSemiRingLineStrip(const QVector3D & p1, const QVector3D & p2, float start_angle, float arc_angle, const float radius, const float thickness, int segNumber);
 
 
 private:

@@ -28,8 +28,8 @@ public:
 
     TransformWidget();
 
-    void DrawGL();
-    void DrawSelectionGL();
+    void DrawGL(const float cam_width);
+    void DrawSelectionGL(const float cam_width);
 
     void SetVisible(const bool b);
     bool GetVisible() const;

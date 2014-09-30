@@ -1231,7 +1231,7 @@ void GLutils::DrawDisc(const QVector3D & p1, const QVector3D & p2, const float i
 
 }
 
-void GLutils::DrawSemiRing(const QVector3D & p1, const QVector3D & p2, float start_angle, float arc_angle, const float inner_rad, const float outer_rad, float thickness, int segNumber)
+void GLutils::DrawSemiRing(const QVector3D & p1, const QVector3D & p2, float start_angle, float arc_angle, const float inner_rad, const float outer_rad, int segNumber)
 {
 
     const float line_len = (p2-p1).length();
@@ -1249,6 +1249,33 @@ void GLutils::DrawSemiRing(const QVector3D & p1, const QVector3D & p2, float sta
     }
 
     DrawArc(0,0,0, inner_rad, outer_rad, start_angle, arc_angle, segNumber);
+
+
+
+    glPopMatrix();
+
+}
+
+
+
+void GLutils::DrawSemiRingLineStrip(const QVector3D & p1, const QVector3D & p2, float start_angle, float arc_angle, float radius, float thickness, int segNumber)
+{
+
+    const float line_len = (p2-p1).length();
+    const float theta_deg = GLutils::AngleBetweenDeg(QVector3D(0, 0, 1), (p2-p1) / line_len);
+    QVector3D axis = QVector3D::crossProduct(QVector3D(0, 0, 1), (p2-p1) / line_len);
+
+    glPushMatrix();
+
+    glTranslatef(p1.x(), p1.y(), p1.z());
+    if (theta_deg > 0.0f && theta_deg < 180.0f) {
+        glRotatef(theta_deg, axis.x(), axis.y(), axis.z());
+    }
+    else {
+        glRotatef(theta_deg, 1.0f, 0.0f, 0.0f);
+    }
+
+    DrawArcLineStrip(0,0,0, radius, start_angle, arc_angle, segNumber, thickness);
 
 
 
@@ -1291,4 +1318,69 @@ void GLutils::DrawArc(float cx, float cy, float cz, float innerR, float outerR, 
     }
     glEnd();
 }
+
+void GLutils::DrawArcLineStrip(float cx, float cy, float cz, float radius, float start_angle, float arc_angle, int num_segments, float thickness)
+{
+
+    glPushAttrib(GL_LIGHTING);
+    glDisable(GL_LIGHTING);
+    float theta = arc_angle / float(num_segments - 1);//theta is now calculated from the arc angle instead, the - 1 bit comes from the fact that the arc is open
+
+    float tangetial_factor = tanf(theta);
+
+    float radial_factor = cosf(theta);
+
+
+    float x = cosf(start_angle);//we now start at the start angle
+    float y = sinf(start_angle);
+
+    glLineWidth(thickness);
+    glBegin(GL_LINE_STRIP);//since the arc is not a closed curve, this is a strip now
+    for(int ii = 0; ii < num_segments; ii++)
+    {
+        glVertex3f(radius*x + cx, radius*y + cy, cz);
+
+
+        float tx = -y;
+        float ty = x;
+
+        x += tx * tangetial_factor;
+        y += ty * tangetial_factor;
+
+        x *= radial_factor;
+        y *= radial_factor;
+    }
+    glEnd();
+    glPopAttrib();
+    glPopAttrib();
+}
+
+void GLutils::DrawArcLineStrip(QVector3D c, QVector3D dir, QVector3D axis, float arc_angle, int num_segments, float thickness, bool dashed)
+{
+
+    glPushAttrib(GL_LIGHTING);
+    glDisable(GL_LIGHTING);
+    float theta = arc_angle / float(num_segments - 1);//theta is now calculated from the arc angle instead, the - 1 bit comes from the fact that the arc is open
+
+
+    glPushMatrix();
+    glTranslatef(c.x(),c.y(),c.z());
+    QVector3D rotVec = RotateVector(dir, axis, -0.5*arc_angle);
+
+    glPushAttrib(GL_LINE_BIT);
+    glLineWidth(thickness);
+    glBegin(GL_LINES);//since the arc is not a closed curve, this is a strip now
+    for(int ii = 0; ii < num_segments; ii++)
+    {
+        glVertex3f(rotVec.x(),rotVec.y(),rotVec.z());
+        rotVec = RotateVector(rotVec, axis, theta);
+        if(!dashed)
+            glVertex3f(rotVec.x(),rotVec.y(),rotVec.z());
+    }
+    glEnd();
+    glPopAttrib();
+    glPopMatrix();
+    glPopAttrib();
+}
+
 

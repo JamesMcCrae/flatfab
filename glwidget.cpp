@@ -1547,7 +1547,7 @@ void GLWidget::paintGL()
         transform_widget.SetX(sections[selected].T());
         transform_widget.SetY(sections[selected].N());
         transform_widget.SetZ(sections[selected].B());
-        transform_widget.DrawGL();
+        transform_widget.DrawGL(cam.CamWidth());
     }
 
     //draw TNB frame
@@ -1616,7 +1616,7 @@ void GLWidget::paintGL()
     else if (IsSectionSelected()) {
 
         //if (state == STATE_NONE || state == STATE_MANIP_CTRLPOINT) {
-        if (state != STATE_CURVE && state != STATE_RESKETCH_CURVE && state != STATE_CAM_TRANSLATE && state != STATE_DEADZONE) {
+        if (!transforming && state != STATE_CURVE && state != STATE_RESKETCH_CURVE && state != STATE_CAM_TRANSLATE && state != STATE_DEADZONE) {
 //            glColor3f(1.0, 0.4, 1.0);
             sections[selected].DrawCurveControlPointsHandleStyle(cam.CamWidth(), cam.Eye());
 
@@ -1901,6 +1901,12 @@ b) when there are planes, attempt to select one
     else if (event->button() == Qt::RightButton) {           
 
         //if something already selected, maybe we are trying to move it
+        if(state == STATE_TRANSFORM_WIDGET)
+        {
+            transform_widget.SetState(NONE);
+            state = STATE_NONE;
+        }
+
         if (IsSectionSelected()) {
 
             if (sections[selected].IsCtrlPointSelected()) {
@@ -2809,7 +2815,7 @@ int GLWidget::PickTransformWidgetElement(const QVector2D & mouse_pos)
 {
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    transform_widget.DrawSelectionGL();
+    transform_widget.DrawSelectionGL(cam.CamWidth());
 
     unsigned char r, g, b;
     int index;
