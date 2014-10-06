@@ -110,6 +110,10 @@ private slots:
     void openPhysicsWidget();
     void openViewsWidget();
 
+    void setEditMenuChecks();
+    void setViewMenuChecks();
+    void setPhysicsMenuChecks();
+
 private:   
 
     void createActions();

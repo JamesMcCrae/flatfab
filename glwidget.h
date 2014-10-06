@@ -143,6 +143,7 @@ protected:
     int PickSection(const QVector2D & mouse_pos, const bool only_test_selected);
     int PickTransformWidgetElement(const QVector2D & mouse_pos);
 
+
 signals:
     
 public slots:
@@ -449,6 +450,19 @@ private:
 
     bool update_sections_disp_list;
     GLuint sections_disp_list;
+
+
+    //---- Needed to connect to menus in mainWindow
+
+    QCheckBox * deformed_checkbox;
+    QCheckBox * skeleton_checkbox;
+    QCheckBox * forces_checkbox;
+    QCheckBox * section_checkbox;
+    QCheckBox * moment_checkbox;
+
+    QPushButton * testPhysicsButton;
+
+    //----
 
 };
 

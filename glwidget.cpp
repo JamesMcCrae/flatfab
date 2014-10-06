@@ -131,6 +131,7 @@ GLWidget::GLWidget() :
 
     transforming = false;
 
+
 }
 
 GLWidget::~GLWidget()
@@ -1165,7 +1166,7 @@ QWidget * GLWidget::GetPhysicsWidget()
 
     QFormLayout * physWidgetLayout = new QFormLayout();
 
-    QPushButton * testPhysicsButton = new QPushButton("Test Physics");
+    testPhysicsButton = new QPushButton("Test Physics");
     testPhysicsButton->setCheckable(true);
     testPhysicsButton->setMinimumHeight(40);
     connect(testPhysicsButton, SIGNAL(clicked()), this, SLOT(ToggleDoPhysicsTest()) );
@@ -1224,19 +1225,24 @@ QWidget * GLWidget::GetPhysicsWidget()
 
 
 
-    QCheckBox * deformed_checkbox = new QCheckBox("Deformed");
+    deformed_checkbox = new QCheckBox("Deformed");
+    deformed_checkbox->setChecked(physics.GetDrawDeformed());
     connect(deformed_checkbox, SIGNAL(toggled(bool)), this, SLOT(SetDrawDeformed(bool)));
 
-    QCheckBox * skeleton_checkbox = new QCheckBox("Skeleton");
+    skeleton_checkbox = new QCheckBox("Skeleton");
+    skeleton_checkbox->setChecked(physics.GetDrawSkeleton());
     connect(skeleton_checkbox, SIGNAL(toggled(bool)), this, SLOT(SetDrawSkeleton(bool)));
 
-    QCheckBox * forces_checkbox = new QCheckBox("Forces");
+    forces_checkbox = new QCheckBox("Forces");
+    forces_checkbox->setChecked(physics.GetDrawForce());
     connect(forces_checkbox, SIGNAL(toggled(bool)), this, SLOT(SetDrawForce(bool)));
 
-    QCheckBox * section_checkbox = new QCheckBox("Section");
+    section_checkbox = new QCheckBox("Section");
+    section_checkbox->setChecked(physics.GetDrawSection());
     connect(section_checkbox, SIGNAL(toggled(bool)), this, SLOT(SetDrawSection(bool)));
 
-    QCheckBox * moment_checkbox = new QCheckBox("Section Moments");
+    moment_checkbox = new QCheckBox("Section Moments");
+    moment_checkbox->setChecked(physics.GetDrawSectionMoment());
     connect(moment_checkbox, SIGNAL(toggled(bool)), this, SLOT(SetDrawSectionMoment(bool)));
 
 
@@ -3291,6 +3297,8 @@ void GLWidget::SetDoPhysicsTest(const bool b)
     update_sections_disp_list = true;
 
     //updateGL();
+
+    testPhysicsButton->setChecked(do_physics_test);
 }
 
 void GLWidget::ToggleDoPhysicsTest()
@@ -3303,6 +3311,9 @@ void GLWidget::ToggleDoPhysicsTest()
     update_sections_disp_list = true;
 
     //updateGL();
+
+    testPhysicsButton->setChecked(do_physics_test);
+
 }
 
  void GLWidget::SetDoConnectedTest(const bool b)
@@ -6445,26 +6456,31 @@ void GLWidget::DoGenerateSurfaceFacets()
 void GLWidget::ToggleDrawDeformed()
 {
     physics.SetDrawDeformed(!physics.GetDrawDeformed());
+    deformed_checkbox->setChecked(physics.GetDrawDeformed());
 }
 
 void GLWidget::ToggleDrawSkeleton()
 {
     physics.SetDrawSkeleton(!physics.GetDrawSkeleton());
+    skeleton_checkbox->setChecked(physics.GetDrawSkeleton());
 }
 
 void GLWidget::ToggleDrawForce()
 {
     physics.SetDrawForce(!physics.GetDrawForce());
+    forces_checkbox->setChecked(physics.GetDrawForce());
 }
 
 void GLWidget::ToggleDrawSection()
 {
     physics.SetDrawSection(!physics.GetDrawSection());
+    section_checkbox->setChecked(physics.GetDrawSection());
 }
 
 void GLWidget::ToggleDrawMoments()
 {
     physics.SetDrawSectionMoment(!physics.GetDrawSectionMoment());
+    moment_checkbox->setChecked(physics.GetDrawSectionMoment());
 }
 
 void GLWidget::ToggleDrawTemplates()
@@ -6477,26 +6493,33 @@ void GLWidget::ToggleDrawTemplates()
 void GLWidget::SetDrawDeformed(bool b)
 {
     physics.SetDrawDeformed(b);
+    deformed_checkbox->setChecked(b);
 }
 
 void GLWidget::SetDrawSkeleton(bool b)
 {
     physics.SetDrawSkeleton(b);
+    skeleton_checkbox->setChecked(b);
 }
 
 void GLWidget::SetDrawForce(bool b)
 {
     physics.SetDrawForce(b);
+    forces_checkbox->setChecked(b);
 }
 
 void GLWidget::SetDrawSection(bool b)
 {
     physics.SetDrawSection(b);
+    section_checkbox->setChecked(b);
 }
 
 void GLWidget::SetDrawSectionMoment(bool b)
 {
     physics.SetDrawSectionMoment(b);
+    moment_checkbox->setChecked(b);
 }
+
+
 
 

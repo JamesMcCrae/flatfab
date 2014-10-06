@@ -134,8 +134,6 @@ void MainWindow::ShowAppWidgets()
     mb.setStandardButtons(QMessageBox::Ok);
     mb.exec();
 
-
-
 }
 
 void MainWindow::closeDialog()
@@ -267,7 +265,6 @@ void MainWindow::createSideBar()
     docks[2]->setWindowTitle("Guides and Dimensions");
     docks[3]->setWindowTitle("Physical Simulation");
     docks[4]->setWindowTitle("Views");
-
 
 }
 
@@ -734,6 +731,11 @@ void MainWindow::createMenus()
     physicsMenu->addAction(addExternalWeightAct);
     physicsMenu->addAction(removeExternalWeightsAct);
 
+
+    connect(editMenu, SIGNAL(aboutToShow()), this, SLOT(setEditMenuChecks()) );
+    connect(viewMenu, SIGNAL(aboutToShow()), this, SLOT(setViewMenuChecks()) );
+    connect(physicsMenu, SIGNAL(aboutToShow()), this, SLOT(setPhysicsMenuChecks()) );
+
 }
 
 void MainWindow::NewPlaneSketch()
@@ -1020,42 +1022,48 @@ void MainWindow::GenerateSurfaceFacets()
 
 void MainWindow::TogglePhysicsTest()
 {
-    glWidget.SetDoPhysicsTest(!glWidget.GetDoPhysicsTest());
+    //glWidget.SetDoPhysicsTest(!glWidget.GetDoPhysicsTest());
+    glWidget.ToggleDoPhysicsTest();
 }
 
 void MainWindow::TogglePhysicsDeformed()
 {
-    CPhysics & physics = glWidget.GetPhysics();
-    physics.SetDrawDeformed(!physics.GetDrawDeformed());
-    //glWidget.updateGL();
+//    CPhysics & physics = glWidget.GetPhysics();
+//    physics.SetDrawDeformed(!physics.GetDrawDeformed());
+//    //glWidget.updateGL();
+    glWidget.ToggleDrawDeformed();
 }
 
 void MainWindow::TogglePhysicsSkeleton()
 {
-    CPhysics & physics = glWidget.GetPhysics();
-    physics.SetDrawSkeleton(!physics.GetDrawSkeleton());
-    //glWidget.updateGL();
+//    CPhysics & physics = glWidget.GetPhysics();
+//    physics.SetDrawSkeleton(!physics.GetDrawSkeleton());
+//    //glWidget.updateGL();
+    glWidget.ToggleDrawSkeleton();
 }
 
 void MainWindow::TogglePhysicsForce()
 {
-    CPhysics & physics = glWidget.GetPhysics();
-    physics.SetDrawForce(!physics.GetDrawForce());
-    //glWidget.updateGL();
+//    CPhysics & physics = glWidget.GetPhysics();
+//    physics.SetDrawForce(!physics.GetDrawForce());
+//    //glWidget.updateGL();
+    glWidget.ToggleDrawForce();
 }
 
 void MainWindow::TogglePhysicsSection()
 {
-    CPhysics & physics = glWidget.GetPhysics();
-    physics.SetDrawSection(!physics.GetDrawSection());
-    //glWidget.updateGL();
+//    CPhysics & physics = glWidget.GetPhysics();
+//    physics.SetDrawSection(!physics.GetDrawSection());
+//    //glWidget.updateGL();
+    glWidget.ToggleDrawSection();
 }
 
 void MainWindow::TogglePhysicsSectionMoment()
 {
-    CPhysics & physics = glWidget.GetPhysics();
-    physics.SetDrawSectionMoment(!physics.GetDrawSectionMoment());
-    //glWidget.updateGL();
+//    CPhysics & physics = glWidget.GetPhysics();
+//    physics.SetDrawSectionMoment(!physics.GetDrawSectionMoment());
+//    //glWidget.updateGL();
+    glWidget.ToggleDrawMoments();
 }
 
 void MainWindow::PhysicsAddExternalMass()
@@ -1164,3 +1172,28 @@ void MainWindow::openViewsWidget()
     docks[4]->toggleViewAction()->trigger();
 }
 
+void MainWindow::setEditMenuChecks()
+{
+    useMagneticCutsAct->setCheckable(glWidget.GetDoMagneticCuts());
+}
+
+void MainWindow::setViewMenuChecks()
+{
+    viewTNBFramesAct->setChecked(glWidget.GetShowTNBFrames());
+    viewShadowAct->setChecked(glWidget.GetShowShadow());
+    viewTemplatesAct->setChecked(glWidget.GetShowTemplates());
+    testCyclesAct->setChecked(glWidget.GetDoCyclesTest());
+    testConnectedAct->setChecked(glWidget.GetDoConnectedTest());
+    testStabilityAct->setChecked(glWidget.GetDoStabilityTest());
+}
+
+void MainWindow::setPhysicsMenuChecks()
+{
+    CPhysics & physics = glWidget.GetPhysics();
+    showPhysicsDeformedAct->setChecked(physics.GetDrawDeformed());
+    showPhysicsSkeletonAct->setChecked(physics.GetDrawSkeleton());
+    showPhysicsForceAct->setChecked(physics.GetDrawForce());
+    showPhysicsSectionAct->setChecked(physics.GetDrawSection());
+    showPhysicsSectionMomentAct->setChecked(physics.GetDrawSectionMoment());
+    testPhysicsAct->setChecked(glWidget.GetDoPhysicsTest());
+}
