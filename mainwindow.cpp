@@ -51,6 +51,8 @@ MainWindow::MainWindow()
 
     //track usage
     SendTrackRequest();
+
+    toolWidget = NULL;
 }
 
 MainWindow::~MainWindow()
@@ -107,12 +109,12 @@ void MainWindow::ShowAppWidgets()
     QMessageBox mb(this);
     mb.setPalette(QPalette(QColor(230,230,230), QColor(255,255,255)));
 
-    mb.setMinimumSize(500, 300);
+    //mb.setMinimumSize(500, 300);
     mb.setTextFormat(Qt::RichText);
     mb.setWindowTitle ( "Getting Started" );
     mb.setText("<p><font size='6'><b>Getting Started</b></font></p>"
 
-                "<p>Start by drawing your first shape with the left mouse button held<br></p>"
+               "<p>Start by drawing your first shape with the left mouse button held<br></p>"
 
                "<p><font size='4'><b>Create a New Section</b></font>"
                "<table> <td>-<br>-</td>  <td>Left click on a section and drag to the section edge to form a slit<br>"
@@ -123,7 +125,8 @@ void MainWindow::ShowAppWidgets()
                "Click on a section with the left or right mouse button to select it</td></table><br></p>"
 
                "<p><font size='4'><b>Editing Section Control Points</b></font>"
-               "<table> <td>-<td>  <td>Right click and drag the control points to modify the section shape</td></table><br></p>"
+               "<table> <td>-<br>-<td>  <td>Right click and drag the control points to modify the section shape<br>"
+               "While hovering over a control point press <b>-</b> to delete a handle or <b>+</b> to add one</td></table><br></p>"
 
                "<p><font size='4'><b>Camera Controls</b></font>"
                "<table> <tr><td><b>orbit</b><br><b>zoom</b><br><b>dolly</b></td>"
@@ -143,24 +146,71 @@ void MainWindow::closeDialog()
 
 void MainWindow::createQuickToolBar()
 {
-    quickToolBar = new QToolBar(tr("Quick Settings"));
-    quickToolBar->setIconSize(QSize(25,25));
-    quickToolBar->setMovable(false);
-    //quickToolBar->setWindowFlags(Qt::Tool | Qt::FramelessWindowHint);
-    quickToolBar->setStyleSheet("QToolButton {color: #aaa; font-size: 10px;}"
-                                "QToolButton::checked { background-color: #fff;}"
-                                "QToolBar {position:absolute; top:10px; right:10px;}");
 
-    QAction *setLocalSymmetry = new QAction(QIcon(":/icons/appbar.transform.flip.horizontal.png"), "Local Symmetry", this);
-    setLocalSymmetry->setStatusTip(tr("Local Symmetry"));
-    setLocalSymmetry->setCheckable(true);
-    setLocalSymmetry->setChecked(true);
-    connect(setLocalSymmetry, SIGNAL(triggered()), this, SLOT(ToggleLocalSymmetry()));
+    // ---- old tool bar - this should stay till new tool bar has been tested enough
+
+//    quickToolBar = new QToolBar(tr("Quick Settings"), this);
+//    quickToolBar->setIconSize(QSize(25,25));
+
+////    quickToolBar->setMovable(false);
+////    quickToolBar->setFloatable(false);
+////    quickToolBar->setWindowFlags(Qt::Tool | Qt::FramelessWindowHint);
+////    quickToolBar->setStyleSheet("QToolButton {color: #aaa; font-size: 10px;}"
+////                                "QToolButton::checked { background-color: #fff;}"
+////                                "QToolBar {position:absolute; top:10px; right:10px;}");
+
+//    QAction *setLocalSymmetry = new QAction(QIcon(":/icons/appbar.transform.flip.horizontal.png"), "Local Symmetry", this);
+//    setLocalSymmetry->setStatusTip(tr("Local Symmetry"));
+//    setLocalSymmetry->setCheckable(true);
+//    setLocalSymmetry->setChecked(true);
+//    connect(setLocalSymmetry, SIGNAL(triggered()), this, SLOT(ToggleLocalSymmetry()));
 
 
-    quickToolBar->addAction(setLocalSymmetry);
+//    quickToolBar->addAction(setLocalSymmetry);
 
-    addToolBar(Qt::RightToolBarArea, quickToolBar);
+
+
+////    quickToolBar->setAllowedAreas(Qt::BottomToolBarArea);
+//    addToolBar(quickToolBar);
+
+    // -----
+
+
+    // Push buttons
+    QPushButton * button = new QPushButton(QIcon(":/icons/appbar.transform.flip.horizontal.png"),"",this);
+    button->setCheckable(true);
+    button->setChecked(false); // this is opposite of what it should be - ugly hack to acheive the right gradient
+    //button->setIconSize(QSize(25,25));
+    button->setToolTip("Local Symmetry");
+    button->setStyleSheet("QPushButton {icon-size:35px; max-width:35px; max-height:35px;}"
+                "QPushButton:closed {background-color: #22c024;}"
+                "QPushButton:open {background-color: #fff;}");
+    connect(button, SIGNAL(clicked()), this, SLOT(ToggleLocalSymmetry()));
+    button->setFocusPolicy(Qt::NoFocus);
+
+
+    // Setting up layout and widget
+    QHBoxLayout * layout = new QHBoxLayout();
+    layout->addWidget(button);
+    QWidget * widget = new QWidget();
+    widget->setLayout(layout);
+    widget->setFocusPolicy(Qt::NoFocus);
+    toolWidget = new QDockWidget("Tools", this);
+    toolWidget->setWidget(widget);
+
+
+    // Setting tool widget properties
+    toolWidget->setFloating( true );
+
+    QPoint point = mapToGlobal(QPoint(width() - 10, 10));
+    toolWidget->setGeometry( point.x(),point.y(),0,0);
+
+    toolWidget->setAllowedAreas( Qt::NoDockWidgetArea );
+    toolWidget->setWindowFlags(Qt::Tool | Qt::FramelessWindowHint);
+    toolWidget->setWindowTitle( "Tools" );
+    toolWidget->setFocusPolicy(Qt::NoFocus);
+    toolWidget->show();
+
 
 
 }
@@ -1196,4 +1246,32 @@ void MainWindow::setPhysicsMenuChecks()
     showPhysicsSectionAct->setChecked(physics.GetDrawSection());
     showPhysicsSectionMomentAct->setChecked(physics.GetDrawSectionMoment());
     testPhysicsAct->setChecked(glWidget.GetDoPhysicsTest());
+}
+
+
+
+void MainWindow::resizeEvent(QResizeEvent * event)
+{
+    //QMainWindow::resizeEvent(event);
+
+    // this moves the toolwidget on resize
+    if(toolWidget != NULL)
+    {
+        QPoint point = mapToGlobal(QPoint(width() - toolWidget->width() - 5, 25));
+        toolWidget->setGeometry( point.x(),point.y(),0,0);
+    }
+
+}
+
+void MainWindow::moveEvent(QMoveEvent * event)
+{
+    //QMainWindow::moveEvent(event);
+
+    // this moves the toolwidget on window move
+    if(toolWidget != NULL)
+    {
+        QPoint point = mapToGlobal(QPoint(width() - toolWidget->width()-5, 25));
+        toolWidget->setGeometry( point.x(),point.y(),0,0);
+    }
+
 }

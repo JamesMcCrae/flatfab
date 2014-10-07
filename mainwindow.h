@@ -220,6 +220,10 @@ private:
 
     void createQuickToolBar();
     QToolBar *quickToolBar;
+    QDockWidget * toolWidget;
+
+    virtual void resizeEvent(QResizeEvent * event);
+    virtual void moveEvent(QMoveEvent * event);
 
 
 };
