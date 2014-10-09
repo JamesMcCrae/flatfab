@@ -1553,7 +1553,7 @@ void GLWidget::paintGL()
         transform_widget.SetX(sections[selected].T());
         transform_widget.SetY(sections[selected].N());
         transform_widget.SetZ(sections[selected].B());
-        transform_widget.DrawGL(cam.CamWidth());
+        transform_widget.DrawGL(cam.CamWidth(),height());
     }
 
     //draw TNB frame
@@ -2821,7 +2821,7 @@ int GLWidget::PickTransformWidgetElement(const QVector2D & mouse_pos)
 {
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    transform_widget.DrawSelectionGL(cam.CamWidth());
+    transform_widget.DrawSelectionGL(cam.CamWidth(), height());
 
     unsigned char r, g, b;
     int index;

@@ -10,14 +10,20 @@ TransformWidget::TransformWidget() :
 {
 }
 
-void TransformWidget::DrawGL(const float cam_width)
+void TransformWidget::DrawGL(const float cam_width, const int screen_height)
 {
     //qDebug() << "TransformWidget::DrawGL()";
     if (!visible) {
         return;
     }
 
-    const float s = 0.2f * cam_width;
+    glPushAttrib(GL_LIGHTING_BIT);
+    glDisable(GL_LIGHTING);
+
+    qDebug()<<cam_width;
+    qDebug()<<screen_height;
+
+    const float s = 0.2f * cam_width * 500.0f/screen_height;
 
     //draw various arrows and things
     //translate x
@@ -58,15 +64,17 @@ void TransformWidget::DrawGL(const float cam_width)
     glColor3f(0,0,1);
     GLutils::DrawSphere(p + z* 1.25f * s, 0.125f  * s);
 
+    glPopAttrib();
+
 }
 
-void TransformWidget::DrawSelectionGL(const float cam_width)
+void TransformWidget::DrawSelectionGL(const float cam_width, const int screen_height)
 {
     if (!visible) {
         return;
     }
 
-    const float s = 0.2f * cam_width;
+    const float s = 0.2f * cam_width * 500.0f/screen_height;
 
 //    //qDebug() << "TransformWidget::DrawSelectionGL()";
     GLutils::SetPickColor(TRANS_X);

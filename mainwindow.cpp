@@ -99,6 +99,8 @@ void MainWindow::ShowAppWidgets()
 {
 
     //main widget/window layout
+    webView->hide();
+    delete webView;
     this->removeDockWidget(bottomDockWidget);
 
     //addDockWidget(Qt::RightDockWidgetArea, dockWidget);
@@ -106,10 +108,14 @@ void MainWindow::ShowAppWidgets()
     createQuickToolBar();
     setCentralWidget(&glWidget);
 
-    QMessageBox mb(this);
+
+
+    // For some reason the message box causes the webView to show up for a fraction
+    // of a second as a side widget is opened on Windows - this happens even after deleting the webView
+    QMessageBox mb;
     mb.setPalette(QPalette(QColor(230,230,230), QColor(255,255,255)));
 
-    //mb.setMinimumSize(500, 300);
+    mb.setMinimumSize(500, 300);
     mb.setTextFormat(Qt::RichText);
     mb.setWindowTitle ( "Getting Started" );
     mb.setText("<p><font size='6'><b>Getting Started</b></font></p>"
@@ -120,9 +126,13 @@ void MainWindow::ShowAppWidgets()
                "<table> <td>-<br>-</td>  <td>Left click on a section and drag to the section edge to form a slit<br>"
                "Now draw the new section while holding the left mouse button</td></table><br></p>"
 
+
                "<p><font size='4'><b>Selecting a Section</b></font>"
                "<table> <td>-<br>-</td>  <td>Sections must be selected to perform editing operation<br>"
                "Click on a section with the left or right mouse button to select it</td></table><br></p>"
+
+               "<p><font size='4'><b>Delete a Section</b></font>"
+               "<table> <td>-</td>  <td>Press <b>Backspace</b> to delete the selected section<br></p>"
 
                "<p><font size='4'><b>Editing Section Control Points</b></font>"
                "<table> <td>-<br>-<td>  <td>Right click and drag the control points to modify the section shape<br>"
@@ -136,6 +146,8 @@ void MainWindow::ShowAppWidgets()
 
     mb.setStandardButtons(QMessageBox::Ok);
     mb.exec();
+//    qDebug()<<"hey";
+//    mb.close();
 
 }
 
