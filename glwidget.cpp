@@ -129,7 +129,7 @@ GLWidget::GLWidget() :
     physicsWidget = NULL;
     viewsWidget = NULL;
 
-    transforming = false;
+    current_tool_state = TOOLSTATE_DEFAULT;
 
 
 }
@@ -873,7 +873,7 @@ QWidget * GLWidget::GetGenerateWidget()
     // Blend group
 
     QPushButton * blendButton = new QPushButton("Blend");
-    connect(blendButton, SIGNAL(clicked()), this, SLOT(DoGenerateBlend()));
+    connect(blendButton, SIGNAL(clicked()), this, SLOT(StartGenerateBlend()));
 
     QSlider * num_blend_sections_slider = new QSlider();
     num_blend_sections_slider->setRange(3, 40);
@@ -961,7 +961,7 @@ QWidget * GLWidget::GetGenerateWidget()
     // Linear group
 
     QPushButton * linearButton = new QPushButton("Linear");
-    connect(linearButton, SIGNAL(clicked()), this, SLOT(DoGenerateLinear()));
+    connect(linearButton, SIGNAL(clicked()), this, SLOT(StartGenerateLinear()));
 
     QSlider * linear_spacing_slider = new QSlider();
     linear_spacing_slider->setRange(1, 50);
@@ -993,7 +993,7 @@ QWidget * GLWidget::GetGenerateWidget()
     // Revolve group
 
     QPushButton * revolveButton = new QPushButton("Revolve");
-    connect(revolveButton, SIGNAL(clicked()), this, SLOT(DoGenerateRevolve()));
+    connect(revolveButton, SIGNAL(clicked()), this, SLOT(StartGenerateRevolve()));
 
     QSlider * num_revolve_sections_slider = new QSlider();
     num_revolve_sections_slider->setRange(2, 40);
@@ -1548,7 +1548,7 @@ void GLWidget::paintGL()
 
 
     //draw the transform widget
-    if (selected >= 0 && transforming) {
+    if (selected >= 0 && current_tool_state == TOOLSTATE_TRANSFORMING) {
         transform_widget.SetP(sections[selected].P());
         transform_widget.SetX(sections[selected].T());
         transform_widget.SetY(sections[selected].N());
@@ -1622,7 +1622,7 @@ void GLWidget::paintGL()
     else if (IsSectionSelected()) {
 
         //if (state == STATE_NONE || state == STATE_MANIP_CTRLPOINT) {
-        if (!transforming && state != STATE_CURVE && state != STATE_RESKETCH_CURVE && state != STATE_CAM_TRANSLATE && state != STATE_DEADZONE) {
+        if (current_tool_state == TOOLSTATE_DEFAULT && state != STATE_CURVE && state != STATE_RESKETCH_CURVE && state != STATE_CAM_TRANSLATE && state != STATE_DEADZONE) {
 //            glColor3f(1.0, 0.4, 1.0);
             sections[selected].DrawCurveControlPointsHandleStyle(cam.CamWidth(), cam.Eye());
 
@@ -1946,7 +1946,7 @@ b) when there are planes, attempt to select one
     }
 
     if(state != STATE_ORBIT && state != STATE_TRANSFORM_WIDGET)
-        transforming = false;
+        current_tool_state = TOOLSTATE_DEFAULT;
 
 }
 
@@ -2450,7 +2450,7 @@ void GLWidget::mouseReleaseEvent(QMouseEvent *event)
 
         }
 
-        if(state == STATE_ORBIT && transforming)
+        if(state == STATE_ORBIT && current_tool_state == TOOLSTATE_TRANSFORMING)
             state = STATE_TRANSFORM_WIDGET;
 
         if(state != STATE_TRANSFORM_WIDGET)
@@ -3616,7 +3616,7 @@ void GLWidget::Transform()
     if(state == STATE_TRANSFORM_WIDGET)
     {
         state = STATE_NONE;
-        transforming = false;
+        current_tool_state = TOOLSTATE_DEFAULT;
         return;
     }
 
@@ -3627,7 +3627,7 @@ void GLWidget::Transform()
     AddToUndoList(OP_MANIP_TRANSFORM);
 
     state = STATE_TRANSFORM_WIDGET;
-    transforming = true;
+    current_tool_state = TOOLSTATE_TRANSFORMING;
 }
 
 void GLWidget::CopyMirrorX()
@@ -5267,6 +5267,52 @@ void GLWidget::UpdateTemplateCut()
     ComputeTemplateCut(active_section.N(), active_section.P(), template_cut);
 
 }
+
+void GLWidget::FinalizeGenerate()
+{
+    ShowGenerate();
+    current_tool_state = TOOLSTATE_DEFAULT;
+}
+
+
+void GLWidget::ShowGenerate()
+{
+
+    switch (gen_state){
+
+    case GENSTATE_LINEAR:
+        DoGenerateLinear();
+        break;
+
+    case GENSTATE_BLEND:
+        DoGenerateBlend();
+        break;
+
+    case GENSTATE_REVOLVE:
+        DoGenerateRevolve();
+        break;
+    }
+}
+
+void GLWidget::StartGenerateLinear()
+{
+    gen_state = GENSTATE_LINEAR;
+    current_tool_state = TOOLSTATE_DEFAULT;
+}
+
+void GLWidget::StartGenerateBlend()
+{
+    gen_state = GENSTATE_BLEND;
+    current_tool_state = TOOLSTATE_DEFAULT;
+}
+
+void GLWidget::StartGenerateRevolve()
+{
+    gen_state = GENSTATE_REVOLVE;
+    current_tool_state = TOOLSTATE_DEFAULT;
+}
+
+
 
 void GLWidget::DoGenerateBranchingSetRoot()
 {

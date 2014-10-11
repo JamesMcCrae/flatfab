@@ -20,9 +20,6 @@ void TransformWidget::DrawGL(const float cam_width, const int screen_height)
     glPushAttrib(GL_LIGHTING_BIT);
     glDisable(GL_LIGHTING);
 
-    qDebug()<<cam_width;
-    qDebug()<<screen_height;
-
     const float s = 0.2f * cam_width * 500.0f/screen_height;
 
     //draw various arrows and things

@@ -65,6 +65,23 @@ enum LastOperation {
     OP_GENERATE_REVOLVE
 };
 
+
+// Tool states
+enum ToolState
+{
+    TOOLSTATE_DEFAULT,
+    TOOLSTATE_TRANSFORMING,
+    TOOLSTATE_GENERATE
+};
+
+// Generate states
+enum GenerateState
+{
+    GENSTATE_BLEND,
+    GENSTATE_LINEAR,
+    GENSTATE_REVOLVE,
+};
+
 class GLWidget : public QGLWidget
 {
     Q_OBJECT
@@ -249,6 +266,13 @@ public slots:
     void DoGenerateMakeRadialHole();
     void DoGenerateSurfaceFacets();
 
+    void ShowGenerate();
+    void FinalizeGenerate();
+
+    void StartGenerateLinear();
+    void StartGenerateBlend();
+    void StartGenerateRevolve();
+
     //physics stuff
     void DoPhysicsAddWeight();
     void DoPhysicsRemoveWeights();
@@ -261,6 +285,8 @@ public slots:
     void SetDrawForce(bool b);
     void SetDrawSection(bool b);
     void SetDrawSectionMoment(bool b);
+
+
 
     
 private:
@@ -463,6 +489,14 @@ private:
     QPushButton * testPhysicsButton;
 
     //----
+
+
+    ToolState current_tool_state;
+    GenerateState gen_state;
+
+    // Generate Selections
+    QList<int> generate_selections;
+    int num_generate_selected;
 
 };
 
