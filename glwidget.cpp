@@ -131,6 +131,11 @@ GLWidget::GLWidget() :
 
     current_tool_state = TOOLSTATE_DEFAULT;
 
+    selections_per_gen_type[GENSTATE_BLEND] = 3;
+    selections_per_gen_type[GENSTATE_LINEAR] = 2;
+    selections_per_gen_type[GENSTATE_REVOLVE] = 2;
+
+
 
 }
 
@@ -1434,7 +1439,19 @@ void GLWidget::paintGL()
             glColor3f(0.75f, 0.75f, 0.75f);
             for (int i=0; i<sections.size(); ++i) {
 
-                if (i != selected) {
+                if(current_tool_state == TOOLSTATE_GENERATE)
+                {
+//                    if ( !( i == selected || (num_generate_selected >= 2 && i == last_selected.last()) ||
+//                           (num_generate_selected == 3 && i == last_selected[last_selected.size() - 2]) ) ) {
+//                        sections[i].DrawShadow();
+//                    }
+                    if ( !( i == selected || (num_generate_selected > 0 && i == generate_selections[0]) ||
+                            (num_generate_selected > 1 && i == generate_selections[1]) ||
+                           (num_generate_selected == 3 && i == generate_selections[2]) ) ) {
+                        sections[i].DrawShadow();
+                    }
+                }
+                else if (i != selected) {
                     sections[i].DrawShadow();
                 }
 
@@ -1448,7 +1465,15 @@ void GLWidget::paintGL()
 
         for (int i=0; i<sections.size(); ++i) {
 
-            if (i != selected) {
+            if(current_tool_state == TOOLSTATE_GENERATE)
+            {
+                if ( !( i == selected || (num_generate_selected > 0 && i == generate_selections[0]) ||
+                        (num_generate_selected > 1 && i == generate_selections[1]) ||
+                       (num_generate_selected == 3 && i == generate_selections[2]) ) ) {
+                    DrawSection(i);
+                }
+            }
+            else if (i != selected) {
                 DrawSection(i);
             }
 
@@ -1473,7 +1498,58 @@ void GLWidget::paintGL()
         active_section.DrawTris();
     }
 
-    if (IsSectionSelected()) {
+    if(current_tool_state == TOOLSTATE_GENERATE)
+    {
+//        if(num_generate_selected == 1)
+//        {
+//            glColor3f(1.0f, 0.0f, 0.0f);
+//            sections[selected].DrawSlab();
+//        }
+//        else if(num_generate_selected == 2)
+//        {
+//            glColor3f(1.0f, 0.0f, 0.0f);
+//            sections[last_selected[last_selected.size() - 2]].DrawSlab();
+//            glColor3f(0.0f, 1.0f, 0.0f);
+//            sections[selected].DrawSlab();
+//        }
+//        else if(num_generate_selected == 3)
+//        {
+//            glColor3f(1.0f, 0.0f, 0.0f);
+//            sections[last_selected[last_selected.size() - 3]].DrawSlab();
+//            glColor3f(0.0f, 1.0f, 0.0f);
+//            sections[last_selected[last_selected.size() - 2]].DrawSlab();
+//            glColor3f(0.0f, 0.0f, 1.0f);
+//            sections[selected].DrawSlab();
+
+//        }
+
+        if(num_generate_selected > 0)
+        {
+            glColor3f(1.0f, 0.0f, 0.0f);
+            sections[generate_selections[0]].DrawSlab();
+            if(num_generate_selected > 1)
+            {
+                glColor3f(0.0f, 1.0f, 0.0f);
+                sections[generate_selections[1]].DrawSlab();
+                if(num_generate_selected > 2)
+                {
+                    glColor3f(0.0f, 0.0f, 1.0f);
+                    sections[generate_selections[2]].DrawSlab();
+                }
+            }
+        }
+
+
+        glEnable(GL_BLEND);
+        glColor4f(0.35f, 0.45f, 0.6f, 0.5f);
+        for(int i = 0; i < generated_sections.size(); i++)
+        {
+            generated_sections[i].DrawSlab();
+        }
+        glDisable(GL_BLEND);
+
+    }
+    else if (IsSectionSelected()) {
         DrawSection(selected);
     }
 
@@ -1857,7 +1933,34 @@ b) when there are planes, attempt to select one
                         QVector3D p;
                         sections[section_clicked].MouseRayIntersect(mouse_pos, p);
 
-                        if (state == STATE_RECURSIVE_SETUP_SLOT) {
+                        // If selectiing sections for the generate tools
+                        if(current_tool_state == TOOLSTATE_GENERATE)
+                        {
+                            if(num_generate_selected < selections_per_gen_type[gen_state])
+                            {
+
+                                bool already_selected = false;
+                                for(int i = 0; i < generate_selections.size(); i++)
+                                {
+                                    if(generate_selections[i] == section_clicked)
+                                    {
+                                        already_selected = true;
+                                        break;
+                                    }
+                                }
+                                if(!already_selected)
+                                {
+                                    generate_selections.append(section_clicked);
+                                    num_generate_selected++;
+                                }
+
+                            }
+                            if(num_generate_selected == selections_per_gen_type[gen_state]  )
+                                ShowGenerate();
+                            UpdateDraw();
+                        }
+
+                        else if (state == STATE_RECURSIVE_SETUP_SLOT) {
                             //modify properties of base section
                             recursive_slot_start = p;
                             recursive_slot_end = p;
@@ -1868,7 +1971,7 @@ b) when there are planes, attempt to select one
                             dimensiontool_end = p;
                             state = STATE_DIMENSIONING_SECOND;
                         }
-                        else {
+                        else if(current_tool_state == TOOLSTATE_DEFAULT) {
 
                             active_section = PlanarSection();
                             SetupPlanarSection(active_section);
@@ -1882,9 +1985,10 @@ b) when there are planes, attempt to select one
                             state = STATE_SLOT;
                         }
 
-                        if (section_clicked != selected) {
+                        if (current_tool_state != TOOLSTATE_GENERATE && section_clicked != selected) {
                             SetSelected(section_clicked);
                             UpdateDraw();
+
                         }
 
                     }
@@ -1913,7 +2017,35 @@ b) when there are planes, attempt to select one
             state = STATE_NONE;
         }
 
-        if (IsSectionSelected()) {
+        // If selectiing sections for the generate tools
+        if(current_tool_state == TOOLSTATE_GENERATE)
+        {
+            const int new_select = PickSection(mouse_pos, false);
+            if(num_generate_selected < selections_per_gen_type[gen_state])
+            {
+                bool already_selected = false;
+                for(int i = 0; i < generate_selections.size(); i++)
+                {
+                    if(generate_selections[i] == new_select)
+                    {
+                        already_selected = true;
+                        break;
+                    }
+                }
+                if(!already_selected)
+                {
+                    generate_selections.append(new_select);
+                    num_generate_selected++;
+                }
+
+            }
+            if(num_generate_selected == selections_per_gen_type[gen_state]  )
+                ShowGenerate();
+
+            UpdateDraw();
+        }
+
+        else if (IsSectionSelected()) {
 
             if (sections[selected].IsCtrlPointSelected()) {
                 state = STATE_MANIP_CTRLPOINT;               
@@ -1925,12 +2057,13 @@ b) when there are planes, attempt to select one
                 AddToUndoList(OP_MANIP_WEIGHT);
             }
             else {
-                const int new_select = PickSection(mouse_pos, false);
+                const int new_select = PickSection(mouse_pos, false);   
                 if (new_select != selected) {
                     last_op = OP_SELECTION;
-                    SetSelected(new_select);
+                    SetSelected(new_select);             
                     UpdateDraw();
                 }
+
             }
 
         }
@@ -1941,11 +2074,12 @@ b) when there are planes, attempt to select one
                 SetSelected(new_select);
                 UpdateDraw();
             }
+
         }
 
     }
 
-    if(state != STATE_ORBIT && state != STATE_TRANSFORM_WIDGET)
+    if(state != STATE_ORBIT && state != STATE_TRANSFORM_WIDGET && current_tool_state == TOOLSTATE_TRANSFORMING)
         current_tool_state = TOOLSTATE_DEFAULT;
 
 }
@@ -2498,6 +2632,16 @@ void GLWidget::keyPressEvent(QKeyEvent *event)
         alt_held = true;
         break;
 
+    case Qt::Key_Enter:
+    case Qt::Key_Return:
+        if(current_tool_state == TOOLSTATE_GENERATE)
+            AcceptGenerate();
+        break;
+
+    case Qt::Key_Escape:
+        if(current_tool_state == TOOLSTATE_GENERATE)
+            CancelGenerate();
+        break;
     }
 
 }
@@ -3442,30 +3586,39 @@ void GLWidget::SetGenerateLinearSpacing(const int i)
     generate_linear_spacing = float(i) / 10.0f;
     linear_spacing_label->setText(QString::number(generate_linear_spacing));
 
-    if (last_op == OP_GENERATE_LINEAR) {
-        Undo(OP_GENERATE_LINEAR);
-        DoGenerateLinear();
-    }
+//    if (last_op == OP_GENERATE_LINEAR) {
+//        Undo(OP_GENERATE_LINEAR);
+//        DoGenerateLinear();
+//    }
+
+    if(current_tool_state == TOOLSTATE_GENERATE && gen_state == GENSTATE_LINEAR)
+        ShowGenerate();
 }
 
 void GLWidget::SetGenerateLinearScaleX(const bool b)
 {
     generate_linear_scalex = b;
 
-    if (last_op == OP_GENERATE_LINEAR) {
-        Undo(OP_GENERATE_LINEAR);
-        DoGenerateLinear();
-    }
+//    if (last_op == OP_GENERATE_LINEAR) {
+//        Undo(OP_GENERATE_LINEAR);
+//        DoGenerateLinear();
+//    }
+
+    if(current_tool_state == TOOLSTATE_GENERATE && gen_state == GENSTATE_LINEAR)
+        ShowGenerate();
 }
 
 void GLWidget::SetGenerateLinearScaleY(const bool b)
 {
     generate_linear_scaley = b;
 
-    if (last_op == OP_GENERATE_LINEAR) {
-        Undo(OP_GENERATE_LINEAR);
-        DoGenerateLinear();
-    }
+//    if (last_op == OP_GENERATE_LINEAR) {
+//        Undo(OP_GENERATE_LINEAR);
+//        DoGenerateLinear();
+//    }
+
+    if(current_tool_state == TOOLSTATE_GENERATE && gen_state == GENSTATE_LINEAR)
+        ShowGenerate();
 }
 
 void GLWidget::SetGenerateBranchingScaleChild(const int i)
@@ -3517,10 +3670,13 @@ void GLWidget::SetGenerateBlendSections(const int i)
     generate_blend_sections = i;
     num_blend_sections_label->setText(QString::number(generate_blend_sections));
 
-    if (last_op == OP_GENERATE_BLEND) {
-        Undo(OP_GENERATE_BLEND);
-        DoGenerateBlend();
-    }
+//    if (last_op == OP_GENERATE_BLEND) {
+//        Undo(OP_GENERATE_BLEND);
+//        DoGenerateBlend();
+//    }
+
+    if(current_tool_state == TOOLSTATE_GENERATE && gen_state == GENSTATE_BLEND)
+        ShowGenerate();
 }
 
 void GLWidget::SetGenerateRevolveSections(const int i)
@@ -3528,10 +3684,13 @@ void GLWidget::SetGenerateRevolveSections(const int i)
     generate_revolve_sections = i; 
     num_revolve_sections_label->setText(QString::number(generate_revolve_sections));
 
-    if (last_op == OP_GENERATE_REVOLVE) {
-        Undo(OP_GENERATE_REVOLVE);
-        DoGenerateRevolve();
-    }
+//    if (last_op == OP_GENERATE_REVOLVE) {
+//        Undo(OP_GENERATE_REVOLVE);
+//        DoGenerateRevolve();
+//    }
+
+    if(current_tool_state == TOOLSTATE_GENERATE && gen_state == GENSTATE_REVOLVE)
+        ShowGenerate();
 }
 
 void GLWidget::AddToUndoList(const LastOperation op)
@@ -3561,6 +3720,9 @@ void GLWidget::AddToUndoList(const LastOperation op)
 void GLWidget::Undo(const LastOperation op)
 {
 
+    if(current_tool_state == TOOLSTATE_GENERATE)
+        return;
+
     //add the existing sections to the undo list, but ONLY if we are at the end
     if (undo_index == undo_sections.size()-1) {
         AddToUndoList(op);
@@ -3579,6 +3741,9 @@ void GLWidget::Undo(const LastOperation op)
 
 void GLWidget::Redo()
 {
+    if(current_tool_state == TOOLSTATE_GENERATE)
+        return;
+
     if (undo_index < undo_sections.size()-2) {
         sections = undo_sections[undo_index+2];
         ++undo_index;
@@ -5268,48 +5433,494 @@ void GLWidget::UpdateTemplateCut()
 
 }
 
-void GLWidget::FinalizeGenerate()
+void GLWidget::AcceptGenerate()
 {
     ShowGenerate();
     current_tool_state = TOOLSTATE_DEFAULT;
+
+    switch (gen_state){
+
+    case GENSTATE_LINEAR:
+        AddToUndoList(OP_GENERATE_LINEAR);
+        break;
+
+    case GENSTATE_BLEND:
+        AddToUndoList(OP_GENERATE_BLEND);
+        break;
+
+    case GENSTATE_REVOLVE:
+        AddToUndoList(OP_GENERATE_REVOLVE);
+        break;
+    }
+
+    sections.append(generated_sections);
+    generated_sections.clear();
+    generate_selections.clear();
+    num_generate_selected = 0;
+
+}
+
+void GLWidget::CancelGenerate()
+{
+    ShowGenerate();
+    current_tool_state = TOOLSTATE_DEFAULT;
+    generated_sections.clear();
+    generate_selections.clear();
+    num_generate_selected = 0;
 }
 
 
 void GLWidget::ShowGenerate()
 {
 
+    generated_sections.clear();
+
     switch (gen_state){
 
     case GENSTATE_LINEAR:
-        DoGenerateLinear();
+        {
+
+            if (generate_selections.size() < 2) {
+                qDebug() << "GLWidget::DoGenerateBlend() - Warning, 3 sections need to be selected";
+                return;
+            }
+
+            //1.  test to make sure they differ
+            const int ind1 = generate_selections.front();
+            const int ind2 = generate_selections.back();
+
+            if (ind1 == ind2) {
+                qDebug() << "GLWidget::DoGenerateLinear() - Last two selections the same, aborting";
+                break;
+            }
+
+            //2.  grab the set of curves that should be copied, this involves getting all children
+            //    of the revolving one's children (relative to tree with root at base planar section)
+            QVector <QVector <bool> > graph;
+            QList <QList <int> > cycles;
+            PlanarSection::ComputeIntersectionGraph(sections, graph);
+
+            QList <int> branch;
+            Tree tree;
+            tree.CreateFromGraph(graph, ind1);
+            tree.GetBranch(ind2, branch);
+
+            if (branch.contains(ind1)) { //node shouldn't have parent in its branch, this means a cycle, just use the 1 node
+                branch.clear();
+                branch.push_back(ind2);
+            }
+
+            //3.  compute lines of intersection
+            PlanarSection & spine_section = sections[ind1];
+            PlanarSection & copy_section = sections[ind2];
+
+            //compute line of intersection
+            QList <QVector3D> intersects;
+            QList <bool> intersects_which;
+            spine_section.GetContourIntersections(copy_section, intersects, intersects_which);
+
+            if (intersects.size() < 2) {
+                qDebug() << "GLWidget::DoGenerateLinear() - Aborting, need at least 2 contour intersections.";
+                return;
+            }
+
+            //compute 2d intersection ray points
+            QVector2D isec_p1_2d = spine_section.GetPoint2D(intersects.first());
+            QVector2D isec_p2_2d = spine_section.GetPoint2D(intersects.last());
+            //compute 2d intersection ray direction
+            QVector2D isec_dir_2d = spine_section.GetPoint2D(intersects.last()) - spine_section.GetPoint2D(intersects.first());
+
+            //compute bounding region
+            QVector2D copy_normal_2d = spine_section.GetPoint2D(copy_section.N()) - spine_section.GetPoint2D(QVector3D(0, 0, 0));
+            float min_val, max_val;
+            spine_section.GetBoundingInterval(copy_normal_2d, min_val, max_val);
+
+            const float copy_val = QVector2D::dotProduct(copy_normal_2d, spine_section.GetPoint2D(copy_section.P()));
+
+            //we need to perform a test to determine which side of the contour to attach to consistently when we cast rays
+            //create a ray on the plane of spine_section
+            QList <QVector2D> contour_isecs;
+            spine_section.ComputeContourLineIntersects(isec_p1_2d, isec_p2_2d-isec_p1_2d, contour_isecs);
+            //which contour_isec is closer to intersects[1]? // TODO: make this more robust, this choice is arbitrary, and depends on spline before point being defined
+            const float contour_first_len = (spine_section.GetPoint3D(contour_isecs.first()) - intersects[1]).length();
+            const float contour_last_len = (spine_section.GetPoint3D(contour_isecs.last()) - intersects[1]).length();
+            const float contour_scale = (spine_section.GetPoint3D(contour_isecs.last()) - spine_section.GetPoint3D(contour_isecs.first())).length();
+            const bool use_first_contour_isec = (contour_first_len < contour_last_len);
+
+            //compute series of 2D intersections on spine's plane, along direction ld (projected to 2D)
+            const int nBefore = -(int((copy_val - min_val) / generate_linear_spacing) + 1);
+            const int nAfter = int((max_val - copy_val) / generate_linear_spacing) + 1;
+
+            const QVector3D oldbasis_t = copy_section.T();
+            const QVector3D oldbasis_n = copy_section.N();
+            const QVector3D oldbasis_b = copy_section.B();
+            const QVector3D oldbasis_p = copy_section.P();
+
+            //4.  add the duplicates in a linear arrangement
+            for (int i=nBefore; i<=nAfter; ++i) {
+
+                //we skip the section at the copy_section position
+                if (i == 0) {
+                    continue;
+                }
+
+                const float d = copy_val + generate_linear_spacing * i;
+
+                const QVector3D new_plane_p1 = spine_section.GetPoint3D(copy_normal_2d * d);
+                const QVector3D new_plane_p2 = spine_section.GetPoint3D(copy_normal_2d * d + isec_dir_2d);
+
+                //create a ray on the plane of spine_section
+                QVector2D ray_p1 = spine_section.GetPoint2D(new_plane_p1);
+                QVector2D ray_p2 = spine_section.GetPoint2D(new_plane_p2);
+
+                //cast the ray and get the intersections with spine_section's contour
+                QList <QVector2D> contour_isecs;
+                spine_section.ComputeContourLineIntersects(ray_p1, ray_p2-ray_p1, contour_isecs);
+
+                //if hits, we duplicate the copy_section there
+                if (!contour_isecs.empty()) {
+
+                    //convert intersection points to 3d
+                    QList <QVector3D> contour_isecs_3d;
+                    for (int j=0; j<contour_isecs.size(); ++j) {
+                        contour_isecs_3d.push_back(spine_section.GetPoint3D(contour_isecs[j]));
+                    }
+
+                    //sort the intersection points
+                    GLutils::SortPointsAlongDirection3D(intersects.last() - intersects.first(), contour_isecs_3d);
+
+                    //visual debugging
+                    /*
+                    for (int j=0; j<contour_isecs_3d.size(); ++j) {
+                        markers.push_back(contour_isecs_3d[j]);
+                        if (j == 0) {
+                            markers_col.push_back(QVector3D(0, 0, 1));
+                        }
+                        else {
+                            markers_col.push_back(QVector3D(1, 0, 1));
+                        }
+                    }
+                    */
+
+                    //create a new planar section copy here, using the intersection value... try both, and use the one
+                    //whose line of intersection distance is closest the piece we are cloning
+                    const float each_contour_scale = (contour_isecs_3d.last() - contour_isecs_3d.first()).length() / contour_scale;
+
+                    const QVector3D newbasis_t = copy_section.T();
+                    const QVector3D newbasis_n = copy_section.N();
+                    const QVector3D newbasis_b = copy_section.B();
+                    QVector3D newbasis_p;
+                    if (use_first_contour_isec) { //when scaling Y a translation is required so the section will still intersect at the slit
+                        newbasis_p = contour_isecs_3d.first() + (copy_section.P() - intersects[1]) + (intersects[1] - intersects[2])*(1.0f - each_contour_scale);
+                    }
+                    else {
+                        newbasis_p = contour_isecs_3d.last() + (copy_section.P() - intersects[2]) + (intersects[2] - intersects[1])*(1.0f - each_contour_scale);
+                    }
+
+                    for (int j=0; j<branch.size(); ++j) {
+
+                        PlanarSection & copy_sec = sections[branch[j]];
+
+                        const float scale_x = (generate_linear_scalex) ? each_contour_scale : 1.0f;
+                        const float scale_y = (generate_linear_scaley) ? each_contour_scale : 1.0f;
+
+                        const QVector3D new_t = GLutils::GetVectorNewBasis(oldbasis_t, oldbasis_n, oldbasis_b, QVector3D(0, 0, 0),
+                                                                           newbasis_t, newbasis_n, newbasis_b, QVector3D(0, 0, 0),
+                                                                           copy_sec.T(), 1.0f, 1.0f, 1.0f);
+                        const QVector3D new_n = GLutils::GetVectorNewBasis(oldbasis_t, oldbasis_n, oldbasis_b, QVector3D(0, 0, 0),
+                                                                           newbasis_t, newbasis_n, newbasis_b, QVector3D(0, 0, 0),
+                                                                           copy_sec.N(), 1.0f, 1.0f, 1.0f);
+                        const QVector3D new_b = GLutils::GetVectorNewBasis(oldbasis_t, oldbasis_n, oldbasis_b, QVector3D(0, 0, 0),
+                                                                           newbasis_t, newbasis_n, newbasis_b, QVector3D(0, 0, 0),
+                                                                           copy_sec.B(), 1.0f, 1.0f, 1.0f);
+                        const QVector3D new_p = GLutils::GetVectorNewBasis(oldbasis_t, oldbasis_n, oldbasis_b, oldbasis_p,
+                                                                          newbasis_t, newbasis_n, newbasis_b, newbasis_p,
+                                                                          copy_sec.P(), scale_x, 1.0f, scale_y);
+
+                        PlanarSection new_sec = copy_sec;
+                        SetupPlanarSection(new_sec);
+                        new_sec.SetT(new_t);
+                        new_sec.SetN(new_n);
+                        new_sec.SetB(new_b);
+                        new_sec.SetP(new_p);
+                        new_sec.Scale(scale_x, scale_y);
+                        new_sec.UpdateCurveTrisSlab();
+
+                        generated_sections.push_back(new_sec);
+
+                    }
+
+                }
+
+            }
+        }
         break;
 
+
     case GENSTATE_BLEND:
-        DoGenerateBlend();
+        {
+
+            if (generate_selections.size() < 3) {
+                qDebug() << "GLWidget::DoGenerateBlend() - Warning, 3 sections need to be selected";
+                return;
+            }
+
+            //2.  need to ensure that sections 2 and 3 are connected to section 1
+            //  2a.  test that connectivity
+            PlanarSection & section1 = sections[generate_selections[0]];
+            PlanarSection & section2 = sections[generate_selections[1]];
+            PlanarSection & section3 = sections[generate_selections[2]];
+
+            if (!section1.IsIntersectingSection(section2) || !section1.IsIntersectingSection(section3)) {
+                qDebug() << "GLWidget::DoGenerateBlend() - Warning, section1 does not intersect both section2 and section3";
+                return;
+            }
+
+            AddToUndoList(OP_GENERATE_BLEND);
+
+            //3.  we need to find the interval of section 1's boundary to regularly add sections to
+            BezierCurve curve;
+            section1.GetCurveBetweenSections(generate_selections[0], section2, generate_selections[1], section3, generate_selections[2], curve);
+            /*
+            const QList <QVector2D> & samples = curve.Samples();
+            markers2.clear();
+            markers_col2.clear();
+            for (int i=0; i<samples.size(); ++i) {
+                markers2.push_back(section1.GetPoint3D(samples[i]));
+                markers_col2.push_back(QVector3D(float(i)/float(samples.size()), 1, 1));
+            }
+            */
+
+            QList <PlanarSection> new_sections;
+            section1.GetSectionsAlongCurve(section2, curve, generate_blend_sections-1, new_sections);
+
+            //4.  set up first and last sections so their normals point tangential to the curve (roughly) and they are centered on the curve
+            //  4a.  translate P of the first and last so they are on the curve (and the interpolated ones are translated correctly)
+            section2.MoveP(new_sections.first().P());
+            section3.MoveP(new_sections.last().P());
+
+            //  4b.  set the normal of the first and last so that they are facing along the curve
+            if (QVector3D::dotProduct(section2.N(), new_sections.first().N()) < 0.0f) {
+                section2.FlipN();
+                section2.UpdateCurveTrisSlab();
+            }
+            if (QVector3D::dotProduct(section3.N(), new_sections.last().N()) < 0.0f) {
+                section3.FlipN();
+                section3.UpdateCurveTrisSlab();
+            }
+            if (QVector3D::dotProduct(section2.T(), new_sections.first().T()) < 0.0f) {
+                for (int i=0; i<new_sections.size(); ++i) {
+                    new_sections[i].FlipTB();
+                }
+            }
+
+            //  4c.  just update them
+            section2.UpdateCurveTrisSlab();
+            section3.UpdateCurveTrisSlab();
+
+            //5.  create a correspondence between section boundaries of 2 and 3
+            //  5a.  correspondence depends on same # of control points.  subdivide section with more, splitting at longest segments
+            BezierCurve & curve2 = section2.GetCurve(0);
+            BezierCurve & curve3 = section3.GetCurve(0);
+
+            while (curve2.GetNumControlPoints() < curve3.GetNumControlPoints()) {
+                curve2.SubdivideLongestSegment();
+                //qDebug() << "subdivided curve2 - pts" << curve2.GetNumControlPoints();
+            }
+            while (curve3.GetNumControlPoints() < curve2.GetNumControlPoints()) {
+                curve3.SubdivideLongestSegment();
+                //qDebug() << "subdivided curve3 - pts" << curve3.GetNumControlPoints();
+            }
+
+            //  5b.  now find the control point correspondences (an index offset mapping ctrl points from 2 to 3)
+            int corresp_offset;
+            bool corresp_forward;
+            curve2.GetCurvePointCorrespondence(curve3, corresp_offset, corresp_forward);
+            //qDebug() << "using correspondence" << corresp_offset << corresp_forward;
+
+            //6.  March along and do the blending interpolation
+            float theta1 = GLutils::SignedAngleBetweenRad(section2.N(), new_sections.first().N(), section2.T());
+            float theta2 = GLutils::SignedAngleBetweenRad(section3.N(), new_sections.last().N(), section2.T());
+
+            for (int i=1; i<generate_blend_sections-1; ++i) {
+
+                //t takes on values (0, 1) and not [0, 1]
+                const float t = float(i) / float(generate_blend_sections);
+
+                BezierCurve blend_curve;
+                curve2.InterpolateCurvePointCorrespondence(curve3, corresp_offset, corresp_forward, t, blend_curve);
+
+                const float theta_t = theta1 * (1.0f - t) + theta2 * t;
+                //qDebug() << i << theta1 << theta2 << theta_t << t;
+
+                QVector3D rotate_n = GLutils::RotateVector(new_sections[i].N(), section2.T(), -theta_t);
+                QVector3D rotate_b = GLutils::RotateVector(new_sections[i].B(), section2.T(), -theta_t);
+
+                new_sections[i].SetCurve(0, blend_curve);
+                new_sections[i].SetN(rotate_n);
+                new_sections[i].SetB(rotate_b);
+                new_sections[i].SetSlabThickness(slab_thickness);
+                new_sections[i].UpdateCurveTrisSlab();
+
+                generated_sections.push_back(new_sections[i]);
+
+            }
+        }
+
         break;
 
     case GENSTATE_REVOLVE:
-        DoGenerateRevolve();
+        {
+            if (generate_selections.size() < 2) {
+                qDebug() << "GLWidget::DoGenerateRevolve() - Warning, 2 sections need to be selected";
+                return;
+            }
+
+            //1.  need to ensure that section 1 is connected to section 2
+            //  1a.  test that connectivity
+            const int ind1 = generate_selections[0];
+            const int ind2 = generate_selections[1];
+            PlanarSection & section1 = sections[ind1];
+            PlanarSection & section2 = sections[ind2];
+
+            if (!section1.IsIntersectingSection(section2)) {
+                qDebug() << "GLWidget::DoGenerateRevolve() - Warning, section1 does not intersect section2";
+                return;
+            }
+
+            //2.  grab the set of curves that should be copied, this involves getting all children
+            //    of the revolving one's children (relative to tree with root at base planar section)
+            QVector <QVector <bool> > graph;
+            QList <QList <int> > cycles;
+            PlanarSection::ComputeIntersectionGraph(sections, graph);
+
+            QList <int> branch;
+            Tree tree;
+            tree.CreateFromGraph(graph, ind1);
+            tree.GetBranch(ind2, branch);
+
+            if (branch.contains(ind1)) { //node shouldn't have parent in its branch, this means a cycle, just use the 1 node
+                branch.clear();
+                branch.push_back(ind2);
+            }
+
+            //3.  we need to find the interval of section 1's boundary to regularly add sections to
+            BezierCurve curve;
+            section1.GetCurveAroundSection(section2, curve);
+            //section1.SetCurve(0, curve); //debugging
+
+            QList <PlanarSection> new_sections;
+            section1.GetSectionsAlongCurve(section2, curve, generate_revolve_sections, new_sections);
+
+            //4.  set up first and last sections so their normals point tangential to the curve (roughly) and they are centered on the curve
+            //  4a.  translate P of the first and last so they are on the curve (and the interpolated ones are translated correctly)
+            section2.MoveP(new_sections.first().P());
+
+            //  4b.  set the normal of the first and last so that they are facing along the curve
+            if (QVector3D::dotProduct(section2.N(), new_sections.first().N()) < 0.0f) {
+                section2.FlipN();
+                section2.UpdateCurveTrisSlab();
+                //qDebug() << "FLIPPED N2";
+            }
+
+            if (QVector3D::dotProduct(section2.T(), new_sections.first().T()) < 0.0f) {
+                for (int i=0; i<new_sections.size(); ++i) {
+                    new_sections[i].FlipTB();
+                }
+            }
+
+            //  4c.  just update them
+            section2.UpdateCurveTrisSlab();
+
+            //5.  March along and add sections
+            float theta = GLutils::SignedAngleBetweenRad(section2.N(), new_sections.first().N(), section2.T());
+
+            const QVector3D oldbasis_t = section2.T();
+            const QVector3D oldbasis_n = section2.N();
+            const QVector3D oldbasis_b = section2.B();
+            const QVector3D oldbasis_p = section2.P();
+
+            for (int i=1; i<generate_revolve_sections; ++i) { //for each section sampled on the boundary...
+
+                const QVector3D newbasis_t = new_sections[i].T();
+                const QVector3D newbasis_n = GLutils::RotateVector(new_sections[i].N(), section2.T(), -theta);
+                const QVector3D newbasis_b = GLutils::RotateVector(new_sections[i].B(), section2.T(), -theta);
+                const QVector3D newbasis_p = new_sections[i].P();
+
+                //qDebug() << "section2t" << section2.T() << "theta" << theta << "newsections[i].N" << new_sections[i].N() << "newsections[i].B" << new_sections[i].B();
+                //qDebug() << "new section" << i << "t" << newbasis_t << "n" << newbasis_n << "b" << newbasis_b << "p" << newbasis_p;
+
+                for (int j=0; j<branch.size(); ++j) { //and for every section which is part of the branch...
+
+                    PlanarSection & copy_sec = sections[branch[j]];
+
+                    const QVector3D new_t = GLutils::GetVectorNewBasis(oldbasis_t, oldbasis_n, oldbasis_b, QVector3D(0, 0, 0),
+                                                                       newbasis_t, newbasis_n, newbasis_b, QVector3D(0, 0, 0),
+                                                                       copy_sec.T(), 1.0f, 1.0f, 1.0f);
+                    const QVector3D new_n = GLutils::GetVectorNewBasis(oldbasis_t, oldbasis_n, oldbasis_b, QVector3D(0, 0, 0),
+                                                                       newbasis_t, newbasis_n, newbasis_b, QVector3D(0, 0, 0),
+                                                                       copy_sec.N(), 1.0f, 1.0f, 1.0f);
+                    const QVector3D new_b = GLutils::GetVectorNewBasis(oldbasis_t, oldbasis_n, oldbasis_b, QVector3D(0, 0, 0),
+                                                                       newbasis_t, newbasis_n, newbasis_b, QVector3D(0, 0, 0),
+                                                                       copy_sec.B(), 1.0f, 1.0f, 1.0f);
+                    const QVector3D new_p = GLutils::GetVectorNewBasis(oldbasis_t, oldbasis_n, oldbasis_b, oldbasis_p,
+                                                                       newbasis_t, newbasis_n, newbasis_b, newbasis_p,
+                                                                       copy_sec.P(), 1.0f, 1.0f, 1.0f);
+
+                    PlanarSection new_sec = copy_sec;
+                    SetupPlanarSection(new_sec);
+                    new_sec.SetT(new_t);
+                    new_sec.SetN(new_n);
+                    new_sec.SetB(new_b);
+                    new_sec.SetP(new_p);
+                    new_sec.UpdateCurveTrisSlab();
+                    generated_sections.push_back(new_sec);
+
+                }
+
+            }
+        }
         break;
+
+
     }
+
+    UpdateAllTests();
+    UpdateDraw();
 }
 
 void GLWidget::StartGenerateLinear()
 {
     gen_state = GENSTATE_LINEAR;
-    current_tool_state = TOOLSTATE_DEFAULT;
+    current_tool_state = TOOLSTATE_GENERATE;
+    num_generate_selected = 0;
+    selected = -1;
+    generate_selections.clear();
+    UpdateAllTests();
+    UpdateDraw();
+
 }
 
 void GLWidget::StartGenerateBlend()
 {
     gen_state = GENSTATE_BLEND;
-    current_tool_state = TOOLSTATE_DEFAULT;
+    current_tool_state = TOOLSTATE_GENERATE;
+    num_generate_selected = 0;
+    selected = -1;
+    generate_selections.clear();
+    UpdateAllTests();
+    UpdateDraw();
 }
 
 void GLWidget::StartGenerateRevolve()
 {
     gen_state = GENSTATE_REVOLVE;
-    current_tool_state = TOOLSTATE_DEFAULT;
+    current_tool_state = TOOLSTATE_GENERATE;
+    num_generate_selected = 0;
+    selected = -1;
+    generate_selections.clear();
+    UpdateAllTests();
+    UpdateDraw();
 }
 
 
@@ -5432,7 +6043,7 @@ void GLWidget::DoGenerateLinear()
 
     if (last_selected.size() < 2) {
         return;
-    }    
+    }
 
     //1.  test to make sure they differ
     const int ind1 = last_selected[last_selected.size()-2];
@@ -5473,7 +6084,7 @@ void GLWidget::DoGenerateLinear()
     if (intersects.size() < 2) {
         qDebug() << "GLWidget::DoGenerateLinear() - Aborting, need at least 2 contour intersections.";
         return;
-    }    
+    }
 
     //compute 2d intersection ray points
     QVector2D isec_p1_2d = spine_section.GetPoint2D(intersects.first());

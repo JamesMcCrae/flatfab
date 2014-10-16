@@ -82,6 +82,7 @@ enum GenerateState
     GENSTATE_REVOLVE,
 };
 
+
 class GLWidget : public QGLWidget
 {
     Q_OBJECT
@@ -267,7 +268,8 @@ public slots:
     void DoGenerateSurfaceFacets();
 
     void ShowGenerate();
-    void FinalizeGenerate();
+    void AcceptGenerate();
+    void CancelGenerate();
 
     void StartGenerateLinear();
     void StartGenerateBlend();
@@ -323,6 +325,8 @@ private:
     QWidget *guidesWidget;
     QWidget *physicsWidget;
     QWidget *viewsWidget;
+
+    QWidget *widget;
 
     QTimer animate_timer;
     QDateTime animate_until;    
@@ -495,8 +499,15 @@ private:
     GenerateState gen_state;
 
     // Generate Selections
-    QList<int> generate_selections;
-    int num_generate_selected;
+    QList<int> generate_selections; // holds indices of selected sections for the generate tool
+    int num_generate_selected;      // the number selected
+    int selections_per_gen_type[3]; // the number of needed selections for each type of generate
+
+    QList <PlanarSection> generated_sections; // the temporary generate sections
+
+    QErrorMessage errorMessage;
+
+
 
 };
 
