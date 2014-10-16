@@ -1723,6 +1723,22 @@ void GLWidget::paintGL()
 
 
     cam.DrawGL_Ortho();
+
+    // Draw symmetry line when using local symmetry with no planar sections
+    if(do_symmetry && sections.empty())
+    {
+        glEnable(GL_BLEND);
+        glLineWidth(4);
+        glColor4f(0.3f, 0.5f, 0.8f, 0.5f);
+        glBegin(GL_LINES);
+            glVertex2f(width()/2.0, 0);
+            glVertex2f(width()/2.0, height());
+        glEnd();
+        glLineWidth(1);
+    }
+
+
+
 //    DrawInfo();
 
 }
@@ -2525,7 +2541,7 @@ void GLWidget::mouseReleaseEvent(QMouseEvent *event)
 
                 active_section.SketchSetEditing(false);
 
-                if (sections.size() >= 1 && do_symmetry) {
+                if (do_symmetry) {
                     //do not do symmetry for the very first plane
                     active_section.SketchSymmetryTest();
                 }
@@ -2538,7 +2554,7 @@ void GLWidget::mouseReleaseEvent(QMouseEvent *event)
                     active_section.Update(0, section_error_tolerance);
                 }
 
-                if (sections.size() >= 1 && do_symmetry) {
+                if (do_symmetry) {
                     //do not do symmetry for the very first plane
                     active_section.CreateLocalSymmetry();
                 }
