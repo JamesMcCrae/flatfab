@@ -115,7 +115,7 @@ GLWidget::GLWidget() :
     animate_timer.setSingleShot(false);
     animate_timer.start(0);
 
-    connect(&animate_timer, SIGNAL(timeout()), this, SLOT(updateGL()));    
+    connect(&animate_timer, SIGNAL(timeout()), this, SLOT(update()));
     //LoadTemplateOBJ();
 
     //initialize the physics thing
