@@ -1495,8 +1495,8 @@ void GLWidget::paintGL()
     //this stuff changes, not for display list
     if (state == STATE_CURVE) {
         glColor3f(0.25f, 0.60f, 0.25f);
-        //active_section.DrawTris();
-        active_section.DrawInputPolyline();
+        active_section.DrawTris();
+        //active_section.DrawInputPolyline();
     }
 
     if(current_tool_state == TOOLSTATE_GENERATE)
