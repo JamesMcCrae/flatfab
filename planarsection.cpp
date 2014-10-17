@@ -1611,7 +1611,6 @@ void PlanarSection::GetSlots(const PlanarSection & other, QList <QVector2D> & my
 {
 
     //qDebug() << "PlanarSection::GetSlots() - calling with " << index << other_index;
-
     my_slots.clear();
     my_slots_rect.clear();
 
@@ -1646,18 +1645,15 @@ void PlanarSection::GetSlots(const PlanarSection & other, QList <QVector2D> & my
 
     //2b.  if there's an odd number of intersection points, we've got an issue (or we just tangentially grazed a point)
     //     (for now, we abort when this happens)
+    /*
     if ((p0_isecs.size() % 2) == 1 || (p1_isecs.size() % 2) == 1) {
         qDebug() << "PlanarSection::GetSlots() - odd number of intersection points along ray encountered, aborting" << p0_isecs.size() << p1_isecs.size();
-
-        if ((p0_isecs.size() % 2) == 1) {
-            qDebug() << p0_isecs;
-        }
-        else {
-            qDebug() << p1_isecs;
-        }
+        qDebug() << p0_isecs;
+        qDebug() << p1_isecs;
 
         return;
     }
+    */
 
     //3.  sort these points, using the common ray in 3D
     QVector3D slot_start_3d = GetPoint3D(p0_slot_start);
@@ -1710,12 +1706,12 @@ void PlanarSection::GetSlots(const PlanarSection & other, QList <QVector2D> & my
 
     bool found_anything = false;
 
-    for (int i=0; i<p0_isecs_3d.size(); i+=2) { //iterate over THIS's intervals
+    for (int i=0; i+1<p0_isecs_3d.size(); i+=2) { //iterate over THIS's intervals
 
         const float p0_start = QVector3D::dotProduct(slot_dir_3d, p0_isecs_3d[i]);
         const float p0_end = QVector3D::dotProduct(slot_dir_3d, p0_isecs_3d[i+1]);
 
-        for (int j=0; j<p1_isecs_3d.size(); j+=2) {//iterate over OTHER's intervals, see if there's some overlap
+        for (int j=0; j+1<p1_isecs_3d.size(); j+=2) {//iterate over OTHER's intervals, see if there's some overlap
 
             const float p1_start = QVector3D::dotProduct(slot_dir_3d, p1_isecs_3d[j]);
             const float p1_end = QVector3D::dotProduct(slot_dir_3d, p1_isecs_3d[j+1]);
