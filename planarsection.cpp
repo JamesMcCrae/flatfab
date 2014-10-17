@@ -392,6 +392,26 @@ QVector3D PlanarSection::B() const
     return b;
 }
 
+void PlanarSection::DrawInputPolyline()
+{
+
+    glPointSize(3.0f);
+    for (int c=0; c<sketch_pts.size(); ++c) {
+
+        const QList <QVector2D> & samples = sketch_pts[c];
+
+        glBegin(GL_POINTS);
+        for (int i=0; i<samples.size(); ++i) {
+
+            QVector3D v = p + (t * samples[i].x()) + (b * samples[i].y());
+            glVertex3f(v.x(), v.y(), v.z());
+
+        }
+        glEnd();
+
+    }
+}
+
 void PlanarSection::DrawCurve()
 {
 
@@ -2532,18 +2552,18 @@ void PlanarSection::DrawSketch()
 }
 
 bool PlanarSection::AddMouseRayIntersect(const int c, const QVector2D & v)
-{
+{   
 
-    const float min_dist_threshold = 0.025f;
+    //const float min_dist_threshold = 0.025f;
+    const float min_dist_threshold = 0.05f;
 
     QVector3D intersect;
     bool result = MouseRayIntersect(v, intersect);
 
     if (result) {
 
-        //enforce minimum distance?
+        //enforce minimum distance
         const QVector2D new_pt = GetPoint2D(intersect);
-
         if (sketch_pts[c].empty() || (new_pt - sketch_pts[c].last()).length() > min_dist_threshold) {
             sketch_pts[c].push_back(GetPoint2D(intersect));
         }

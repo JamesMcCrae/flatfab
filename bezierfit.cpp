@@ -64,15 +64,67 @@ void BezierFit::FitCurve(const QList <QVector2D> & d, const double error, QList 
     //}
     //qDebug() << d.size() << len;
 
+    /*
     const int n_split = 40;
     for (int i=0; i<d.size()-1; i+=n_split) {
 
         const int i2 = qMin(d.size()-1, i+n_split);
         //qDebug() << i << i2 << d.size();
 
-        const QVector2D tHat1 = ComputeLeftTangent(d, i); /*  Unit tangent vectors at endpoints */
+        const QVector2D tHat1 = ComputeLeftTangent(d, i); // Unit tangent vectors at endpoints
         const QVector2D tHat2 = ComputeRightTangent(d, i2);
         FitCubic(d, i, i2, tHat1, tHat2, error, fit_curve);
+
+    }
+    */
+
+    const float smoothThreshold = 0.35f;
+    const float curvatureThreshold = 0.6f;
+    const int iterations = 3;
+
+    //1. Compute curvatures for all points on curve
+    QVector <float> ks;
+    ComputeCurvatures(d, ks);
+
+    //2.  Iterative passes to smooth the curve via local averaging
+    QList <QVector2D> d_smooth = d;
+
+    for(int j=0; j < iterations; j++)
+    {
+        for(int i=1; i < d.size()-1; i++)
+        {
+            if (ks[i] < smoothThreshold) {
+                d_smooth[i] = (d_smooth[i-1] + d_smooth[i] + d_smooth[i+1])/3.0f;
+            }
+        }
+    }
+
+    //3.  Recompute the curvature for the smoothed curve
+    ComputeCurvatures(d_smooth, ks);
+
+    //4.  Compute list of indexes to points of high curvature
+    //(these are used to segment the sketched curve at corners/discontinuities)
+    QList <int> segment_indexes;
+    segment_indexes.push_back(0); //always include the first point
+    for (int i=2; i<ks.size()-2; ++i) {
+        if (ks[i] > curvatureThreshold) {
+            segment_indexes.push_back(i);
+            ++i; //skip a point
+        }
+    }
+    segment_indexes.push_back(d.size()-1); //always include the last point
+
+    //qDebug() << "segment_indexes" << segment_indexes;
+
+    //5.  Fit cubic bezier splines to each segmented curve
+    for (int i=0; i<segment_indexes.size()-1; ++i) {
+
+        const int i1 = segment_indexes[i];
+        const int i2 = segment_indexes[i+1];
+
+        const QVector2D tHat1 = ComputeLeftTangent(d_smooth, i1); // Unit tangent vectors at endpoints
+        const QVector2D tHat2 = ComputeRightTangent(d_smooth, i2);
+        FitCubic(d_smooth, i1, i2, tHat1, tHat2, error, fit_curve);
 
     }
 
@@ -581,3 +633,37 @@ static Vector2 V2SubII(a, b)
     return (c);
 }
 */
+
+void BezierFit::ComputeCurvatures(const QList <QVector2D> & d, QVector <float> & ks)
+{
+    ks.clear();
+    ks.reserve(d.size());
+    for(int i = 0; i < d.size(); i++)
+    {
+        ks.push_back(CurvatureAtPoint(d, i));
+    }
+}
+
+float BezierFit::CurvatureAtPoint(const QList <QVector2D> & d, const int index)
+{
+    if (index <= 0 || index >= d.size()-1) {
+        return 0;
+    }
+
+    float a = 1.0f;
+    float b = 1.0f;
+    float c = ((d[index + 1] - d[index]).normalized() - (d[index - 1] - d[index]).normalized()).length();
+
+
+    if(c > 2.0f - 0.00001f)
+    {
+        return 0;
+    }
+
+    float result = 1.0f / ((a*b*c)/sqrtf((a+b+c)*(b+c-a)*(c+a-b)*(a+b-c)));
+
+
+    return result;
+
+
+}

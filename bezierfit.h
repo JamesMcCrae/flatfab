@@ -2,6 +2,7 @@
 #define BEZIERFIT_H
 
 #include <QtGui>
+#include <QVector>
 
 class BezierFit
 {
@@ -21,6 +22,9 @@ public:
     static double ComputeMaxError(const QList <QVector2D> & d, const int first, const int last, const QVector <QVector2D> & bezCurve, const QVector <double> & u, int & splitPoint);
     static void ChordLengthParameterize(const QList <QVector2D> & d, const int first, const int last, QVector <double> & u);
     static void GenerateBezier(const QList <QVector2D> & d, const int first, const int last, const QVector <double> & uPrime, const QVector2D tHat1, const QVector2D tHat2, QVector <QVector2D> & bezCurve);
+
+    static void ComputeCurvatures(const QList <QVector2D> & d, QVector <float> & curvs);
+    static float CurvatureAtPoint(const QList <QVector2D> & d, const int index);
 
     static double B0(const double u);
     static double B1(const double u);

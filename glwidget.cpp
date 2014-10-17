@@ -73,8 +73,8 @@ GLWidget::GLWidget() :
 
     template_cut_snap_distance_3d = 0.5f;
 
-    //section_error_tolerance = 0.02f;
-    section_error_tolerance = 0.01f;
+    section_error_tolerance = 0.015f;
+    //section_error_tolerance = 0.01f;
     section_error_tolerance_template = 0.005f;
 
     animate_until = QDateTime::currentDateTime();
@@ -1495,7 +1495,8 @@ void GLWidget::paintGL()
     //this stuff changes, not for display list
     if (state == STATE_CURVE) {
         glColor3f(0.25f, 0.60f, 0.25f);
-        active_section.DrawTris();
+        //active_section.DrawTris();
+        active_section.DrawInputPolyline();
     }
 
     if(current_tool_state == TOOLSTATE_GENERATE)

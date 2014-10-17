@@ -4,7 +4,12 @@ MainWindow::MainWindow()
 {   
 
     //title/window stuff
-    setWindowTitle("FlatFab (Release 0.5 Beta - September 30, 2014)");
+    setWindowTitle("FlatFab (Release 0.6 Beta - October 17, 2014)");
+    //release 0.6 -
+    //more ui improvements
+    //new interaction for specifying planes for procedural modelling operations
+    //updated curve filtering/fitting algorithm for input strokes
+
     //release 0.5 -
     //ui improvements including
     //- new tool sidebar
