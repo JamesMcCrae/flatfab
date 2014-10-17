@@ -1722,20 +1722,46 @@ void GLWidget::paintGL()
 
     // grab control point 2D positions
 
+    QVector3D slot_start_projected, slot_end_projected;
+    if(do_symmetry && (state == STATE_CURVE || state == STATE_RESKETCH_CURVE || state == STATE_DEADZONE))
+    {
+        slot_start_projected = GLutils::ProjectPoint(slot_start);
+        slot_end_projected = GLutils::ProjectPoint(slot_end);
+    }
+
 
     cam.DrawGL_Ortho();
 
     // Draw symmetry line when using local symmetry with no planar sections
-    if(do_symmetry && sections.empty())
+    if(do_symmetry)
     {
-        glEnable(GL_BLEND);
-        glLineWidth(4);
-        glColor4f(0.3f, 0.5f, 0.8f, 0.5f);
-        glBegin(GL_LINES);
-            glVertex2f(width()/2.0, 0);
-            glVertex2f(width()/2.0, height());
-        glEnd();
-        glLineWidth(1);
+        if(sections.empty())
+        {
+            glEnable(GL_BLEND);
+            glLineWidth(3);
+            glColor4f(0.3f, 0.5f, 0.8f, 0.5f);
+            glBegin(GL_LINES);
+                glVertex2f(width()/2.0, 0);
+                glVertex2f(width()/2.0, height());
+            glEnd();
+            glLineWidth(1);
+        }
+        else if(state == STATE_CURVE || state == STATE_RESKETCH_CURVE || state == STATE_DEADZONE)
+        {
+            QVector3D dir = (slot_start_projected - slot_end_projected).normalized();
+            float factor = ( 20.0 * 600.0/height() ) / cam.CamWidth();
+            glEnable(GL_BLEND);
+            glLineWidth(3);
+            glColor4f(0.3f, 0.5f, 0.8f, 0.5f);
+            glBegin(GL_LINES);
+                glVertex2f(slot_start_projected.x() + factor*dir.x(), slot_start_projected.y() + factor*dir.y());
+                glVertex2f(slot_start_projected.x() + 10000*dir.x(), slot_start_projected.y() + 10000*dir.y());
+                glVertex2f(slot_end_projected.x() - factor*dir.x(), slot_end_projected.y() - factor*dir.y());
+                glVertex2f(slot_end_projected.x() - 10000*dir.x(), slot_end_projected.y() - 10000*dir.y());
+            glEnd();
+            glLineWidth(1);
+
+        }
     }
 
 
