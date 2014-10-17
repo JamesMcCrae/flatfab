@@ -4240,7 +4240,7 @@ void GLWidget::LoadTemplateOBJ()
 
 }
 
-void GLWidget::LoadPlaneSketch()
+bool GLWidget::LoadPlaneSketch()
 {
 
     QString filename = QFileDialog::getOpenFileName(this, tr("Open FlatFab"), QString(), tr("FlatFab (*.txt);;All Files (*)"), 0, QFileDialog::DontUseNativeDialog);
@@ -4253,7 +4253,7 @@ void GLWidget::LoadPlaneSketch()
     QFile file(filename);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
         qDebug() << "GLWidget::LoadPlaneSketch(): File " << filename << " can't be loaded";
-        return;
+        return false;
     }
 
     QTextStream ifs(&file);
@@ -4277,6 +4277,8 @@ void GLWidget::LoadPlaneSketch()
     UpdateDraw();
 
     SetViewIso1();
+
+    return true;
 
 }
 

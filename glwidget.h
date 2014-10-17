@@ -244,7 +244,7 @@ public slots:
     void LoadTemplateCurve();
     void LoadTemplateImage();
     void LoadTemplateOBJ();
-    void LoadPlaneSketch();
+    bool LoadPlaneSketch();
     void SavePlaneSketch();
     void SaveSliceOBJ();
     void SaveSlabOBJ();

@@ -9,6 +9,8 @@ MainWindow::MainWindow()
     //more ui improvements
     //new interaction for specifying planes for procedural modelling operations
     //updated curve filtering/fitting algorithm for input strokes
+    //potentially fixed bug on mac with cpu usage
+    //fixed bug where "new flatfab" from menu would not first remove the webview
 
     //release 0.5 -
     //ui improvements including
@@ -80,8 +82,9 @@ void MainWindow::ShowWelcomePage()
     connect(button2, SIGNAL(clicked()), this, SLOT(LoadPlaneSketch()));
     connect(button3, SIGNAL(clicked()), this, SLOT(Exit()));
 
-    connect(button1, SIGNAL(clicked()), this, SLOT(ShowAppWidgets()));
-    connect(button2, SIGNAL(clicked()), this, SLOT(ShowAppWidgets()));
+    //ShowAppWidgets() is now called from within NewPlaneSketch and LoadPlaneSketch
+    //connect(button1, SIGNAL(clicked()), this, SLOT(ShowAppWidgets()));
+    //connect(button2, SIGNAL(clicked()), this, SLOT(ShowAppWidgets()));
 
     QHBoxLayout *layout = new QHBoxLayout;
     layout->addWidget(button1);
@@ -104,8 +107,12 @@ void MainWindow::ShowAppWidgets()
 {
 
     //main widget/window layout
-    webView->hide();
-    delete webView;
+    if (webView != NULL) {
+        webView->hide();
+        delete webView;
+        webView = NULL;
+    }
+
     this->removeDockWidget(bottomDockWidget);
 
     //addDockWidget(Qt::RightDockWidgetArea, dockWidget);
@@ -807,6 +814,7 @@ void MainWindow::createMenus()
 
 void MainWindow::NewPlaneSketch()
 {
+    ShowAppWidgets();
     glWidget.NewPlaneSketch();
 }
 
@@ -827,7 +835,9 @@ void MainWindow::LoadTemplateImage()
 
 void MainWindow::LoadPlaneSketch()
 {
-    glWidget.LoadPlaneSketch();
+    if (glWidget.LoadPlaneSketch()) {
+        ShowAppWidgets();
+    }
 }
 
 void MainWindow::SavePlaneSketch()
