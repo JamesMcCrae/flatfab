@@ -1384,3 +1384,112 @@ void GLutils::DrawArcLineStrip(QVector3D c, QVector3D dir, QVector3D axis, float
 }
 
 
+//Note: segements is assumed to be a list of pairs of vertices defining segments, an even number of verts is expected
+void GLutils::CurvesFromLineSegments(QList <QVector2D> & segments, QList <QList <QVector2D> > & curves)
+{
+
+    //qDebug() << "GLutils::CurvesFromLineSegments - segments size" << segments.size();
+    curves.clear();
+
+    const float max_dist = 0.0005f;
+
+    while (!segments.empty()) {
+
+        QList <QVector2D> curve;
+        curve.push_back(segments[0]);
+        curve.push_back(segments[1]);
+
+        segments.pop_front();
+        segments.pop_front();
+
+        //find the closest vertex to the end of curve
+        bool find_next = true;
+
+        do {
+
+            int closest_index1 = GetClosestPoint(segments, curve.last());
+            int closest_index2 = GetClosestPoint(segments, curve.first());
+
+            float dist1 = (segments[closest_index1] - curve.last()).length();
+            float dist2 = (segments[closest_index2] - curve.first()).length();
+
+            if (dist1 <= dist2 && dist1 < max_dist) {
+                find_next = true;
+
+                //add the OTHER point to the current curve we are growing
+                if (closest_index1 % 2 == 0) {
+                    curve.push_back(segments[closest_index1+1]);
+
+                    //remove the segment
+                    segments.removeAt(closest_index1);
+                    segments.removeAt(closest_index1);
+                }
+                else {
+                    curve.push_back(segments[closest_index1-1]);
+
+                    //remove the segment
+                    segments.removeAt(closest_index1-1);
+                    segments.removeAt(closest_index1-1);
+                }
+            }
+            else if (dist2 <= dist1 && dist2 < max_dist) {
+                find_next = true;
+
+                //add the OTHER point to the current curve we are growing
+                if (closest_index2 % 2 == 0) {
+                    curve.push_front(segments[closest_index2+1]);
+
+                    //remove the segment
+                    segments.removeAt(closest_index2);
+                    segments.removeAt(closest_index2);
+                }
+                else {
+                    curve.push_front(segments[closest_index2-1]);
+
+                    //remove the segment
+                    segments.removeAt(closest_index2-1);
+                    segments.removeAt(closest_index2-1);
+                }
+            }
+            else {
+                find_next = false;
+            }
+
+            //might have prematurely closed the loop
+            if ((curve.first() - curve.last()).length() < max_dist) {
+                find_next = false;
+            }
+
+        } while (find_next);
+
+        curves.push_back(curve);
+        //NOTE: curve closed test presently disabled!
+        //push the curve back if it's closed (the endpoints are about the same)
+        //if ((curve.first() - curve.last()).length() < max_dist) {
+        //
+        //}
+
+    }
+
+    //qDebug() << "GLutils::CurvesFromLineSegments - curves created " << curves.size();
+    //if (curves.size() > 0) {
+    //    qDebug() << curves[0];
+    //}
+
+}
+
+int GLutils::GetClosestPoint(const QList <QVector2D> & pts, const QVector2D & p)
+{
+    float best_dist = FLT_MAX;
+    int best_index = -1;
+
+    for (int i=0; i<pts.size(); ++i) {
+        const float each_dist = (pts[i] - p).lengthSquared();
+        if (each_dist < best_dist) {
+            best_dist = each_dist;
+            best_index = i;
+        }
+    }
+
+    return best_index;
+}

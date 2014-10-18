@@ -146,6 +146,7 @@ public:
 
     void SketchClear(const int c);
     void SketchAdd(const int c, const QVector2D & v);
+    void SketchSetCurve(const int c, const QList <QVector2D> & v);
     void SketchSetEditing(const bool b);
     int SketchNumPoints() const;
     bool SketchEditing();

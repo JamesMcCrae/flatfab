@@ -106,6 +106,8 @@ public:
     static void DrawArcLineStrip(QVector3D c, QVector3D dir, QVector3D axis, float arc_angle, int num_segments, float thickness, bool dashed = false);
     static void DrawSemiRingLineStrip(const QVector3D & p1, const QVector3D & p2, float start_angle, float arc_angle, const float radius, const float thickness, int segNumber);
 
+    static void CurvesFromLineSegments(QList <QVector2D> & segments, QList <QList <QVector2D> > & curves);
+    static int GetClosestPoint(const QList <QVector2D> & pts, const QVector2D & p);
 
 private:
 

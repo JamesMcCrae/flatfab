@@ -2376,6 +2376,11 @@ void PlanarSection::SketchAdd(const int c, const QVector2D & v)
     sketch_pts[c].push_back(v);
 }
 
+void PlanarSection::SketchSetCurve(const int c, const QList <QVector2D> & v)
+{
+    sketch_pts[c] = v;
+}
+
 void PlanarSection::SketchSetEditing(const bool b)
 {
     editing_sketch = b;

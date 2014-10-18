@@ -30,6 +30,7 @@ public:
 
     void AddPoint(const QVector2D & v);
     void SetPoints(const QList <QVector2D> & ps);    
+    void SetPointsFromPolyline(const QList <QVector2D> & polyline);
     void SetPoint(const int index, const QVector2D & v);
     void TranslateControlPoints(const QVector2D & v);
     void RotateControlPoints(const float rotate_radians);

@@ -5,7 +5,7 @@ GLWidget::GLWidget() :
 {
 
     setMouseTracking(true);
-    setMinimumSize(800, 500);
+    setMinimumSize(800, 700);
     setAutoFillBackground(false);
     setFocusPolicy(Qt::ClickFocus);
 
@@ -49,6 +49,10 @@ GLWidget::GLWidget() :
     generate_linear_spacing = 0.5f;
     generate_linear_scalex = false;
     generate_linear_scaley = false;
+    generate_slices_spacing = 0.5f;
+    generate_slices_x = true;
+    generate_slices_y = false;
+    generate_slices_z = true;
     generate_blend_sections = 10;    
     generate_revolve_sections = 10;
     generate_branching_scalechild = 0.8f;
@@ -134,8 +138,7 @@ GLWidget::GLWidget() :
     selections_per_gen_type[GENSTATE_BLEND] = 3;
     selections_per_gen_type[GENSTATE_LINEAR] = 2;
     selections_per_gen_type[GENSTATE_REVOLVE] = 2;
-
-
+    selections_per_gen_type[GENSTATE_SLICES] = 0;
 
 }
 
@@ -452,6 +455,7 @@ QWidget * GLWidget::GetSideWidget()
     grid_sizey_label = new QLabel(QString::number(GetGenerateGridSizeX()));
     grid_staple_label = new QLabel(QString::number(GetGenerateGridStapleSize()));
     linear_spacing_label = new QLabel(QString::number(GetGenerateLinearSpacing()));
+    slices_spacing_label = new QLabel(QString::number(GetGenerateSlicesSpacing()));
     num_blend_sections_label = new QLabel(QString::number(GetGenerateBlendSections()));
     num_revolve_sections_label = new QLabel(QString::number(GetGenerateRevolveSections()));
     branching_scalechild_label = new QLabel(QString::number(GetGenerateBranchingScaleChild()));
@@ -461,6 +465,7 @@ QWidget * GLWidget::GetSideWidget()
     grid_sizey_label->setFixedWidth(30);
     grid_staple_label->setFixedWidth(30);
     linear_spacing_label->setFixedWidth(30);
+    slices_spacing_label->setFixedWidth(30);
     num_blend_sections_label->setFixedWidth(30);
     num_revolve_sections_label->setFixedWidth(30);
     branching_scalechild_label->setFixedWidth(30);
@@ -867,13 +872,12 @@ QWidget * GLWidget::GetEditWidget()
 
 QWidget * GLWidget::GetGenerateWidget()
 {
+
     if (genWidget != NULL) {
         return genWidget;
     }
 
     QFormLayout * generateWidgetLayout = new QFormLayout();
-
-
 
     // Blend group
 
@@ -991,8 +995,7 @@ QWidget * GLWidget::GetGenerateWidget()
     linear_layout->addWidget(linear_scalex_checkbox, 2, 0, 1, 2);
     linear_layout->addWidget(linear_scaley_checkbox, 2, 2, 1, 2);
     linear_groupbox->setLayout(linear_layout);
-    generateWidgetLayout->addRow(linear_groupbox);
-
+    generateWidgetLayout->addRow(linear_groupbox);                
 
 
     // Revolve group
@@ -1016,6 +1019,42 @@ QWidget * GLWidget::GetGenerateWidget()
     generateWidgetLayout->addRow(revolve_groupbox);
 
 
+    // Slices group
+
+    QPushButton * slicesButton = new QPushButton("Slices");
+    connect(slicesButton, SIGNAL(clicked()), this, SLOT(StartGenerateSlices()));
+
+    QSlider * slices_spacing_slider = new QSlider();
+    slices_spacing_slider->setRange(1, 50);
+    slices_spacing_slider->setOrientation(Qt::Horizontal);
+    slices_spacing_slider->setValue(GetGenerateSlicesSpacing()*10);
+    connect(slices_spacing_slider, SIGNAL(valueChanged(int)), this, SLOT(SetGenerateSlicesSpacing(int)));
+
+    QCheckBox * slices_x_checkbox = new QCheckBox("X");
+    slices_x_checkbox ->setChecked(GetGenerateSlicesX());
+    connect(slices_x_checkbox , SIGNAL(toggled(bool)), this, SLOT(SetGenerateSlicesX(bool)));
+
+    QCheckBox * slices_y_checkbox = new QCheckBox("Y");
+    slices_y_checkbox ->setChecked(GetGenerateSlicesY());
+    connect(slices_y_checkbox , SIGNAL(toggled(bool)), this, SLOT(SetGenerateSlicesY(bool)));
+
+    QCheckBox * slices_z_checkbox = new QCheckBox("Z");
+    slices_z_checkbox ->setChecked(GetGenerateSlicesZ());
+    connect(slices_z_checkbox , SIGNAL(toggled(bool)), this, SLOT(SetGenerateSlicesZ(bool)));
+
+    QGroupBox * slices_groupbox = new QGroupBox(tr("Slice Operation"));
+    QGridLayout * slices_layout = new QGridLayout;
+    slices_layout->addWidget(slicesButton,0,0,1,4);
+    slices_layout->addWidget(new QLabel("Spacing"), 1, 0);
+    slices_layout->addWidget(slices_spacing_slider, 1, 1, 1, 2);
+    slices_layout->addWidget(slices_spacing_label, 1, 3);
+    slices_layout->addWidget(slices_x_checkbox, 2, 0, 1, 1);
+    slices_layout->addWidget(slices_y_checkbox, 2, 1, 1, 1);
+    slices_layout->addWidget(slices_z_checkbox, 2, 3, 1, 1);
+    slices_groupbox->setLayout(slices_layout);
+    generateWidgetLayout->addRow(slices_groupbox);
+
+    //Finally, create the tabwidget
 
     genWidget = new QTabWidget();
     genWidget->setMinimumWidth(225);
@@ -3401,6 +3440,26 @@ bool GLWidget::GetGenerateLinearScaleY()
     return generate_linear_scaley;
 }
 
+float GLWidget::GetGenerateSlicesSpacing()
+{
+    return generate_slices_spacing;
+}
+
+bool GLWidget::GetGenerateSlicesX()
+{
+    return generate_slices_x;
+}
+
+bool GLWidget::GetGenerateSlicesY()
+{
+    return generate_slices_y;
+}
+
+bool GLWidget::GetGenerateSlicesZ()
+{
+    return generate_slices_z;
+}
+
 int GLWidget::GetGenerateBlendSections()
 {
     return generate_blend_sections;
@@ -3661,6 +3720,44 @@ void GLWidget::SetGenerateLinearScaleY(const bool b)
 //    }
 
     if(current_tool_state == TOOLSTATE_GENERATE && gen_state == GENSTATE_LINEAR)
+        ShowGenerate();
+}
+
+void GLWidget::SetGenerateSlicesSpacing(const int i)
+{
+    generate_slices_spacing = float(i) / 10.0f;
+    slices_spacing_label->setText(QString::number(generate_slices_spacing));
+
+//    if (last_op == OP_GENERATE_LINEAR) {
+//        Undo(OP_GENERATE_LINEAR);
+//        DoGenerateLinear();
+//    }
+
+    if(current_tool_state == TOOLSTATE_GENERATE && gen_state == GENSTATE_SLICES)
+        ShowGenerate();
+}
+
+void GLWidget::SetGenerateSlicesX(const bool b)
+{
+    generate_slices_x = b;
+
+    if(current_tool_state == TOOLSTATE_GENERATE && gen_state == GENSTATE_SLICES)
+        ShowGenerate();
+}
+
+void GLWidget::SetGenerateSlicesY(const bool b)
+{
+    generate_slices_y = b;
+
+    if(current_tool_state == TOOLSTATE_GENERATE && gen_state == GENSTATE_SLICES)
+        ShowGenerate();
+}
+
+void GLWidget::SetGenerateSlicesZ(const bool b)
+{
+    generate_slices_z = b;
+
+    if(current_tool_state == TOOLSTATE_GENERATE && gen_state == GENSTATE_SLICES)
         ShowGenerate();
 }
 
@@ -4221,7 +4318,7 @@ void GLWidget::LoadTemplateOBJ()
     file.close();
 
     //compute smooth per-face normals
-    qDebug() << "Computing smooth face normals...";
+    //qDebug() << "Computing smooth face normals...";
     QVector <QVector3D> new_norms = QVector <QVector3D> (template_verts.size(), QVector3D(0, 0, 0));
     QVector <int> vert_degree = QVector <int> (template_verts.size(), 0);
     QVector <int> new_facenorms;
@@ -4247,7 +4344,7 @@ void GLWidget::LoadTemplateOBJ()
     QVector3D bbox_min, bbox_max;
     GLutils::GetBoundingBox(template_verts, bbox_min, bbox_max);
     const float bbox_diam = (bbox_max-bbox_min).length();
-    qDebug() << bbox_min << bbox_max << bbox_diam;
+    //qDebug() << bbox_min << bbox_max << bbox_diam;
     for (int i=0; i<template_verts.size(); ++i) {
         //translate
         template_verts[i].setX(template_verts[i].x() - (bbox_max.x() + bbox_min.x()) * 0.5f); //move to X centroid
@@ -5363,16 +5460,16 @@ void GLWidget::ComputeTemplateCut(const QVector3D & n, const QVector3D & p, QLis
         b2 = GLutils::LineSegmentPlaneIntersection(p, n, v2, v3, int2);
         b3 = GLutils::LineSegmentPlaneIntersection(p, n, v3, v1, int3);
 
-        //intersection between plane and triangle
-        if (b1 && b2) {
+        //intersection between plane and triangle, but remove zero-length segments
+        if (b1 && b2 && int1 != int2) {
             cut_segments.push_back(int1);
             cut_segments.push_back(int2);
         }
-        else if (b2 && b3) {
+        else if (b2 && b3 && int2 != int3) {
             cut_segments.push_back(int2);
             cut_segments.push_back(int3);
         }
-        else if (b3 && b1) {
+        else if (b3 && b1 && int1 != int3) {
             cut_segments.push_back(int3);
             cut_segments.push_back(int1);
         }
@@ -5496,6 +5593,14 @@ void GLWidget::AcceptGenerate()
     case GENSTATE_REVOLVE:
         AddToUndoList(OP_GENERATE_REVOLVE);
         break;
+
+    case GENSTATE_SLICES:
+        AddToUndoList(OP_GENERATE_SLICES);
+        break;
+
+    default:
+        break;
+
     }
 
     sections.append(generated_sections);
@@ -5520,7 +5625,135 @@ void GLWidget::ShowGenerate()
 
     generated_sections.clear();
 
-    switch (gen_state){
+    switch (gen_state) {
+
+    case GENSTATE_SLICES:
+    {
+
+        //qDebug() << "GLWidget::ShowGenerate() for GENSTATE_SLICES";
+
+        if (template_verts.empty() || template_faces.empty()) {
+            qDebug() << "GLWidget::ShowGenerate() - Template is empty (either no vertices or faces), aborting";
+            return;
+        }
+
+        //1.  compute bounding box
+        QVector3D bbox_min, bbox_max;
+        GLutils::GetBoundingBox(template_verts, bbox_min, bbox_max);
+
+        //2.  we sweep through each of X, Y, and Z adding planar sections along spacing defined by the slices_spacing value
+        //float generate_slices_spacing;
+        //bool generate_slices_x;
+        //bool generate_slices_y;
+        //bool generate_slices_z;
+        for (int i=0; i<3; ++i) {
+
+            //continue if this direction is not enabled
+            if ((i == 0 && !generate_slices_x) ||
+                    (i == 1 && !generate_slices_y) ||
+                    (i == 2 && !generate_slices_z)) {
+                continue;
+            }
+
+            //2a.  Assign normal sampling direction
+            QVector3D t, n, b;
+
+            switch (i) {
+            case 0:
+                t = QVector3D(0,0,1);
+                n = QVector3D(1,0,0);
+                b = QVector3D(0,-1,0);
+                break;
+            case 1:
+                t = QVector3D(1,0,0);
+                n = QVector3D(0,1,0);
+                b = QVector3D(0,0,-1);
+                break;
+            case 2:
+            default:
+                t = QVector3D(0,1,0);
+                n = QVector3D(0,0,1);
+                b = QVector3D(-1,0,0);
+                break;
+            }
+
+            //2b.  Compute interval range to iterate over (the bounding box dimensions along sampling direction n)
+            const float dp_min = QVector3D::dotProduct(n, bbox_min);
+            const float dp_max = QVector3D::dotProduct(n, bbox_max);
+
+            const int j_min = floorf(dp_min/generate_slices_spacing);
+            const int j_max = ceilf(dp_max/generate_slices_spacing);
+
+            //2c.  iterate by the spacing amount, creating each planar section
+            for (int j=j_min; j<=j_max; ++j) {
+
+                if (i == 1 && j <= 0) { //skip slices that would be below the ground plane
+                    continue;
+                }
+
+                QVector3D p = n * (generate_slices_spacing * j);
+
+                PlanarSection new_sec;
+                SetupPlanarSection(new_sec);
+                new_sec.SetT(t);
+                new_sec.SetN(n);
+                new_sec.SetB(b);
+                new_sec.SetP(p);
+
+
+                //2c.1.  Compute the segment list with the plane intersected with triangles of the surface
+                QList <QVector3D> segments;
+                ComputeTemplateCut(n, p, segments);
+
+                if (segments.empty()) {
+                    continue;
+                }
+
+                //2c.2  Project each line segment endpoint onto the plane
+                QList <QVector2D> segments_2d;
+                for (int k=0; k<segments.size(); ++k) {
+                    segments_2d.push_back(new_sec.GetPoint2D(segments[k]));
+                }
+
+                //qDebug() << "segments in 2d" << segments_2d;
+
+                //2c.2.  Combine the segments together into one or more curves
+                QList <QList <QVector2D> > curves;
+                GLutils::CurvesFromLineSegments(segments_2d, curves);
+
+                if (curves.empty()) {
+                    continue;
+                }
+
+                BezierCurve bez_curve;
+                bez_curve.SetPointsFromPolyline(curves.first());
+                new_sec.SetCurve(0, bez_curve);
+
+                //2c.3.  Assign the planar section the computed curves as the input polylines
+                /*
+                for (int k=0; k<curves.size(); ++k) {
+                    new_sec.SketchSetCurve(k, curves[k]);
+                    new_sec.Update(k, section_error_tolerance);
+
+                    if (k < curves.size()-1) {
+                        new_sec.AddNewCurve();
+                    }
+
+                }
+                */
+
+                //new_sec.CreateCircle(QVector2D(0,0), 1.0f);
+                new_sec.UpdateCurveTrisSlab();
+
+                generated_sections.push_back(new_sec);
+
+            }
+
+        }
+    }
+
+        break;
+
 
     case GENSTATE_LINEAR:
         {
@@ -5927,6 +6160,9 @@ void GLWidget::ShowGenerate()
         }
         break;
 
+    default:
+        break;
+
 
     }
 
@@ -5968,7 +6204,17 @@ void GLWidget::StartGenerateRevolve()
     UpdateDraw();
 }
 
-
+void GLWidget::StartGenerateSlices()
+{
+    gen_state = GENSTATE_SLICES;
+    current_tool_state = TOOLSTATE_GENERATE;
+    num_generate_selected = 0;
+    selected = -1;
+    generate_selections.clear();
+    ShowGenerate(); //note: since no selections are required, perform operation immediately
+    UpdateAllTests();
+    UpdateDraw();
+}
 
 void GLWidget::DoGenerateBranchingSetRoot()
 {

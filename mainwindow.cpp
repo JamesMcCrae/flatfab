@@ -40,7 +40,7 @@ MainWindow::MainWindow()
 
     //web view stuff
     webView = new QWebView(this);
-    webView->setGeometry(0,0,800,400);
+    webView->setGeometry(0,0,800,700);
 
     // --- does nothing for some reason
     webView->settings()->setFontFamily(QWebSettings::SansSerifFont, "Arial");
@@ -112,6 +112,10 @@ void MainWindow::ShowAppWidgets()
         delete webView;
         webView = NULL;
     }
+    else {
+        //skip everything else if webview is NULL, as it means this method has been called before
+        return;
+    }
 
     this->removeDockWidget(bottomDockWidget);
 
@@ -120,7 +124,8 @@ void MainWindow::ShowAppWidgets()
     createQuickToolBar();
     setCentralWidget(&glWidget);
 
-
+    this->update(); //@chris: maybe this solves that issue (a quick redraw after changing widgets and before showing the messagebox?)
+    glWidget.repaint();
 
     // For some reason the message box causes the webView to show up for a fraction
     // of a second as a side widget is opened on Windows - this happens even after deleting the webView

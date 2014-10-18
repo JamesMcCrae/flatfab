@@ -20,6 +20,24 @@ void BezierCurve::SetPoints(const QList <QVector2D> & ps)
     pts = ps;
 }
 
+void BezierCurve::SetPointsFromPolyline(const QList <QVector2D> & polyline)
+{
+
+    pts.clear();
+
+    for (int i=0; i<polyline.size()-1; ++i) {
+
+        if (i == 0) {
+            pts.push_back(polyline[i]);
+        }
+        pts.push_back(polyline[i] * 0.6666f + polyline[i+1] * 0.3333f);
+        pts.push_back(polyline[i] * 0.3333f + polyline[i+1] * 0.6666f);
+        pts.push_back(polyline[i+1]);
+
+    }
+
+}
+
 void BezierCurve::SetPoint(const int index, const QVector2D & v)
 {
     if (index < 0 || index >= pts.size()) {

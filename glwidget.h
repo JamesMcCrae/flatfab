@@ -62,7 +62,8 @@ enum LastOperation {
     OP_GENERATE_MAKE_RADIAL,
     OP_GENERATE_MAKE_RADIAL_HOLE,
     OP_GENERATE_MAKE_RECTANGLE,
-    OP_GENERATE_REVOLVE
+    OP_GENERATE_REVOLVE,
+    OP_GENERATE_SLICES
 };
 
 
@@ -80,6 +81,8 @@ enum GenerateState
     GENSTATE_BLEND,
     GENSTATE_LINEAR,
     GENSTATE_REVOLVE,
+    GENSTATE_SLICES,
+    GENSTATE_NUM //note: enum declaration guaranteed to be in order: 0, 1, 2... therefore this enum is the # of previously defined enums
 };
 
 
@@ -121,6 +124,10 @@ public:
     float GetGenerateLinearSpacing();
     bool GetGenerateLinearScaleX();
     bool GetGenerateLinearScaleY();
+    float GetGenerateSlicesSpacing();
+    bool GetGenerateSlicesX();
+    bool GetGenerateSlicesY();
+    bool GetGenerateSlicesZ();
     int GetGenerateBlendSections();
     int GetGenerateRevolveSections();
     float GetGenerateBranchingScaleChild();    
@@ -210,6 +217,10 @@ public slots:
     void SetGenerateLinearSpacing(const int i);
     void SetGenerateLinearScaleX(const bool b);
     void SetGenerateLinearScaleY(const bool b);
+    void SetGenerateSlicesSpacing(const int i);
+    void SetGenerateSlicesX(const bool b);
+    void SetGenerateSlicesY(const bool b);
+    void SetGenerateSlicesZ(const bool b);
     void SetGenerateBlendSections(const int i);
     void SetGenerateRevolveSections(const int i);
     void SetGenerateBranchingScaleChild(const int i);
@@ -274,6 +285,7 @@ public slots:
     void StartGenerateLinear();
     void StartGenerateBlend();
     void StartGenerateRevolve();
+    void StartGenerateSlices();
 
     //physics stuff
     void DoPhysicsAddWeight();
@@ -369,6 +381,10 @@ private:
     float generate_linear_spacing;
     bool generate_linear_scalex;
     bool generate_linear_scaley;
+    float generate_slices_spacing;
+    bool generate_slices_x;
+    bool generate_slices_y;
+    bool generate_slices_z;
     float generate_grid_sizex;
     float generate_grid_sizey;
     float generate_grid_staplesize;
@@ -460,6 +476,7 @@ private:
     QLabel *rotate_label;
     QLabel *rotate_angle_label;
     QLabel *linear_spacing_label;
+    QLabel *slices_spacing_label;
     QLabel *num_blend_sections_label;
     QLabel *num_revolve_sections_label;
     QLabel *grid_sizex_label;
@@ -501,7 +518,7 @@ private:
     // Generate Selections
     QList<int> generate_selections; // holds indices of selected sections for the generate tool
     int num_generate_selected;      // the number selected
-    int selections_per_gen_type[3]; // the number of needed selections for each type of generate
+    int selections_per_gen_type[GENSTATE_NUM]; // the number of needed selections for each type of generate
 
     QList <PlanarSection> generated_sections; // the temporary generate sections
 
