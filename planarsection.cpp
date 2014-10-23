@@ -3077,31 +3077,39 @@ void PlanarSection::DrawSlabCurves()
 
     const QVector3D n_offset = n * (slab_thickness / 2.0f);
 
-        for (int c=0; c<bez_curve.size(); ++c) {
-            const QList <QVector2D> & samples = bez_curve[c].Samples();
+    glBegin(GL_LINES);
+    for (int c=0; c<bez_curve.size(); ++c) {
+        const QList <QVector2D> & samples = bez_curve[c].Samples();
 
-            for (int j=0; j<2; ++j) {
-                glBegin(GL_LINE_LOOP);
-                for (int i=0; i<samples.size(); ++i) {
+        for (int j=0; j<2; ++j) {
 
-                    //const float colour = float(i) / float(samples.size());
-                    //glColor3f(colour, 1.0f - colour, 0.0f);
-                    QVector3D v = p + (t * samples[i].x()) + (b * samples[i].y());
-                    if (j == 0) {
-                        v += n_offset;
-                    }
-                    else {
-                        v -= n_offset;
-                    }
+            for (int i=0; i<samples.size(); ++i) {
 
-                    glVertex3f(v.x(), v.y(), v.z());
+                //const float colour = float(i) / float(samples.size());
+                //glColor3f(colour, 1.0f - colour, 0.0f);
+                const int i2 = (i+1) % samples.size();
+                QVector3D v1 = p + (t * samples[i].x()) + (b * samples[i].y());
+                QVector3D v2 = p + (t * samples[i2].x()) + (b * samples[i2].y());
 
+                if (j == 0) {
+                    v1 += n_offset;
+                    v2 += n_offset;
                 }
-                glEnd();
-            }
-        }
+                else {
+                    v1 -= n_offset;
+                    v2 -= n_offset;
+                }
 
-        /*
+                glVertex3f(v1.x(), v1.y(), v1.z());
+                glVertex3f(v2.x(), v2.y(), v2.z());
+
+            }
+
+        }
+    }
+    glEnd();
+
+    /*
         glEndList();
 
     }
