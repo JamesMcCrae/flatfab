@@ -138,7 +138,7 @@ GLWidget::GLWidget() :
     selections_per_gen_type[GENSTATE_BLEND] = 3;
     selections_per_gen_type[GENSTATE_LINEAR] = 2;
     selections_per_gen_type[GENSTATE_REVOLVE] = 2;
-    selections_per_gen_type[GENSTATE_SLICES] = 0;
+    selections_per_gen_type[GENSTATE_SLICES] = 0;   
 
 }
 
@@ -3533,6 +3533,11 @@ bool GLWidget::IsSectionSelected() const
     return (selected >= 0 && selected < sections.size());
 }
 
+QString GLWidget::GetOpenFilename() const
+{
+    return open_filename;
+}
+
 void GLWidget::SetDoMagneticCuts(const bool b)
 {
     do_magnetic_cuts = b;
@@ -3892,6 +3897,10 @@ void GLWidget::AddToUndoList(const LastOperation op)
 
     update_sections_disp_list = true;
 
+    if (QString::compare(open_filename.right(1), "*") != 0) {
+        open_filename += "*";
+    }
+
 }
 
 void GLWidget::Undo(const LastOperation op)
@@ -4148,6 +4157,8 @@ void GLWidget::NewPlaneSketch()
     ClearAll();
     ResetCamera();
     UpdateDraw();
+
+    open_filename = "untitled";
 }
 
 void GLWidget::LoadTemplateCurve()
@@ -4416,6 +4427,8 @@ bool GLWidget::LoadPlaneSketch()
         return false;
     }
 
+    open_filename = QFileInfo(filename).fileName();
+
     QTextStream ifs(&file);
     int nPlanes = PlanarSection::LoadHeaderFromFile(ifs);
 
@@ -4442,13 +4455,13 @@ bool GLWidget::LoadPlaneSketch()
 
 }
 
-void GLWidget::SavePlaneSketch()
+bool GLWidget::SavePlaneSketch()
 {
 
     //get filename
     QString filename = QFileDialog::getSaveFileName(this, tr("Save FlatFab"), QString(""), tr("FlatFab (*.txt);;All Files (*)"), 0, QFileDialog::DontUseNativeDialog);
     if (filename.isNull()) {
-        return;
+        return false;
     }
 
     //add extension if missing
@@ -4461,8 +4474,10 @@ void GLWidget::SavePlaneSketch()
     QFile file(filename);
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
         qDebug() << "GLWidget::SavePlaneSketch(): File " << filename << " can't be saved";
-        return;
+        return false;
     }
+
+    open_filename = QFileInfo(filename).fileName();
 
     //save out the data
     QTextStream ofs(&file);
@@ -4476,7 +4491,7 @@ void GLWidget::SavePlaneSketch()
     file.close();
     qDebug() << "GLWidget::SavePlaneSketch(): File " << filename << "saved.";
 
-    return;
+    return true;
 
 }
 

@@ -26,6 +26,7 @@ protected:
 private slots:   
 
     void ShowAppWidgets();
+    void UpdateWindowTitle();
 
     void NewPlaneSketch();
     void LoadTemplateOBJ();
@@ -123,6 +124,9 @@ private:
     void SendTrackRequest();
 
     void SetMultisampling(const int i);
+
+    virtual void resizeEvent(QResizeEvent * event);
+    virtual void moveEvent(QMoveEvent * event);
 
     QMenu *fileMenu;
     QAction *newPlaneSketchAct;    
@@ -222,9 +226,8 @@ private:
     QToolBar *quickToolBar;
     QDockWidget * toolWidget;
 
-    virtual void resizeEvent(QResizeEvent * event);
-    virtual void moveEvent(QMoveEvent * event);
-
+    QString window_title;
+    QTimer window_title_timer;
 
 };
 

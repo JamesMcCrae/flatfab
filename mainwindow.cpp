@@ -4,13 +4,16 @@ MainWindow::MainWindow()
 {   
 
     //title/window stuff
-    setWindowTitle("FlatFab (Release 0.6 Beta - October 17, 2014)");
+    window_title = "FlatFab (0.6 beta)";
+    setWindowTitle(window_title);
+
     //release 0.6 -
     //more ui improvements
     //new interaction for specifying planes for procedural modelling operations
     //updated curve filtering/fitting algorithm for input strokes
     //potentially fixed bug on mac with cpu usage
     //fixed bug where "new flatfab" from menu would not first remove the webview
+    //added filename to window title
 
     //release 0.5 -
     //ui improvements including
@@ -60,6 +63,12 @@ MainWindow::MainWindow()
     SendTrackRequest();
 
     toolWidget = NULL;
+
+    window_title_timer.setSingleShot(false);
+    window_title_timer.start(1000);
+
+    connect(&window_title_timer, SIGNAL(timeout()), this, SLOT(UpdateWindowTitle()));
+
 }
 
 MainWindow::~MainWindow()
@@ -817,10 +826,21 @@ void MainWindow::createMenus()
 
 }
 
-void MainWindow::NewPlaneSketch()
+void MainWindow::UpdateWindowTitle()
 {
-    ShowAppWidgets();
-    glWidget.NewPlaneSketch();
+    QString open_filename = glWidget.GetOpenFilename();
+    if (open_filename.length() > 0) {
+        setWindowTitle(glWidget.GetOpenFilename() + " - " + window_title);
+    }
+    else {
+        setWindowTitle(window_title);
+    }
+}
+
+void MainWindow::NewPlaneSketch()
+{    
+    ShowAppWidgets();    
+    glWidget.NewPlaneSketch();    
 }
 
 void MainWindow::LoadTemplateOBJ()
@@ -840,7 +860,7 @@ void MainWindow::LoadTemplateImage()
 
 void MainWindow::LoadPlaneSketch()
 {
-    if (glWidget.LoadPlaneSketch()) {
+    if (glWidget.LoadPlaneSketch()) {        
         ShowAppWidgets();
     }
 }

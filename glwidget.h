@@ -139,6 +139,8 @@ public:
 
     bool IsSectionSelected() const;
 
+    QString GetOpenFilename() const;
+
 protected:
 
     void initializeGL();
@@ -262,7 +264,7 @@ public slots:
     void LoadTemplateImage();
     void LoadTemplateOBJ();
     bool LoadPlaneSketch();
-    void SavePlaneSketch();
+    bool SavePlaneSketch();
     void SaveSliceOBJ();
     void SaveSlabOBJ();
     void SaveSurfaceOBJ();
@@ -524,6 +526,7 @@ private:
 
 
 
+    QString open_filename;
     //----
 
 
