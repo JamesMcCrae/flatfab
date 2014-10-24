@@ -2797,7 +2797,7 @@ void GLWidget::keyReleaseEvent(QKeyEvent *event)
                 AddToUndoList(OP_ADD_CTRLPOINT);
                 sections[selected].InsertCtrlPoint();
             }
-            else {
+            else if (do_physics_test) {
                 AddToUndoList(OP_ADD_WEIGHT);
                 UpdateCamera();
                 sections[selected].AddWeightAtMousePos(mouse_pos, physics_new_weight_mass);
