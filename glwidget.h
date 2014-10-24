@@ -101,7 +101,7 @@ public:
     QWidget * GetGenerateWidget();
     QWidget * GetGuidesWidget();
     QWidget * GetPhysicsWidget();
-    QWidget * GetViewsWidget();
+    QWidget * GetViewWidget();
 
     CPhysics & GetPhysics();
 
@@ -205,6 +205,12 @@ public slots:
     void SetShowTNBFrames(const bool b);
     void SetShowShadow(const bool b);
     void SetShowTemplates(const bool b);
+
+    void ToggleShowTNBFrames();
+    void ToggleDoCyclesTest();
+    void ToggleDoStabilityTest();
+    void ToggleShowShadow();
+    void ToggleDoConnectedTest();
 
     void SetSlabThickness(const double d);
     void SetCalibrationFactor(const int i);
@@ -336,7 +342,7 @@ private:
     QWidget *genWidget;
     QWidget *guidesWidget;
     QWidget *physicsWidget;
-    QWidget *viewsWidget;
+    QWidget *viewWidget;
 
     QWidget *widget;
 
@@ -508,6 +514,15 @@ private:
     QCheckBox * moment_checkbox;
 
     QPushButton * testPhysicsButton;
+    QPushButton * toggleTemplatesButton;
+
+    QCheckBox * show_tnb_frames_checkbox;
+    QCheckBox * show_cycles_test_checkbox;
+    QCheckBox * show_stability_checkbox;
+    QCheckBox * show_shadow_checkbox;
+    QCheckBox * show_connectivity_checkbox;
+
+
 
     //----
 

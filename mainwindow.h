@@ -108,7 +108,7 @@ private slots:
     void openGenerateWidget();
     void openGuidesWidget();
     void openPhysicsWidget();
-    void openViewsWidget();
+    void openViewWidget();
 
     void setEditMenuChecks();
     void setViewMenuChecks();

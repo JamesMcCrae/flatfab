@@ -131,7 +131,7 @@ GLWidget::GLWidget() :
     genWidget = NULL;
     guidesWidget = NULL;
     physicsWidget = NULL;
-    viewsWidget = NULL;
+    viewWidget = NULL;
 
     current_tool_state = TOOLSTATE_DEFAULT;
 
@@ -167,9 +167,9 @@ GLWidget::~GLWidget()
         delete physicsWidget;
         physicsWidget = NULL;
     }
-    if (viewsWidget != NULL) {
-        delete viewsWidget;
-        viewsWidget = NULL;
+    if (viewWidget != NULL) {
+        delete viewWidget;
+        viewWidget = NULL;
     }
 
 
@@ -1186,7 +1186,7 @@ QWidget * GLWidget::GetGuidesWidget()
     guidesWidgetLayout->addRow(image_groupbox);
 
 
-    QPushButton * toggleTemplatesButton = new QPushButton("Show Templates");
+    toggleTemplatesButton = new QPushButton("Show Templates");
     toggleTemplatesButton->setCheckable(true);
     toggleTemplatesButton->setChecked(do_show_templates);
     toggleTemplatesButton->setMinimumHeight(40);
@@ -1241,33 +1241,7 @@ QWidget * GLWidget::GetPhysicsWidget()
     physWidgetLayout->addRow(weight_groupbox);
 
 
-//    QPushButton * showButton1 = new QPushButton("Deformed");
-//    connect(showButton1, SIGNAL(clicked()), this, SLOT(ToggleDrawDeformed()));
-
-//    QPushButton * showButton2 = new QPushButton("Skeleton");
-//    connect(showButton2, SIGNAL(clicked()), this, SLOT(ToggleDrawSkeleton()));
-
-//    QPushButton * showButton3 = new QPushButton("Forces");
-//    connect(showButton3, SIGNAL(clicked()), this, SLOT(ToggleDrawForce()));
-
-//    QPushButton * showButton4 = new QPushButton("Section");
-//    connect(showButton4, SIGNAL(clicked()), this, SLOT(ToggleDrawSection()));
-
-//    QPushButton * showButton5 = new QPushButton("Moments");
-//    connect(showButton5, SIGNAL(clicked()), this, SLOT(ToggleDrawMoments()));
-
-//    QGroupBox * show_groupbox = new QGroupBox(tr("Display"));
-//    QFormLayout *show_layout = new QFormLayout;
-
-//    show_layout->addWidget(showButton3, 0, 0,1,2);
-//    show_layout->addWidget(showButton1, 1, 0);
-//    show_layout->addWidget(showButton2, 1, 1);
-//    show_layout->addWidget(showButton4, 2, 0);
-//    show_layout->addWidget(showButton5, 2, 1);
-//    show_groupbox->setLayout(show_layout);
-//    physWidgetLayout->addRow(show_groupbox);
-
-
+    //display checkboxes
 
     deformed_checkbox = new QCheckBox("Deformed");
     deformed_checkbox->setChecked(physics.GetDrawDeformed());
@@ -1335,15 +1309,15 @@ QWidget * GLWidget::GetPhysicsWidget()
     return physicsWidget;
 }
 
-QWidget * GLWidget::GetViewsWidget()
+QWidget * GLWidget::GetViewWidget()
 {
-    if (viewsWidget != NULL) {
-        return viewsWidget;
+    if (viewWidget != NULL) {
+        return viewWidget;
     }
 
-    QFormLayout * viewsWidgetLayout = new QFormLayout();
+    QFormLayout * viewWidgetLayout = new QFormLayout();
 
-    //views
+    //view
     const int viewbtnwidth = 50;
     QPushButton * viewisobtn1 = new QPushButton("Iso1");
     viewisobtn1->setMaximumWidth(viewbtnwidth);
@@ -1385,7 +1359,7 @@ QWidget * GLWidget::GetViewsWidget()
     view_layout->addWidget(viewzbtn, 1, 2);
     view_layout->addWidget(viewpartbtn, 1, 3);
     view_groupbox->setLayout(view_layout);
-    viewsWidgetLayout->addRow(view_groupbox);
+    viewWidgetLayout->addRow(view_groupbox);
 
 
 
@@ -1411,13 +1385,60 @@ QWidget * GLWidget::GetViewsWidget()
     viewrot_layout->addWidget(rotation_angle_slider, 1, 1);
     viewrot_layout->addWidget(rotate_angle_label, 1, 0);
     viewrot_groupbox->setLayout(viewrot_layout);
-    viewsWidgetLayout->addRow(viewrot_groupbox);
+    viewWidgetLayout->addRow(viewrot_groupbox);
 
-    viewsWidget = new QTabWidget();
-    viewsWidget->setMinimumWidth(225);
-    viewsWidget->setLayout(viewsWidgetLayout);
 
-    return viewsWidget;
+
+
+    //display checkboxes
+
+    show_tnb_frames_checkbox = new QCheckBox("TNB Frames");
+    show_tnb_frames_checkbox->setChecked(do_show_tnb_frames);
+    connect(show_tnb_frames_checkbox, SIGNAL(toggled(bool)), this, SLOT(SetShowTNBFrames(bool)));
+
+    show_cycles_test_checkbox = new QCheckBox("Cycles");
+    show_cycles_test_checkbox->setChecked(do_cycles_test);
+    connect(show_cycles_test_checkbox, SIGNAL(toggled(bool)), this, SLOT(SetDoCyclesTest(bool)));
+
+    show_stability_checkbox = new QCheckBox("Stability");
+    show_stability_checkbox->setChecked(do_stability_test);
+    connect(show_stability_checkbox, SIGNAL(toggled(bool)), this, SLOT(SetDoStabilityTest(bool)));
+
+    show_shadow_checkbox = new QCheckBox("Shadow");
+    show_shadow_checkbox->setChecked(do_show_shadow);
+    connect(show_shadow_checkbox, SIGNAL(toggled(bool)), this, SLOT(SetShowShadow(bool)));
+
+    show_connectivity_checkbox = new QCheckBox("Connectivity");
+    show_connectivity_checkbox->setChecked(do_connected_test);
+    connect(show_connectivity_checkbox, SIGNAL(toggled(bool)), this, SLOT(SetDoConnectedTest(bool)));
+
+    QGroupBox * show_groupbox1 = new QGroupBox(tr("General Display"));
+    QGridLayout *show_layout1 = new QGridLayout;
+
+    show_layout1->addWidget(show_tnb_frames_checkbox, 0, 0);
+    show_layout1->addWidget(show_shadow_checkbox, 0, 1);
+
+    show_groupbox1->setLayout(show_layout1);
+    viewWidgetLayout->addRow(show_groupbox1);
+
+    QGroupBox * show_groupbox2 = new QGroupBox(tr("Display Tests"));
+    QGridLayout *show_layout2 = new QGridLayout;
+
+    show_layout2->addWidget(show_stability_checkbox, 0, 0);
+    show_layout2->addWidget(show_cycles_test_checkbox, 0, 1);
+    show_layout2->addWidget(show_connectivity_checkbox, 1, 0, 1, 2);
+
+    show_groupbox2->setLayout(show_layout2);
+    viewWidgetLayout->addRow(show_groupbox2);
+
+
+
+    viewWidget = new QTabWidget();
+    viewWidget->setMinimumWidth(225);
+    viewWidget->setLayout(viewWidgetLayout);
+
+
+    return viewWidget;
 }
 
 
@@ -1456,7 +1477,9 @@ void GLWidget::paintGL()
     glCullFace(GL_BACK);
     glColor3f(0.75f, 0.75f, 0.75f);
 
-    if (IsSectionSelected()) {
+    DrawGroundPlane();
+
+    if (IsSectionSelected() && do_show_shadow) {
         sections[selected].DrawShadow();
     }
 
@@ -1469,7 +1492,7 @@ void GLWidget::paintGL()
         glNewList(sections_disp_list, GL_COMPILE_AND_EXECUTE);
 
         glEnable(GL_DEPTH_TEST);
-        DrawGroundPlane();
+        //DrawGroundPlane();
 
         if (do_show_shadow) {
             glDisable(GL_DEPTH_TEST);
@@ -2811,18 +2834,28 @@ void GLWidget::UpdateCamera() {
 void GLWidget::DrawGroundPlane()
 {
 
+    glColor3f(0.95f, 0.95f, 0.95f);
     glBegin(GL_LINES);
-    for (int i=-grid_size; i<=grid_size; ++i) {
+        for (int i=-grid_size; i<=grid_size; ++i) {
 
-        (i == 0) ? glColor3f(0.8f, 0.8f, 0.8f) : glColor3f(0.9f, 0.9f, 0.9f);
+            if(i != 0)
+            {
+                glVertex3i(i, 0, -grid_size);
+                glVertex3i(i, 0, grid_size);
 
-        glVertex3i(i, 0, -grid_size);
-        glVertex3i(i, 0, grid_size);
+                glVertex3i(-grid_size, 0, i);
+                glVertex3i(grid_size, 0, i);
+            }
 
-        glVertex3i(-grid_size, 0, i);
-        glVertex3i(grid_size, 0, i);
+        }
 
-    }
+        glColor3f(0.8f, 0.8f, 0.8f);
+        glVertex3i(0, 0, -grid_size);
+        glVertex3i(0, 0, grid_size);
+
+        glVertex3i(-grid_size, 0, 0);
+        glVertex3i(grid_size, 0, 0);
+
     glEnd();
     glColor3i(255, 255, 255);
 
@@ -3517,11 +3550,12 @@ void GLWidget::SetDoCyclesTest(const bool b)
 {
     do_cycles_test = b;
 
-    for (int i=0; i<sections.size(); ++i) {
-        sections[i].SetPartOfCycle(false);
-    }
+//    for (int i=0; i<sections.size(); ++i) {
+//        sections[i].SetPartOfCycle(false);
+//    }
 
     DoCyclesConnectedTest();
+    update_sections_disp_list = true;
 
     //updateGL();
 
@@ -3568,6 +3602,8 @@ void GLWidget::ToggleDoPhysicsTest()
 
      DoCyclesConnectedTest();
 
+     update_sections_disp_list = true;
+
      //updateGL();
  }
 
@@ -3580,6 +3616,7 @@ void GLWidget::ToggleDoPhysicsTest()
  void GLWidget::SetShowShadow(const bool b)
  {
      do_show_shadow = b;
+     update_sections_disp_list = true;
      //updateGL();
  }
 
@@ -7434,6 +7471,52 @@ void GLWidget::ToggleDrawMoments()
 void GLWidget::ToggleDrawTemplates()
 {
     do_show_templates = !do_show_templates;
+    toggleTemplatesButton->setChecked(do_show_templates); //keeps the menu option and button synced
+
+}
+
+
+void GLWidget::ToggleShowTNBFrames()
+{
+    do_show_tnb_frames = !do_show_tnb_frames;
+    show_tnb_frames_checkbox->setChecked(do_show_tnb_frames);
+}
+
+void GLWidget::ToggleDoCyclesTest()
+{
+    do_cycles_test = !do_cycles_test;
+    show_cycles_test_checkbox->setChecked(do_cycles_test);
+    update_sections_disp_list = true;
+
+    if(do_cycles_test)
+        DoCyclesConnectedTest();
+}
+
+void GLWidget::ToggleDoStabilityTest()
+{
+    do_stability_test = !do_stability_test;
+    show_stability_checkbox->setChecked(do_stability_test);
+    update_sections_disp_list = true;
+
+    if(do_stability_test)
+        DoStabilityTest();
+}
+
+void GLWidget::ToggleShowShadow()
+{
+    do_show_shadow = !do_show_shadow;
+    show_shadow_checkbox->setChecked(do_show_shadow);
+    update_sections_disp_list = true;
+}
+
+void GLWidget::ToggleDoConnectedTest()
+{
+    do_connected_test = !do_connected_test;
+    show_connectivity_checkbox->setChecked(do_connected_test);
+    update_sections_disp_list = true;
+
+    if(do_connected_test)
+        DoCyclesConnectedTest();
 }
 
 

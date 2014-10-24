@@ -665,6 +665,7 @@ void PlanarSection::DrawTNBFrame()
 void PlanarSection::DrawShadow()
 {
 
+    glColor3f(.75f, .75f, .75f);
     glBegin(GL_TRIANGLES);
     glNormal3f(0, 1, 0);
     for (int i=0; i<slab_vert.size(); ++i) {

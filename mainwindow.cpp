@@ -292,11 +292,11 @@ void MainWindow::createSideBar()
     icon[4].addFile(":/icons/views-checked.png", QSize(), QIcon::Normal, QIcon::On);
 
 
-    openDock[4] = new QAction(icon[4], tr("&Views"), this);
+    openDock[4] = new QAction(icon[4], tr("&View"), this);
     //openEdit->setShortcuts(QKeySequence::Open);
-    openDock[4]->setStatusTip(tr("Views"));
+    openDock[4]->setStatusTip(tr("View"));
     openDock[4]->setCheckable(true);
-    connect(openDock[4], SIGNAL(triggered()), this, SLOT(openViewsWidget()));
+    connect(openDock[4], SIGNAL(triggered()), this, SLOT(openViewWidget()));
 
     //mainToolGroup->setExclusive(true);
 
@@ -324,7 +324,7 @@ void MainWindow::createSideBar()
     widgets[1] = glWidget.GetGenerateWidget();
     widgets[2] = glWidget.GetGuidesWidget();
     widgets[3] = glWidget.GetPhysicsWidget();
-    widgets[4] = glWidget.GetViewsWidget();
+    widgets[4] = glWidget.GetViewWidget();
 
     for(int i = 0; i < 5; i++)
     {
@@ -343,7 +343,7 @@ void MainWindow::createSideBar()
     docks[1]->setWindowTitle("Generate Sections");
     docks[2]->setWindowTitle("Guides and Dimensions");
     docks[3]->setWindowTitle("Physical Simulation");
-    docks[4]->setWindowTitle("Views");
+    docks[4]->setWindowTitle("View");
 
 }
 
@@ -1019,32 +1019,32 @@ void MainWindow::ViewPart()
 
 void MainWindow::ToggleCyclesTest()
 {
-    glWidget.SetDoCyclesTest(!glWidget.GetDoCyclesTest());
+    glWidget.ToggleDoCyclesTest();
 }
 
 void MainWindow::ToggleConnectedTest()
 {
-    glWidget.SetDoConnectedTest(!glWidget.GetDoConnectedTest());
+    glWidget.ToggleDoConnectedTest();
 }
 
 void MainWindow::ToggleStabilityTest()
 {
-    glWidget.SetDoStabilityTest(!glWidget.GetDoStabilityTest());
+    glWidget.ToggleDoStabilityTest();
 }
 
 void MainWindow::ToggleShowTNBFrames()
 {
-    glWidget.SetShowTNBFrames(!glWidget.GetShowTNBFrames());
+    glWidget.ToggleShowTNBFrames();
 }
 
 void MainWindow::ToggleShowShadow()
 {
-    glWidget.SetShowShadow(!glWidget.GetShowShadow());
+    glWidget.ToggleShowShadow();
 }
 
 void MainWindow::ToggleShowTemplates()
 {
-    glWidget.SetShowTemplates(!glWidget.GetShowTemplates());
+    glWidget.ToggleDrawTemplates();
 }
 
 void MainWindow::GenerateBranchingSetRoot()
@@ -1241,7 +1241,7 @@ void MainWindow::openPhysicsWidget()
     docks[3]->toggleViewAction()->trigger();
 }
 
-void MainWindow::openViewsWidget()
+void MainWindow::openViewWidget()
 {
     for(int i = 0; i < 5; i++)
     {
