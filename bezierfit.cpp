@@ -78,7 +78,7 @@ void BezierFit::FitCurve(const QList <QVector2D> & d, const double error, QList 
     }
     */
 
-    const float smoothThreshold = 0.35f;
+    const float smoothThreshold = 0.6f;
     const float curvatureThreshold = 0.6f;
     const int iterations = 3;
 

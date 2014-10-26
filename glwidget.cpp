@@ -772,7 +772,7 @@ QWidget * GLWidget::GetEditWidget()
     editWidgetLayout->addWidget(resketchButton);
 
     QPushButton * deleteButton = new QPushButton("Delete Section");
-    deleteButton->setPalette(QPalette(QColor(64, 250, 66)));
+    deleteButton->setStyleSheet("QPushButton{ background-color: #40FA42; color:black}"); // for any delete button
     connect(deleteButton, SIGNAL(clicked()), this, SLOT(DeleteSelected()));
 
     editWidgetLayout->addWidget(deleteButton);
@@ -810,7 +810,7 @@ QWidget * GLWidget::GetEditWidget()
 
     QPushButton * holeButton2 = new QPushButton("Remove All Holes");
     connect(holeButton2, SIGNAL(clicked()), this, SLOT(RemoveHolesBoundary()));
-    holeButton2->setPalette(QPalette(QColor(64, 250, 66)));
+    holeButton2->setStyleSheet("QPushButton{ background-color: #40FA42; color:black}"); // for any delete button
 
     QGroupBox * hole_groupbox = new QGroupBox(tr("Section Holes"));
     QGridLayout * hole_layout = new QGridLayout;
@@ -1222,7 +1222,7 @@ QWidget * GLWidget::GetPhysicsWidget()
 
     QPushButton * weightButton2 = new QPushButton("Remove All");
     connect(weightButton2, SIGNAL(clicked()), this, SLOT(DoPhysicsRemoveWeights()));
-    weightButton2->setPalette(QPalette(QColor(64, 250, 66)));
+    weightButton2->setStyleSheet("QPushButton{ background-color: #40FA42; color:black}"); // for any delete button
 
     QDoubleSpinBox * new_weight_spinbox = new QDoubleSpinBox();
     new_weight_spinbox->setRange(0.001, 50);
