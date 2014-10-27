@@ -72,7 +72,8 @@ enum ToolState
 {
     TOOLSTATE_DEFAULT,
     TOOLSTATE_TRANSFORMING,
-    TOOLSTATE_GENERATE
+    TOOLSTATE_GENERATE,
+    TOOLSTATE_RADIAL
 };
 
 // Generate states
@@ -286,6 +287,8 @@ public slots:
     void DoGenerateMakeRadialHole();
     void DoGenerateSurfaceFacets();
 
+    void MakeRadialAfterEdit();
+
     void ShowGenerate();
     void AcceptGenerate();
     void CancelGenerate();
@@ -294,6 +297,8 @@ public slots:
     void StartGenerateBlend();
     void StartGenerateRevolve();
     void StartGenerateSlices();
+
+    void StartRadial();
 
     //physics stuff
     void DoPhysicsAddWeight();

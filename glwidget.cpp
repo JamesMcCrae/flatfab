@@ -1,4 +1,4 @@
-#include "glwidget.h"
+﻿#include "glwidget.h"
 
 GLWidget::GLWidget() :
     sideWidget(NULL)
@@ -825,7 +825,7 @@ QWidget * GLWidget::GetEditWidget()
     // Radial group
 
     QPushButton * radialButton = new QPushButton("Make Radial");
-    connect(radialButton, SIGNAL(clicked()), this, SLOT(DoGenerateMakeRadial()));
+    connect(radialButton, SIGNAL(clicked()), this, SLOT(StartRadial()));
 
     QSlider * radial_sectors_slider = new QSlider();
     radial_sectors_slider->setRange(1, 40);
@@ -2153,8 +2153,9 @@ b) when there are planes, attempt to select one
         else if (IsSectionSelected()) {
 
             if (sections[selected].IsCtrlPointSelected()) {
-                state = STATE_MANIP_CTRLPOINT;               
-                AddToUndoList(OP_MANIP_CTRLPOINT);
+                state = STATE_MANIP_CTRLPOINT;
+//                if(last_op != OP_GENERATE_MAKE_RADIAL)
+                    AddToUndoList(OP_MANIP_CTRLPOINT);
 
             }
             else if (sections[selected].IsWeightSelected()) {
@@ -2699,6 +2700,15 @@ void GLWidget::mouseReleaseEvent(QMouseEvent *event)
     }
     else if (event->button() == Qt::RightButton) {
 
+//        if(state == STATE_MANIP_CTRLPOINT)
+//        {
+//            if(last_op == OP_GENERATE_MAKE_RADIAL)
+//            {
+//                qDebug() << "doing it";
+//                MakeRadialAfterEdit();
+//            }
+//        }
+
         if (IsSectionSelected()) {
 
             sections[selected].SetCtrlPointsAboveXZPlane();
@@ -2928,7 +2938,7 @@ void GLWidget::DrawSection(const int i)
 {   
 
     if (i == selected) {
-        if( state == STATE_RESKETCH_CURVE)
+        if( state == STATE_RESKETCH_CURVE || current_tool_state == TOOLSTATE_RADIAL)
         {
             glEnable(GL_BLEND);
             glColor4f(0.35f, 0.45f, 0.6f, 0.5f);
@@ -6268,6 +6278,15 @@ void GLWidget::StartGenerateSlices()
     UpdateDraw();
 }
 
+
+
+void GLWidget::StartRadial()
+{
+    //current_tool_state = TOOLSTATE_RADIAL;
+    DoGenerateMakeRadial();
+}
+
+
 void GLWidget::DoGenerateBranchingSetRoot()
 {
     state = STATE_RECURSIVE_SETUP_SLOT;
@@ -7283,6 +7302,30 @@ void GLWidget::DoGenerateMakeRadial()
     UpdateDraw();
 
 }
+
+void GLWidget::MakeRadialAfterEdit()
+{
+
+    if (!IsSectionSelected()) {
+        return;
+    }
+
+    AddToUndoList(OP_GENERATE_MAKE_RADIAL);
+
+    //1.  get existing points dimensions
+    QVector2D min_v;
+    QVector2D max_v;
+    sections[selected].GetBoundingBox2D(min_v, max_v);
+
+    //2.  parameterize circle based on dimensions
+    const QVector2D centre = (min_v + max_v) * 0.5f;
+    sections[selected].CreateRadial(centre);
+
+    UpdateAllTests();
+    UpdateDraw();
+
+}
+
 
 void GLWidget::DoGenerateMakeRadialHole()
 {

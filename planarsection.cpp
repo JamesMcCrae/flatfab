@@ -208,6 +208,51 @@ void PlanarSection::CreateRadial(QVector2D centre, const float base_rad, const i
 
 }
 
+
+void PlanarSection::CreateRadial(QVector2D centre)
+{
+
+    QList <QLineF> lines;
+    QList <QVector2D> pts;
+
+
+    if(bez_curve[0].GetNumControlPoints() < 7)
+        return;
+
+    // Convert QVector2Ds to QLineFs
+    for(int i = 0; i < 7; i++)
+    {
+        lines.push_back( QLineF(centre.toPointF(), bez_curve[0].Point(i).toPointF()) );
+        pts.push_back(bez_curve[0].Point(i));
+    }
+
+    const float angularLength = lines.back().angleTo(lines.front());
+    const int num_sectors = int( 360.0 / angularLength);
+    qDebug() << "num sectors: " << num_sectors;
+    qDebug() << "angle: " << angularLength;
+
+    for (int i=1; i<num_sectors; ++i) {
+
+        lines[0].setAngle(lines[0].angle() + angularLength);
+        for (int j=1; j<7; ++j) {
+
+            lines[j].setAngle(lines[j].angle() + angularLength);
+            pts.push_back( QVector2D(lines[j].x2(), lines[j].y2()) );
+
+        }
+
+    }
+
+    bez_curve[0].ClearPoints();
+
+    for (int i=0; i<=pts.size(); ++i) {
+        bez_curve[0].AddPoint(pts[i]);
+    }
+
+    UpdateCurveTrisSlab();
+
+}
+
 void PlanarSection::CreateRadialHoles(QVector2D centre, const float base_rad, const int num_sectors, const float radii[9])
 {
 
@@ -559,7 +604,11 @@ void PlanarSection::DrawCurveControlPointsHandleStyle(const float cam_width, con
 //                if(i == bez_curve[c].SelectedPoint())
 //                    s = 0.005f * cam_width;
 
+
                 glColor3f(1.0f,0.5f,0.8f);
+
+//                if(i < 7)
+//                    glColor3f(0.0f,1.0f,1.0f);
 
 //                if((i != bez_curve[c].SelectedPoint()))
 //                    glColor4f(1.0f,0.5f,0.8f,.7f);
@@ -575,6 +624,9 @@ void PlanarSection::DrawCurveControlPointsHandleStyle(const float cam_width, con
 //                    s = 0.0075f * cam_width;
 
                 glColor3f(1.0f,0.0f,.5f);
+
+//                if(i < 7)
+//                    glColor3f(0.0f,1.0f,1.0f);
 
 //                if((i != bez_curve[c].SelectedPoint()))
 //                    glColor4f(1.0f,0.0f,.5f,.7f);

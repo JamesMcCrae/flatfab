@@ -63,6 +63,7 @@ public:
     void CreateRectangle(QVector2D min_v, QVector2D max_v);
     void CreateCircle(QVector2D centre, const float radius);
     void CreateRadial(QVector2D centre, const float base_rad, const int num_sectors, const float radii[9]);
+    void CreateRadial(QVector2D centre);
     void CreateRadialHoles(QVector2D centre, const float base_rad, const int num_sectors, const float radii[9]);
 
     void AddWeight(const QVector2D & pos_2d, const float mass);
