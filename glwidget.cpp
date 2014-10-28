@@ -1503,13 +1503,13 @@ void GLWidget::paintGL()
 
                 if(current_tool_state == TOOLSTATE_GENERATE)
                 {
-//                    if ( !( i == selected || (num_generate_selected >= 2 && i == last_selected.last()) ||
-//                           (num_generate_selected == 3 && i == last_selected[last_selected.size() - 2]) ) ) {
+//                    if ( !( i == selected || (generate_selections.size() >= 2 && i == last_selected.last()) ||
+//                           (generate_selections.size() == 3 && i == last_selected[last_selected.size() - 2]) ) ) {
 //                        sections[i].DrawShadow();
 //                    }
-                    if ( !( i == selected || (num_generate_selected > 0 && i == generate_selections[0]) ||
-                            (num_generate_selected > 1 && i == generate_selections[1]) ||
-                           (num_generate_selected == 3 && i == generate_selections[2]) ) ) {
+                    if ( !( i == selected || (generate_selections.size() > 0 && i == generate_selections[0]) ||
+                            (generate_selections.size() > 1 && i == generate_selections[1]) ||
+                           (generate_selections.size() == 3 && i == generate_selections[2]) ) ) {
                         sections[i].DrawShadow();
                     }
                 }
@@ -1529,9 +1529,9 @@ void GLWidget::paintGL()
 
             if(current_tool_state == TOOLSTATE_GENERATE)
             {
-                if ( !( i == selected || (num_generate_selected > 0 && i == generate_selections[0]) ||
-                        (num_generate_selected > 1 && i == generate_selections[1]) ||
-                       (num_generate_selected == 3 && i == generate_selections[2]) ) ) {
+                if ( !( i == selected || (generate_selections.size() > 0 && i == generate_selections[0]) ||
+                        (generate_selections.size() > 1 && i == generate_selections[1]) ||
+                       (generate_selections.size() == 3 && i == generate_selections[2]) ) ) {
                     DrawSection(i);
                 }
             }
@@ -1563,19 +1563,19 @@ void GLWidget::paintGL()
 
     if(current_tool_state == TOOLSTATE_GENERATE)
     {
-//        if(num_generate_selected == 1)
+//        if(generate_selections.size() == 1)
 //        {
 //            glColor3f(1.0f, 0.0f, 0.0f);
 //            sections[selected].DrawSlab();
 //        }
-//        else if(num_generate_selected == 2)
+//        else if(generate_selections.size() == 2)
 //        {
 //            glColor3f(1.0f, 0.0f, 0.0f);
 //            sections[last_selected[last_selected.size() - 2]].DrawSlab();
 //            glColor3f(0.0f, 1.0f, 0.0f);
 //            sections[selected].DrawSlab();
 //        }
-//        else if(num_generate_selected == 3)
+//        else if(generate_selections.size() == 3)
 //        {
 //            glColor3f(1.0f, 0.0f, 0.0f);
 //            sections[last_selected[last_selected.size() - 3]].DrawSlab();
@@ -1586,15 +1586,15 @@ void GLWidget::paintGL()
 
 //        }
 
-        if(num_generate_selected > 0)
+        if(generate_selections.size() > 0)
         {
             glColor3f(1.0f, 0.0f, 0.0f);
             sections[generate_selections[0]].DrawSlab();
-            if(num_generate_selected > 1)
+            if(generate_selections.size() > 1)
             {
                 glColor3f(0.0f, 1.0f, 0.0f);
                 sections[generate_selections[1]].DrawSlab();
-                if(num_generate_selected > 2)
+                if(generate_selections.size() > 2)
                 {
                     glColor3f(0.0f, 0.0f, 1.0f);
                     sections[generate_selections[2]].DrawSlab();
@@ -2041,7 +2041,7 @@ b) when there are planes, attempt to select one
                         // If selectiing sections for the generate tools
                         if(current_tool_state == TOOLSTATE_GENERATE)
                         {
-                            if(num_generate_selected < selections_per_gen_type[gen_state])
+                            if(generate_selections.size() < selections_per_gen_type[gen_state])
                             {
 
                                 bool already_selected = false;
@@ -2056,11 +2056,10 @@ b) when there are planes, attempt to select one
                                 if(!already_selected)
                                 {
                                     generate_selections.append(section_clicked);
-                                    num_generate_selected++;
                                 }
 
                             }
-                            if(num_generate_selected == selections_per_gen_type[gen_state]  )
+                            if(generate_selections.size() == selections_per_gen_type[gen_state]  )
                                 ShowGenerate();
                             UpdateDraw();
                         }
@@ -2126,7 +2125,7 @@ b) when there are planes, attempt to select one
         if(current_tool_state == TOOLSTATE_GENERATE)
         {
             const int new_select = PickSection(mouse_pos, false);
-            if(num_generate_selected < selections_per_gen_type[gen_state])
+            if(generate_selections.size() < selections_per_gen_type[gen_state])
             {
                 bool already_selected = false;
                 for(int i = 0; i < generate_selections.size(); i++)
@@ -2140,11 +2139,10 @@ b) when there are planes, attempt to select one
                 if(!already_selected)
                 {
                     generate_selections.append(new_select);
-                    num_generate_selected++;
                 }
 
             }
-            if(num_generate_selected == selections_per_gen_type[gen_state]  )
+            if(generate_selections.size() == selections_per_gen_type[gen_state]  )
                 ShowGenerate();
 
             UpdateDraw();
@@ -5631,50 +5629,59 @@ void GLWidget::UpdateTemplateCut()
 
 void GLWidget::AcceptGenerate()
 {
-    ShowGenerate();
+
     current_tool_state = TOOLSTATE_DEFAULT;
+    if(ShowGenerate())
+    {
 
-    switch (gen_state){
+        switch (gen_state){
 
-    case GENSTATE_LINEAR:
-        AddToUndoList(OP_GENERATE_LINEAR);
-        break;
+        case GENSTATE_LINEAR:
+            AddToUndoList(OP_GENERATE_LINEAR);
+            break;
 
-    case GENSTATE_BLEND:
-        AddToUndoList(OP_GENERATE_BLEND);
-        break;
+        case GENSTATE_BLEND:
+            AddToUndoList(OP_GENERATE_BLEND);
+            break;
 
-    case GENSTATE_REVOLVE:
-        AddToUndoList(OP_GENERATE_REVOLVE);
-        break;
+        case GENSTATE_REVOLVE:
+            AddToUndoList(OP_GENERATE_REVOLVE);
+            break;
 
-    case GENSTATE_SLICES:
-        AddToUndoList(OP_GENERATE_SLICES);
-        break;
+        case GENSTATE_SLICES:
+            AddToUndoList(OP_GENERATE_SLICES);
+            break;
 
-    default:
-        break;
+        default:
+            break;
 
+        }
+        sections.append(generated_sections);
+    }
+    else
+    {
+        UpdateAllTests();
+        UpdateDraw();
     }
 
-    sections.append(generated_sections);
+
     generated_sections.clear();
     generate_selections.clear();
-    num_generate_selected = 0;
 
 }
 
 void GLWidget::CancelGenerate()
 {
-    ShowGenerate();
+//    ShowGenerate();
     current_tool_state = TOOLSTATE_DEFAULT;
     generated_sections.clear();
     generate_selections.clear();
-    num_generate_selected = 0;
+    UpdateAllTests();
+    UpdateDraw();
 }
 
 
-void GLWidget::ShowGenerate()
+bool GLWidget::ShowGenerate()
 {
 
     generated_sections.clear();
@@ -5688,7 +5695,13 @@ void GLWidget::ShowGenerate()
 
         if (template_verts.empty() || template_faces.empty()) {
             qDebug() << "GLWidget::ShowGenerate() - Template is empty (either no vertices or faces), aborting";
-            return;
+
+            UpdateAllTests();
+            UpdateDraw();
+            if(current_tool_state == TOOLSTATE_DEFAULT) // this is should only be shown during AcceptGenerate()
+                QMessageBox::warning ( this, "Generate Slices Error", "Can't Accept Generate Slices - Template is empty (either no vertices or faces).");
+
+            return false;
         }
 
         //1.  compute bounding box
@@ -5813,8 +5826,14 @@ void GLWidget::ShowGenerate()
         {
 
             if (generate_selections.size() < 2) {
-                qDebug() << "GLWidget::DoGenerateBlend() - Warning, 3 sections need to be selected";
-                return;
+                qDebug() << "GLWidget::DoGenerateLinear() - Warning, 2 sections need to be selected";
+
+                UpdateAllTests();
+                UpdateDraw();
+                if(current_tool_state == TOOLSTATE_DEFAULT) // this is should only be shown during AcceptGenerate()
+                    QMessageBox::warning ( this, "Generate Linear Error", "Can't Accept Generate Linear - 2 sections need to be selected.");
+
+                return false;
             }
 
             //1.  test to make sure they differ
@@ -5823,7 +5842,13 @@ void GLWidget::ShowGenerate()
 
             if (ind1 == ind2) {
                 qDebug() << "GLWidget::DoGenerateLinear() - Last two selections the same, aborting";
-                break;
+
+                UpdateAllTests();
+                UpdateDraw();
+                if(current_tool_state == TOOLSTATE_DEFAULT) // this is should only be shown during AcceptGenerate()
+                    QMessageBox::warning ( this, "Generate Linear Error", "Can't Accept Generate Linear - Last two selections the same.");
+
+                return false;
             }
 
             //2.  grab the set of curves that should be copied, this involves getting all children
@@ -5853,7 +5878,13 @@ void GLWidget::ShowGenerate()
 
             if (intersects.size() < 2) {
                 qDebug() << "GLWidget::DoGenerateLinear() - Aborting, need at least 2 contour intersections.";
-                return;
+
+                UpdateAllTests();
+                UpdateDraw();
+                if(current_tool_state == TOOLSTATE_DEFAULT) // this is should only be shown during AcceptGenerate()
+                    QMessageBox::warning ( this, "Generate Linear Error", "Can't Accept Generate Linear - Section 1 and Section 2 must intersect.");
+
+                return false;
             }
 
             //compute 2d intersection ray points
@@ -5994,7 +6025,13 @@ void GLWidget::ShowGenerate()
 
             if (generate_selections.size() < 3) {
                 qDebug() << "GLWidget::DoGenerateBlend() - Warning, 3 sections need to be selected";
-                return;
+
+                UpdateAllTests();
+                UpdateDraw();
+                if(current_tool_state == TOOLSTATE_DEFAULT) // this is should only be shown during AcceptGenerate()
+                    QMessageBox::warning ( this, "Generate Blend Error", "Can't Accept Generate Blend - 3 sections need to be selected.");
+
+                return false;
             }
 
             //2.  need to ensure that sections 2 and 3 are connected to section 1
@@ -6005,7 +6042,13 @@ void GLWidget::ShowGenerate()
 
             if (!section1.IsIntersectingSection(section2) || !section1.IsIntersectingSection(section3)) {
                 qDebug() << "GLWidget::DoGenerateBlend() - Warning, section1 does not intersect both section2 and section3";
-                return;
+
+                UpdateAllTests();
+                UpdateDraw();
+                if(current_tool_state == TOOLSTATE_DEFAULT) // this is should only be shown during AcceptGenerate()
+                    QMessageBox::warning ( this, "Generate Blend Error", "Can't Accept Generate Blend - Section 1 does not intersect both Section 2 and Section 3.");
+
+                return false;
             }
 
             AddToUndoList(OP_GENERATE_BLEND);
@@ -6105,7 +6148,13 @@ void GLWidget::ShowGenerate()
         {
             if (generate_selections.size() < 2) {
                 qDebug() << "GLWidget::DoGenerateRevolve() - Warning, 2 sections need to be selected";
-                return;
+
+                UpdateAllTests();
+                UpdateDraw();
+                if(current_tool_state == TOOLSTATE_DEFAULT) // this is should only be shown during AcceptGenerate()
+                    QMessageBox::warning ( this, "Generate Revolve Error", "Can't Accept Generate Revolve - 2 sections need to be selected");
+
+                return false;
             }
 
             //1.  need to ensure that section 1 is connected to section 2
@@ -6117,7 +6166,13 @@ void GLWidget::ShowGenerate()
 
             if (!section1.IsIntersectingSection(section2)) {
                 qDebug() << "GLWidget::DoGenerateRevolve() - Warning, section1 does not intersect section2";
-                return;
+
+                UpdateAllTests();
+                UpdateDraw();
+                if(current_tool_state == TOOLSTATE_DEFAULT) // this is should only be shown during AcceptGenerate()
+                    QMessageBox::warning ( this, "Generate Revolve Error", "Can't Accept Generate Revolve - Section 1 does not intersect Section 2.");
+
+                return false;
             }
 
             //2.  grab the set of curves that should be copied, this involves getting all children
@@ -6222,13 +6277,16 @@ void GLWidget::ShowGenerate()
 
     UpdateAllTests();
     UpdateDraw();
+    return true;
 }
 
 void GLWidget::StartGenerateLinear()
 {
+    if(current_tool_state == TOOLSTATE_GENERATE)
+        CancelGenerate();
+
     gen_state = GENSTATE_LINEAR;
     current_tool_state = TOOLSTATE_GENERATE;
-    num_generate_selected = 0;
     selected = -1;
     generate_selections.clear();
     UpdateAllTests();
@@ -6238,9 +6296,11 @@ void GLWidget::StartGenerateLinear()
 
 void GLWidget::StartGenerateBlend()
 {
+    if(current_tool_state == TOOLSTATE_GENERATE)
+        CancelGenerate();
+
     gen_state = GENSTATE_BLEND;
     current_tool_state = TOOLSTATE_GENERATE;
-    num_generate_selected = 0;
     selected = -1;
     generate_selections.clear();
     UpdateAllTests();
@@ -6249,9 +6309,11 @@ void GLWidget::StartGenerateBlend()
 
 void GLWidget::StartGenerateRevolve()
 {
+    if(current_tool_state == TOOLSTATE_GENERATE)
+        CancelGenerate();
+
     gen_state = GENSTATE_REVOLVE;
     current_tool_state = TOOLSTATE_GENERATE;
-    num_generate_selected = 0;
     selected = -1;
     generate_selections.clear();
     UpdateAllTests();
@@ -6260,9 +6322,11 @@ void GLWidget::StartGenerateRevolve()
 
 void GLWidget::StartGenerateSlices()
 {
+    if(current_tool_state == TOOLSTATE_GENERATE)
+        CancelGenerate();
+
     gen_state = GENSTATE_SLICES;
     current_tool_state = TOOLSTATE_GENERATE;
-    num_generate_selected = 0;
     selected = -1;
     generate_selections.clear();
     ShowGenerate(); //note: since no selections are required, perform operation immediately

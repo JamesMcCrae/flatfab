@@ -287,7 +287,7 @@ public slots:
     void DoGenerateMakeRadialHole();
     void DoGenerateSurfaceFacets();
 
-    void ShowGenerate();
+    bool ShowGenerate();
     void AcceptGenerate();
     void CancelGenerate();
 
@@ -542,6 +542,8 @@ private:
     int selections_per_gen_type[GENSTATE_NUM]; // the number of needed selections for each type of generate
 
     QList <PlanarSection> generated_sections; // the temporary generate sections
+
+
 
     QErrorMessage errorMessage;
 
