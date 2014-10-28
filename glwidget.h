@@ -83,6 +83,7 @@ enum GenerateState
     GENSTATE_LINEAR,
     GENSTATE_REVOLVE,
     GENSTATE_SLICES,
+    GENSTATE_GRID,
     GENSTATE_NUM //note: enum declaration guaranteed to be in order: 0, 1, 2... therefore this enum is the # of previously defined enums
 };
 
@@ -295,6 +296,7 @@ public slots:
     void StartGenerateBlend();
     void StartGenerateRevolve();
     void StartGenerateSlices();
+    void StartGenerateGrid();
 
     void StartRadial();
 

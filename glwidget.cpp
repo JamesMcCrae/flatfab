@@ -138,7 +138,8 @@ GLWidget::GLWidget() :
     selections_per_gen_type[GENSTATE_BLEND] = 3;
     selections_per_gen_type[GENSTATE_LINEAR] = 2;
     selections_per_gen_type[GENSTATE_REVOLVE] = 2;
-    selections_per_gen_type[GENSTATE_SLICES] = 0;   
+    selections_per_gen_type[GENSTATE_SLICES] = 0;
+    selections_per_gen_type[GENSTATE_GRID] = 1;
 
 }
 
@@ -930,7 +931,7 @@ QWidget * GLWidget::GetGenerateWidget()
     // Grid group
 
     QPushButton * gridButton = new QPushButton("Grid");
-    connect(gridButton, SIGNAL(clicked()), this, SLOT(DoGenerateGrid()));
+    connect(gridButton, SIGNAL(clicked()), this, SLOT(StartGenerateGrid()));
 
     QSlider * grid_sizex_slider = new QSlider();
     grid_sizex_slider->setRange(1, 50);
@@ -1501,19 +1502,15 @@ void GLWidget::paintGL()
             glColor3f(0.75f, 0.75f, 0.75f);
             for (int i=0; i<sections.size(); ++i) {
 
-                if(current_tool_state == TOOLSTATE_GENERATE)
+/*                if(current_tool_state == TOOLSTATE_GENERATE)
                 {
-//                    if ( !( i == selected || (generate_selections.size() >= 2 && i == last_selected.last()) ||
-//                           (generate_selections.size() == 3 && i == last_selected[last_selected.size() - 2]) ) ) {
-//                        sections[i].DrawShadow();
-//                    }
                     if ( !( i == selected || (generate_selections.size() > 0 && i == generate_selections[0]) ||
                             (generate_selections.size() > 1 && i == generate_selections[1]) ||
                            (generate_selections.size() == 3 && i == generate_selections[2]) ) ) {
                         sections[i].DrawShadow();
                     }
                 }
-                else if (i != selected) {
+                else */if (i != selected) {
                     sections[i].DrawShadow();
                 }
 
@@ -1563,30 +1560,8 @@ void GLWidget::paintGL()
 
     if(current_tool_state == TOOLSTATE_GENERATE)
     {
-//        if(generate_selections.size() == 1)
-//        {
-//            glColor3f(1.0f, 0.0f, 0.0f);
-//            sections[selected].DrawSlab();
-//        }
-//        else if(generate_selections.size() == 2)
-//        {
-//            glColor3f(1.0f, 0.0f, 0.0f);
-//            sections[last_selected[last_selected.size() - 2]].DrawSlab();
-//            glColor3f(0.0f, 1.0f, 0.0f);
-//            sections[selected].DrawSlab();
-//        }
-//        else if(generate_selections.size() == 3)
-//        {
-//            glColor3f(1.0f, 0.0f, 0.0f);
-//            sections[last_selected[last_selected.size() - 3]].DrawSlab();
-//            glColor3f(0.0f, 1.0f, 0.0f);
-//            sections[last_selected[last_selected.size() - 2]].DrawSlab();
-//            glColor3f(0.0f, 0.0f, 1.0f);
-//            sections[selected].DrawSlab();
 
-//        }
-
-        if(generate_selections.size() > 0)
+        if(generate_selections.size() > 0 && gen_state != GENSTATE_GRID)
         {
             glColor3f(1.0f, 0.0f, 0.0f);
             sections[generate_selections[0]].DrawSlab();
@@ -2041,7 +2016,7 @@ b) when there are planes, attempt to select one
                         // If selectiing sections for the generate tools
                         if(current_tool_state == TOOLSTATE_GENERATE)
                         {
-                            if(generate_selections.size() < selections_per_gen_type[gen_state])
+                            if(generate_selections.size() < selections_per_gen_type[gen_state] || gen_state == GENSTATE_GRID)
                             {
 
                                 bool already_selected = false;
@@ -2055,7 +2030,10 @@ b) when there are planes, attempt to select one
                                 }
                                 if(!already_selected)
                                 {
-                                    generate_selections.append(section_clicked);
+                                    if(gen_state == GENSTATE_GRID && generate_selections.size() == 1)
+                                        generate_selections[0] = section_clicked; // this allows the user to switch sections during grid generation
+                                    else
+                                        generate_selections.append(section_clicked);
                                 }
 
                             }
@@ -2125,7 +2103,7 @@ b) when there are planes, attempt to select one
         if(current_tool_state == TOOLSTATE_GENERATE)
         {
             const int new_select = PickSection(mouse_pos, false);
-            if(generate_selections.size() < selections_per_gen_type[gen_state])
+            if(generate_selections.size() < selections_per_gen_type[gen_state]  || gen_state == GENSTATE_GRID)
             {
                 bool already_selected = false;
                 for(int i = 0; i < generate_selections.size(); i++)
@@ -2138,7 +2116,10 @@ b) when there are planes, attempt to select one
                 }
                 if(!already_selected)
                 {
-                    generate_selections.append(new_select);
+                    if(gen_state == GENSTATE_GRID && generate_selections.size() == 1)
+                        generate_selections[0] = new_select; // this allows the user to switch sections during grid generation
+                    else
+                        generate_selections.append(new_select);
                 }
 
             }
@@ -3697,10 +3678,13 @@ void GLWidget::SetGenerateGridSizeX(const int i)
     generate_grid_sizex = float(i) / 10.0f;
     grid_sizex_label->setText(QString::number(generate_grid_sizex));
 
-    if (last_op == OP_GENERATE_GRID) {
-        Undo(OP_GENERATE_GRID);
-        DoGenerateGrid();
-    }
+//    if (last_op == OP_GENERATE_GRID) {
+//        Undo(OP_GENERATE_GRID);
+//        DoGenerateGrid();
+//    }
+
+    if(current_tool_state == TOOLSTATE_GENERATE && gen_state == GENSTATE_GRID)
+        ShowGenerate();
 }
 
 void GLWidget::SetGenerateGridSizeY(const int i)
@@ -3708,10 +3692,13 @@ void GLWidget::SetGenerateGridSizeY(const int i)
     generate_grid_sizey = float(i) / 10.0f;
     grid_sizey_label->setText(QString::number(generate_grid_sizey));
 
-    if (last_op == OP_GENERATE_GRID) {
-        Undo(OP_GENERATE_GRID);
-        DoGenerateGrid();
-    }
+//    if (last_op == OP_GENERATE_GRID) {
+//        Undo(OP_GENERATE_GRID);
+//        DoGenerateGrid();
+//    }
+
+    if(current_tool_state == TOOLSTATE_GENERATE && gen_state == GENSTATE_GRID)
+        ShowGenerate();
 }
 
 void GLWidget::SetGenerateGridStapleSize(const int i)
@@ -3719,10 +3706,13 @@ void GLWidget::SetGenerateGridStapleSize(const int i)
     generate_grid_staplesize = float(i) / 20.0f;
     grid_staple_label->setText(QString::number(generate_grid_staplesize));
 
-    if (last_op == OP_GENERATE_GRID) {
-        Undo(OP_GENERATE_GRID);
-        DoGenerateGrid();
-    }
+//    if (last_op == OP_GENERATE_GRID) {
+//        Undo(OP_GENERATE_GRID);
+//        DoGenerateGrid();
+//    }
+
+    if(current_tool_state == TOOLSTATE_GENERATE && gen_state == GENSTATE_GRID)
+        ShowGenerate();
 }
 
 void GLWidget::SetGenerateLinearSpacing(const int i)
@@ -5652,21 +5642,25 @@ void GLWidget::AcceptGenerate()
             AddToUndoList(OP_GENERATE_SLICES);
             break;
 
+        case GENSTATE_GRID:
+            AddToUndoList(OP_GENERATE_GRID);
+            sections.removeAt(generate_selections[0]); // Note: this must come after AddToUndoList(OP_GENERATE_GRID); or else the undo will not work
+            break;
+
         default:
             break;
 
         }
         sections.append(generated_sections);
     }
-    else
-    {
-        UpdateAllTests();
-        UpdateDraw();
-    }
+
 
 
     generated_sections.clear();
     generate_selections.clear();
+
+    UpdateAllTests();
+    UpdateDraw();
 
 }
 
@@ -6178,7 +6172,6 @@ bool GLWidget::ShowGenerate()
             //2.  grab the set of curves that should be copied, this involves getting all children
             //    of the revolving one's children (relative to tree with root at base planar section)
             QVector <QVector <bool> > graph;
-            QList <QList <int> > cycles;
             PlanarSection::ComputeIntersectionGraph(sections, graph);
 
             QList <int> branch;
@@ -6269,13 +6262,145 @@ bool GLWidget::ShowGenerate()
         }
         break;
 
+
+    case GENSTATE_GRID:
+    {
+        //1.  need to ensure at least 3 sections were selected
+        if (generate_selections.size() < 1) {
+            qDebug() << "GLWidget::DoGenerateGrid() - Warning, 1 section must be selected";
+
+            UpdateAllTests();
+            UpdateDraw();
+            if(current_tool_state == TOOLSTATE_DEFAULT) // this is should only be shown during AcceptGenerate()
+                QMessageBox::warning ( this, "Generate Grid Error", "Can't Accept Generate Grid - 1 section must be selected");
+
+            return false;
+        }
+
+        PlanarSection & section1 = sections[generate_selections[0]];
+
+        //TODO: this stuff should eventually be moved into planarsection class, and only parameters passed
+        const float offset = -0.01f;
+
+        //get bounding box
+        QVector2D min_bb, max_bb;
+        section1.GetBoundingBox2D(min_bb, max_bb);
+
+        QList <PlanarSection> split_sections;
+        split_sections.push_back(section1);
+
+        QList <QVector2D> split_pts;
+        QList <QVector2D> split_dirs;
+
+        for (float x=min_bb.x()+(generate_grid_sizex*offset); x-generate_grid_sizex<=max_bb.x(); x += generate_grid_sizex) {
+            split_pts.push_back(QVector2D(x, 0));
+            split_dirs.push_back(QVector2D(0, 1));
+        }
+
+        for (float y=min_bb.y()+(generate_grid_sizey*offset); y-generate_grid_sizey<=max_bb.y(); y += generate_grid_sizey) {
+            split_pts.push_back(QVector2D(0, y));
+            split_dirs.push_back(QVector2D(1, 0));
+        }
+
+        //iterate through all cuts
+        for (int i=0; i<split_pts.size(); ++i) {
+
+            //this saves sections remaining following the cut
+            QList <PlanarSection> split_sections_after_cut;
+
+            for (int j=0; j<split_sections.size(); ++j) {
+
+                QList <PlanarSection> each_split_sections;
+                split_sections[j].SplitAlongLine(split_pts[i], split_dirs[i], each_split_sections);
+
+                if (!each_split_sections.empty()) {
+                    split_sections_after_cut += each_split_sections;
+                }
+                else {
+                    split_sections_after_cut += split_sections[j];
+                }
+
+            }
+
+            split_sections = split_sections_after_cut;
+
+        }
+
+        for (int i=0; i<split_sections.size(); ++i) {
+            SetupPlanarSection(split_sections[i]);
+        }
+
+        //need to add more sections between neighbouring cuts
+        //add a bunch of staples regularly, then, only keep the ones connected to at least 2 other planes
+
+
+        QList <PlanarSection> staple_sections;
+        //sections with normal which is vertical (wrt to the grid plane)
+        for (float x=min_bb.x()+(generate_grid_sizex*(1.0f+offset)); x<=max_bb.x(); x += generate_grid_sizex) {
+            for (float y=min_bb.y()+(generate_grid_sizey*(0.5+offset)); y<=max_bb.y(); y += generate_grid_sizey) {
+
+                PlanarSection staple;
+                SetupPlanarSection(staple);
+                staple.SetP(section1.GetPoint3D(QVector2D(x, y)));
+                staple.SetT(section1.N());
+                staple.SetN(section1.B());
+                staple.SetB(section1.T());
+                staple.CreateSquare(generate_grid_staplesize);
+                staple_sections.push_back(staple);
+
+            }
+        }
+
+        //sections with normal which is horizontal (wrt to the grid plane)
+        for (float y=min_bb.y()+(generate_grid_sizey*(1.0f+offset)); y<=max_bb.y(); y += generate_grid_sizey) {
+            for (float x=min_bb.x()+(generate_grid_sizex*(0.5+offset)); x<=max_bb.x(); x += generate_grid_sizex) {
+
+                PlanarSection staple;
+                SetupPlanarSection(staple);
+                staple.SetP(section1.GetPoint3D(QVector2D(x, y)));
+                staple.SetT(section1.B());
+                staple.SetN(section1.T());
+                staple.SetB(section1.N());
+                staple.CreateSquare(generate_grid_staplesize);
+                staple_sections.push_back(staple);
+
+            }
+        }
+
+        //for all staple sections now ensure they intersect at least 2 of the split sections
+        for (int i=0; i<staple_sections.size(); ++i) {
+
+            //count # of intersections
+            int num_staple_split_ints = 0;
+            for (int j=0; j<split_sections.size(); ++j) {
+
+                if (staple_sections[i].IsIntersectingSection(split_sections[j])) {
+                    ++num_staple_split_ints;
+                    //qDebug() << i << "intersects" << j;
+                }
+            }
+
+            //if less than 2, remove this staple
+            //qDebug() << i << "intersects" << num_staple_split_ints << "sections";
+            if (num_staple_split_ints < 2) {
+                staple_sections.removeAt(i);
+                --i;
+            }
+        }
+
+
+        generated_sections += split_sections;
+        generated_sections += staple_sections;
+    }
+        break;
+
     default:
         break;
 
 
     }
 
-    UpdateAllTests();
+    //UpdateAllTests();
     UpdateDraw();
     return true;
 }
@@ -6330,6 +6455,19 @@ void GLWidget::StartGenerateSlices()
     selected = -1;
     generate_selections.clear();
     ShowGenerate(); //note: since no selections are required, perform operation immediately
+    UpdateAllTests();
+    UpdateDraw();
+}
+
+void GLWidget::StartGenerateGrid()
+{
+    if(current_tool_state == TOOLSTATE_GENERATE)
+        CancelGenerate();
+
+    gen_state = GENSTATE_GRID;
+    current_tool_state = TOOLSTATE_GENERATE;
+    selected = -1;
+    generate_selections.clear();
     UpdateAllTests();
     UpdateDraw();
 }
