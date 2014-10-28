@@ -150,12 +150,12 @@ void PlanarSection::CreateRectangle(QVector2D min_v, QVector2D max_v)
 
 }
 
-void PlanarSection::CreateCircle(QVector2D centre, const float radius)
+void PlanarSection::CreateCircle(QVector2D centre, const float radius, int num_sections)
 {
 
     QList <QVector2D> pts;
 
-    const int circ_samples = 16;
+    const int circ_samples = num_sections;
     const float pi2 = (2.0f * 3.14159f);
 
     for (int i=0; i<circ_samples; ++i) {
@@ -209,18 +209,19 @@ void PlanarSection::CreateRadial(QVector2D centre, const float base_rad, const i
 }
 
 
-void PlanarSection::CreateRadial(QVector2D centre)
+// This one copies the first pie sector and then rotates it
+void PlanarSection::CreateRadial(QVector2D centre, int points_per_sector)
 {
 
     QList <QLineF> lines;
     QList <QVector2D> pts;
 
 
-    if(bez_curve[0].GetNumControlPoints() < 7)
+    if(bez_curve[0].GetNumControlPoints() < points_per_sector)
         return;
 
     // Convert QVector2Ds to QLineFs
-    for(int i = 0; i < 7; i++)
+    for(int i = 0; i < points_per_sector; i++)
     {
         lines.push_back( QLineF(centre.toPointF(), bez_curve[0].Point(i).toPointF()) );
         pts.push_back(bez_curve[0].Point(i));
@@ -228,15 +229,16 @@ void PlanarSection::CreateRadial(QVector2D centre)
 
     const float angularLength = lines.back().angleTo(lines.front());
     const int num_sectors = int( 360.0 / angularLength);
-    qDebug() << "num sectors: " << num_sectors;
-    qDebug() << "angle: " << angularLength;
+//    qDebug() << "num sectors: " << 360.0 / angularLength;
+//    qDebug() << "num sectors: " << num_sectors;
+//    qDebug() << "angle: " << angularLength;
 
     for (int i=1; i<num_sectors; ++i) {
 
-        lines[0].setAngle(lines[0].angle() + angularLength);
-        for (int j=1; j<7; ++j) {
+        lines[0].setAngle(lines[0].angle() - angularLength);
+        for (int j=1; j<points_per_sector; ++j) {
 
-            lines[j].setAngle(lines[j].angle() + angularLength);
+            lines[j].setAngle(lines[j].angle() - angularLength);
             pts.push_back( QVector2D(lines[j].x2(), lines[j].y2()) );
 
         }
@@ -607,8 +609,6 @@ void PlanarSection::DrawCurveControlPointsHandleStyle(const float cam_width, con
 
                 glColor3f(1.0f,0.5f,0.8f);
 
-//                if(i < 7)
-//                    glColor3f(0.0f,1.0f,1.0f);
 
 //                if((i != bez_curve[c].SelectedPoint()))
 //                    glColor4f(1.0f,0.5f,0.8f,.7f);
@@ -625,8 +625,6 @@ void PlanarSection::DrawCurveControlPointsHandleStyle(const float cam_width, con
 
                 glColor3f(1.0f,0.0f,.5f);
 
-//                if(i < 7)
-//                    glColor3f(0.0f,1.0f,1.0f);
 
 //                if((i != bez_curve[c].SelectedPoint()))
 //                    glColor4f(1.0f,0.0f,.5f,.7f);

@@ -2700,14 +2700,6 @@ void GLWidget::mouseReleaseEvent(QMouseEvent *event)
     }
     else if (event->button() == Qt::RightButton) {
 
-//        if(state == STATE_MANIP_CTRLPOINT)
-//        {
-//            if(last_op == OP_GENERATE_MAKE_RADIAL)
-//            {
-//                qDebug() << "doing it";
-//                MakeRadialAfterEdit();
-//            }
-//        }
 
         if (IsSectionSelected()) {
 
@@ -7303,28 +7295,6 @@ void GLWidget::DoGenerateMakeRadial()
 
 }
 
-void GLWidget::MakeRadialAfterEdit()
-{
-
-    if (!IsSectionSelected()) {
-        return;
-    }
-
-    AddToUndoList(OP_GENERATE_MAKE_RADIAL);
-
-    //1.  get existing points dimensions
-    QVector2D min_v;
-    QVector2D max_v;
-    sections[selected].GetBoundingBox2D(min_v, max_v);
-
-    //2.  parameterize circle based on dimensions
-    const QVector2D centre = (min_v + max_v) * 0.5f;
-    sections[selected].CreateRadial(centre);
-
-    UpdateAllTests();
-    UpdateDraw();
-
-}
 
 
 void GLWidget::DoGenerateMakeRadialHole()

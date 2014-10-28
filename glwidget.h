@@ -287,8 +287,6 @@ public slots:
     void DoGenerateMakeRadialHole();
     void DoGenerateSurfaceFacets();
 
-    void MakeRadialAfterEdit();
-
     void ShowGenerate();
     void AcceptGenerate();
     void CancelGenerate();
