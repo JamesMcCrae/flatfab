@@ -1030,6 +1030,7 @@ QWidget * GLWidget::GetGenerateWidget()
     slices_spacing_slider->setRange(1, 50);
     slices_spacing_slider->setOrientation(Qt::Horizontal);
     slices_spacing_slider->setValue(GetGenerateSlicesSpacing()*10);
+    connect(slices_spacing_slider, SIGNAL(sliderReleased()), this, SLOT(UpdateGenerateSlicesSpacing()));
     connect(slices_spacing_slider, SIGNAL(valueChanged(int)), this, SLOT(SetGenerateSlicesSpacing(int)));
 
     QCheckBox * slices_x_checkbox = new QCheckBox("X");
@@ -1579,6 +1580,7 @@ void GLWidget::paintGL()
         }
 
 
+        glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         glEnable(GL_BLEND);
         glColor4f(0.35f, 0.45f, 0.6f, 0.5f);
         for(int i = 0; i < generated_sections.size(); i++)
@@ -1807,10 +1809,96 @@ void GLWidget::paintGL()
     }
 
 
+    if(current_tool_state == TOOLSTATE_GENERATE)
+        DrawGenerateInstructions();
 
 //    DrawInfo();
 
 }
+
+
+
+void GLWidget::DrawGenerateInstructions()
+{
+
+    QPainter painter(this);
+    painter.setRenderHint(QPainter::Antialiasing);
+
+    QString title;
+    QString text;
+
+
+    switch (gen_state) {
+
+    case GENSTATE_LINEAR:
+        title = "Generate: Linear";
+        text = "Instructions\n\n 1) Select the base section\n 2) Select a section that intersects the base\n 3) Press Enter to accept or Escape to cancel";
+        break;
+
+    case GENSTATE_BLEND:
+        title = "Generate: Blend";
+        text = "Instructions\n\n 1) Select the base section\n 2) Select two sections that intersect the base\n 3) Press Enter to accept or Escape to cancel";
+        break;
+
+    case GENSTATE_REVOLVE:
+        title = "Generate: Revolve";
+        text = "Instructions\n\n 1) Select the base section\n 2) Select a section that intersects the base\n 3) Press Enter to accept or Escape to cancel";
+        break;
+
+    case GENSTATE_GRID:
+        title = "Generate: Grid";
+        text = "Instructions\n\n 1) Select a section to form the grid\n 2) Press Enter to accept or Escape to cancel";
+        break;
+
+    case GENSTATE_SLICES:
+        title = "Generate: Slices";
+        text = "Instructions\n\n 1) A template obj must be loaded - This can be done in the Guides side panel\n 2) Press Enter to accept or Escape to cancel";
+        break;
+
+        // branching isn't active yet
+    case GENSTATE_BRANCH:
+        title = "Generate: Branch";
+        text = "Instructions\n\n 1) Set the root slot by clicking and dragging on a section\n 2) Add branches 3) Press Enter to accept or Escape to cancel";
+        break;
+
+    case GENSTATE_NUM:
+        break;
+
+    }
+
+    QFontMetrics metrics = QFontMetrics(font());
+
+    int border = qMax(10, metrics.leading());
+
+    QRect rect = metrics.boundingRect(0, 0, width() - 2*border, int(height()*0.125),
+                                      Qt::AlignLeft | Qt::TextWordWrap, text);
+    rect.setHeight(rect.height() + 20); // This accounts for the title
+
+    painter.setRenderHint(QPainter::TextAntialiasing);
+    painter.fillRect(QRect(0, 0, width(), rect.height() + 2*border),
+                     QColor(245, 245, 245, 127));
+
+
+    QFont title_font = font();
+    title_font.setPixelSize(14);
+    painter.setFont(title_font);
+    painter.setPen(QColor(100,100,100));
+    painter.drawText(border, border,
+                      rect.width(), rect.height(),
+                      Qt::AlignLeft | Qt::TextWordWrap, title);
+
+    painter.setFont(font());
+    painter.setPen(QColor(136,136,136));
+    painter.drawText(border, border + 20,
+                      rect.width(), rect.height(),
+                      Qt::AlignLeft | Qt::TextWordWrap, text);
+
+    painter.end();
+
+
+
+}
+
 
 void GLWidget::DrawInfo()
 {
@@ -3760,18 +3848,17 @@ void GLWidget::SetGenerateLinearScaleY(const bool b)
         ShowGenerate();
 }
 
+void GLWidget::UpdateGenerateSlicesSpacing()
+{
+    if(current_tool_state == TOOLSTATE_GENERATE && gen_state == GENSTATE_SLICES)
+        ShowGenerate();
+}
+
 void GLWidget::SetGenerateSlicesSpacing(const int i)
 {
     generate_slices_spacing = float(i) / 10.0f;
     slices_spacing_label->setText(QString::number(generate_slices_spacing));
 
-//    if (last_op == OP_GENERATE_LINEAR) {
-//        Undo(OP_GENERATE_LINEAR);
-//        DoGenerateLinear();
-//    }
-
-    if(current_tool_state == TOOLSTATE_GENERATE && gen_state == GENSTATE_SLICES)
-        ShowGenerate();
 }
 
 void GLWidget::SetGenerateSlicesX(const bool b)

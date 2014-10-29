@@ -160,6 +160,7 @@ protected:
     void DrawSymmetryPlanes();
     void DrawSection(const int i);
     void DrawInfo();
+    void DrawGenerateInstructions();
     void DrawMarkers();
     void DrawSlot(QVector3D start, QVector3D end);
     void DrawDimensionTool();
@@ -229,6 +230,7 @@ public slots:
     void SetGenerateLinearScaleX(const bool b);
     void SetGenerateLinearScaleY(const bool b);
     void SetGenerateSlicesSpacing(const int i);
+    void UpdateGenerateSlicesSpacing();
     void SetGenerateSlicesX(const bool b);
     void SetGenerateSlicesY(const bool b);
     void SetGenerateSlicesZ(const bool b);
