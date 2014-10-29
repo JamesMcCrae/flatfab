@@ -140,6 +140,7 @@ GLWidget::GLWidget() :
     selections_per_gen_type[GENSTATE_REVOLVE] = 2;
     selections_per_gen_type[GENSTATE_SLICES] = 0;
     selections_per_gen_type[GENSTATE_GRID] = 1;
+    selections_per_gen_type[GENSTATE_BRANCH] = 1;
 
 }
 
@@ -905,10 +906,10 @@ QWidget * GLWidget::GetGenerateWidget()
     // Branch group
 
     QPushButton * setRootButton = new QPushButton("Set Root");
-    connect(setRootButton, SIGNAL(clicked()), this, SLOT(DoGenerateBranchingSetRoot()));
+    connect(setRootButton, SIGNAL(clicked()), this, SLOT(DoGenerateBranchingSetRoot()) );
 
-    QPushButton * branchButton = new QPushButton("Branch");
-    connect(branchButton, SIGNAL(clicked()), this, SLOT(DoGenerateBranching()));
+    QPushButton * branchButton = new QPushButton("Add Branch");
+    connect(branchButton, SIGNAL(clicked()), this, SLOT(DoGenerateBranching()) );
 
     QSlider * branching_scalechild_slider = new QSlider();
     branching_scalechild_slider->setRange(1, 200);
@@ -1603,7 +1604,10 @@ void GLWidget::paintGL()
         PlanarSection::DrawConvexHull(sections_convex_hull, centre_of_mass_in_hull);
     }
 
-    DrawSlot();
+    DrawSlot(slot_start, slot_end);
+
+    if(recursive_slot_start != QVector3D(0, 0 ,0))
+        DrawSlot(recursive_slot_start, recursive_slot_end);
 
     //draw template cut only when:
     //1.  no sections exist,
@@ -1645,7 +1649,8 @@ void GLWidget::paintGL()
 
     glClear(GL_DEPTH_BUFFER_BIT);
     UpdateMarkers();
-    DrawMarkers();      
+    DrawMarkers();
+
 
     if (state == STATE_DIMENSIONING_SECOND) {
         DrawDimensionTool();
@@ -2014,7 +2019,7 @@ b) when there are planes, attempt to select one
                         sections[section_clicked].MouseRayIntersect(mouse_pos, p);
 
                         // If selectiing sections for the generate tools
-                        if(current_tool_state == TOOLSTATE_GENERATE)
+                        if(current_tool_state == TOOLSTATE_GENERATE && gen_state != GENSTATE_BRANCH)
                         {
                             if(generate_selections.size() < selections_per_gen_type[gen_state] || gen_state == GENSTATE_GRID)
                             {
@@ -5180,7 +5185,7 @@ void GLWidget::DrawMarkers()
 
 }
 
-void GLWidget::DrawSlot()
+void GLWidget::DrawSlot(QVector3D start, QVector3D end)
 {
 
     //draw the slot as a dashed line
@@ -5191,8 +5196,8 @@ void GLWidget::DrawSlot()
     glLineStipple(1, 0x00ff);
     glBegin(GL_LINES);
 
-    glVertex3f(slot_start.x(), slot_start.y(), slot_start.z());
-    glVertex3f(slot_end.x(), slot_end.y(), slot_end.z());
+    glVertex3f(start.x(), start.y(), start.z());
+    glVertex3f(end.x(), end.y(), end.z());
 
     glEnd();
     glDisable(GL_LINE_STIPPLE);
@@ -5200,6 +5205,8 @@ void GLWidget::DrawSlot()
     glEnable(GL_DEPTH_TEST);
 
 }
+
+
 
 void GLWidget::DrawDimensionTool()
 {
@@ -6471,6 +6478,20 @@ void GLWidget::StartGenerateGrid()
     UpdateAllTests();
     UpdateDraw();
 }
+
+//void GLWidget::StartGenerateBranch()
+//{
+//    if(current_tool_state == TOOLSTATE_GENERATE)
+//        CancelGenerate();
+
+//    gen_state = GENSTATE_BRANCH;
+//    current_tool_state = TOOLSTATE_GENERATE;
+//    state = STATE_RECURSIVE_SETUP_SLOT;
+//    selected = -1;
+//    generate_selections.clear();
+//    UpdateAllTests();
+//    UpdateDraw();
+//}
 
 
 

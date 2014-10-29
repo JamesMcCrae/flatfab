@@ -84,6 +84,7 @@ enum GenerateState
     GENSTATE_REVOLVE,
     GENSTATE_SLICES,
     GENSTATE_GRID,
+    GENSTATE_BRANCH,
     GENSTATE_NUM //note: enum declaration guaranteed to be in order: 0, 1, 2... therefore this enum is the # of previously defined enums
 };
 
@@ -160,7 +161,7 @@ protected:
     void DrawSection(const int i);
     void DrawInfo();
     void DrawMarkers();
-    void DrawSlot();
+    void DrawSlot(QVector3D start, QVector3D end);
     void DrawDimensionTool();
     void DrawTemplateSurface();
     void DrawTemplateImage();
@@ -297,6 +298,7 @@ public slots:
     void StartGenerateRevolve();
     void StartGenerateSlices();
     void StartGenerateGrid();
+//    void StartGenerateBranch();
 
     void StartRadial();
 
