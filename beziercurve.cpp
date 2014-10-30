@@ -421,12 +421,17 @@ void BezierCurve::SelectPoint(const QVector2D & p, const float select_size)
 
 }
 
+void BezierCurve::SetSelectedPoint(const int index)
+{
+    selected = index;
+}
+
 int BezierCurve::SelectedPoint() const
 {
     return selected;
 }
 
-void BezierCurve::MoveSelectedPoint(const QVector2D & p, const bool keep_g1)
+void BezierCurve::MoveSelectedPoint(const QVector2D & p, const bool keep_g1, const bool equal_lengths)
 {
 
     if (selected == -1) {
@@ -470,7 +475,10 @@ void BezierCurve::MoveSelectedPoint(const QVector2D & p, const bool keep_g1)
         if (keep_g1 && other_index >= 0) {
 
             float dist = (pts[other_index]-pts[ctrl_pt]).length();
-            pts[other_index] = pts[ctrl_pt] + (p-pts[ctrl_pt]).normalized() * (-dist);            
+            if(equal_lengths)
+                pts[other_index] = pts[ctrl_pt] - (p-pts[ctrl_pt]);
+            else
+                pts[other_index] = pts[ctrl_pt] + (p-pts[ctrl_pt]).normalized() * (-dist);
 
         }
 
@@ -483,19 +491,26 @@ void BezierCurve::MoveSelectedPoint(const QVector2D & p, const bool keep_g1)
 
         if (closed && (selected == 0 || selected == pts.size()-1)) {
 
+
             pts[0] += movement;
-            pts[1] += movement;
-            pts[pts.size()-2] += movement;
             pts[pts.size()-1] += movement;
+            if(keep_g1)
+            {
+                pts[1] += movement;
+                pts[pts.size()-2] += movement;
+            }
 
         }
         else {
 
-            if (selected > 0) {
-                pts[selected-1] += movement;
-            }
-            if (selected < pts.size()-1) {
-                pts[selected+1] += movement;
+            if(keep_g1)
+            {
+                if (selected > 0) {
+                    pts[selected-1] += movement;
+                }
+                if (selected < pts.size()-1) {
+                    pts[selected+1] += movement;
+                }
             }
 
             pts[selected] += movement;

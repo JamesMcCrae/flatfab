@@ -163,12 +163,13 @@ public:
     bool RayIntersect(const QVector3D & p0, const QVector3D & dir, QVector3D & intersect);
     bool MouseOutsideDeadzone(const QVector2D & v, const QVector3D & slot_start, const QVector3D & slot_end, const float deadzone_radius);
 
-    void SelectMouseRayIntersect(const QVector2D & v, const float cam_width);
+    void SelectMouseRayIntersect(const QVector2D & v, const float cam_width);   
     void MoveWeightMouseRayIntersect(const QVector2D & v);
-    void MoveCtrlPointMouseRayIntersect(const QVector2D & v, const bool keep_g1);
+    void MoveCtrlPointMouseRayIntersect(const QVector2D & v, const bool keep_g1, const bool equal_lengths = false);
 
     bool IsCtrlPointSelected();
     int SelectedCtrlPoint();
+    void SelectCtrlPoint(const int ctrl_point_index, const int bez_curve_index = 0);
     void UnselectCtrlPoint();
     void SetCtrlPointsAboveXZPlane();
     void InsertCtrlPoint();

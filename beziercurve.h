@@ -56,8 +56,9 @@ public:
     const QList <QVector2D> & Samples() const;    
 
     void SelectPoint(const QVector2D & p, const float select_size);
+    void SetSelectedPoint(const int index);
     int SelectedPoint() const;
-    void MoveSelectedPoint(const QVector2D & p, const bool keep_g1);
+    void MoveSelectedPoint(const QVector2D & p, const bool keep_g1, const bool equal_lengths = false);
     void DeletePoint(const int segment_index);
     void DeleteSelectedPoint();
     void InsertPoint(const int segment_index);

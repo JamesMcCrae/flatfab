@@ -1555,31 +1555,9 @@ void GLWidget::paintGL()
     //GLutils::DrawArrow(QVector3D(0, 0, 0), cam.ViewDir());
 
 
-    if (state == STATE_PEN_POINT || state == STATE_PEN_DRAG)
-    {
-        glColor3f(0.25f, 0.60f, 0.25f);
-        active_section.DrawTris();
-
-        glLineWidth(2.0f);
-        glColor3f(0, 0, 0.3f);
-        active_section.DrawCurve();
-
-        if (do_show_templates) {
-            DrawTemplateCut(template_cut);
-        }
-
-        glColor3f(0, 0, 0);
-        glLineWidth(3.0f);
-        active_section.DrawXZPlaneLine();
-        glLineWidth(1.0f);
-
-        active_section.DrawCurveControlPointsHandleStyle(cam.CamWidth(), cam.Eye());
-    }
-
-
 
     //this stuff changes, not for display list
-    if (state == STATE_CURVE) {
+    if (state == STATE_CURVE || state == STATE_PEN_POINT || state == STATE_PEN_DRAG) {
         glColor3f(0.25f, 0.60f, 0.25f);
         active_section.DrawTris();
         //active_section.DrawInputPolyline();
@@ -1646,6 +1624,8 @@ void GLWidget::paintGL()
                 state == STATE_CAM_TRANSLATE ||
                 state == STATE_DEADZONE ||
                 state == STATE_CURVE ||
+                state == STATE_PEN_POINT ||
+                state == STATE_PEN_DRAG ||
                 state == STATE_MANIP_CTRLPOINT || //3.
                 sections.empty()) { //1.
 
@@ -1732,7 +1712,7 @@ void GLWidget::paintGL()
         }
 
     }
-    else if (state == STATE_CURVE ) {
+    else if (state == STATE_CURVE || state == STATE_PEN_POINT || state == STATE_PEN_DRAG) {
 
         //glColor3f(0.3, 0.3, 0.9);
         //sections.last().DrawSketch();                
@@ -1788,6 +1768,9 @@ void GLWidget::paintGL()
     if (do_show_templates) {
         DrawTemplateImage();
     }
+
+    if(state == STATE_PEN_POINT || state == STATE_PEN_DRAG)
+        active_section.DrawCurveControlPointsHandleStyle(cam.CamWidth(), cam.Eye());
 
 
     // grab control point 2D positions
@@ -1897,7 +1880,7 @@ void GLWidget::DrawGenerateInstructions()
     else if(state == STATE_PEN_POINT || state == STATE_PEN_DRAG)
     {
         title = "Pen Mode";
-        text = "Left-click and drag to create a new point and handles";
+        text = "Left-click and drag to create a new point and handles\nPress enter to finish";
     }
 
     QFontMetrics metrics = QFontMetrics(font());
@@ -2059,7 +2042,7 @@ b) when there are planes, attempt to select one
 
     if (event->button() == Qt::LeftButton) {
 
-        if(ctrl_held || shift_held || alt_held)
+        if(!(pen_mode && state == STATE_PEN_POINT) && (ctrl_held || shift_held || alt_held) )
             state = STATE_ORBIT;
         else
         {
@@ -2103,6 +2086,8 @@ b) when there are planes, attempt to select one
                 break;
 
             case STATE_DEADZONE:
+
+                // Make a pen point change the state
                 if(pen_mode)
                 {
                     state = STATE_PEN_POINT;
@@ -2112,6 +2097,7 @@ b) when there are planes, attempt to select one
 
             case STATE_PEN_POINT:
                 active_section.AddCtrlPointPenPress(0, mouse_pos);
+                active_section.SelectCtrlPoint(active_section.GetCurve(0).Points().size() - 3); // the last two points in the curve attach to the first point
                 break;
 
             case STATE_RESKETCH_CURVE:
@@ -2140,6 +2126,7 @@ b) when there are planes, attempt to select one
 
                     active_section.SketchSetEditing(true);
 
+                    // Make a pen point change the state
                     if(pen_mode)
                     {
                         state = STATE_PEN_POINT;
@@ -2606,6 +2593,11 @@ void GLWidget::mouseMoveEvent(QMouseEvent * event)
 
             break;
 
+        case STATE_PEN_POINT:
+            active_section.MoveCtrlPointMouseRayIntersect(mouse_pos, !ctrl_held, true);
+            active_section.UpdateCurveTrisSlab();
+            break;
+
         case STATE_CURVE:
 
             active_section.AddMouseRayIntersect(0, mouse_pos);
@@ -2715,14 +2707,17 @@ void GLWidget::mouseReleaseEvent(QMouseEvent *event)
             //if the gesture wasn't completed, remove the section being added
             //sections.removeLast();
             //active_section = null_section;
-            qDebug()<<"pen mode: " << pen_mode;
             if(pen_mode)
                 state = STATE_PEN_POINT;
             else if (selected != -1) {
                 SetSelected(-1);
                 UpdateDraw();
             }
-            break;       
+            break;
+
+        case STATE_PEN_POINT:
+            active_section.UnselectCtrlPoint();
+            break;
 
         case STATE_RESKETCH_CURVE:
 
