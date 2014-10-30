@@ -610,6 +610,19 @@ void PlanarSection::DrawCurveControlPointsHandleStyle(const float cam_width, con
                 glColor3f(1.0f,0.5f,0.8f);
 
 
+                if(i == pts.size() - 1)
+                    glColor3f(0.0f,0.0f,1.0f);
+
+                if(i == pts.size() - 2)
+                    glColor3f(0.0f,1.0f,0.0f);
+
+//                if(i == 0)
+//                    glColor3f(1.0f,1.0f,0.0f);
+
+//                if(i == 1)
+//                    glColor3f(1.0f,0.0f,0.0f);
+
+
 //                if((i != bez_curve[c].SelectedPoint()))
 //                    glColor4f(1.0f,0.5f,0.8f,.7f);
 //                else
@@ -624,6 +637,18 @@ void PlanarSection::DrawCurveControlPointsHandleStyle(const float cam_width, con
 //                    s = 0.0075f * cam_width;
 
                 glColor3f(1.0f,0.0f,.5f);
+
+                if(i == pts.size() - 1)
+                    glColor3f(0.0f,0.0f,1.0f);
+
+                if(i == pts.size() - 2)
+                    glColor3f(0.0f,1.0f,0.0f);
+
+//                if(i == 0)
+//                    glColor3f(1.0f,1.0f,0.0f);
+
+//                if(i == 1)
+//                    glColor3f(1.0f,0.0f,0.0f);
 
 
 //                if((i != bez_curve[c].SelectedPoint()))
@@ -2626,6 +2651,83 @@ bool PlanarSection::AddMouseRayIntersect(const int c, const QVector2D & v)
     return result;
 
 }
+
+
+bool PlanarSection::AddCtrlPointPenPress(const int c, const QVector2D & v)
+{
+    QVector3D intersect;
+    bool result = MouseRayIntersect(v, intersect);
+
+    QList <QVector2D> bez_points = bez_curve[c].Points();
+    qDebug()<< "bez_points.size() " << bez_points.size();
+
+    if (result) {
+
+        // Delete the end added from the previous times
+        if(bez_points.size() == 0)
+        {
+            bez_points.push_back(GetPoint2D(intersect));
+            bez_points.push_back(GetPoint2D(intersect));
+        }
+        else
+        {
+
+            // removing the points added to the back
+            bez_points.pop_back();
+            bez_points.pop_back();
+
+            // adding the new points
+            bez_points.push_back(GetPoint2D(intersect));
+            bez_points.push_back(GetPoint2D(intersect));
+            bez_points.push_back(GetPoint2D(intersect));
+        }
+
+
+        // Add the last the last 2 points to connect the curve
+        bez_points.push_back(bez_points.front());
+        //bez_curve[c].AddPoint( bez_curve[c].Point(0) - (bez_curve[c].Point(1) - bez_curve[c].Point(0) ) );
+        bez_points.push_back(bez_points.front());
+
+        bez_curve[c].SetPoints(bez_points);
+
+        // Set closed if large enough
+        if(bez_curve[c].Points().size() > 3)
+            bez_curve[c].SetClosed(true);
+
+        UpdateCurveTrisSlab();
+
+    }
+
+    //qDebug() << "PlanarSection::AddMouseRayIntersect - " << intersect;
+    return result;
+}
+
+
+//bool PlanarSection::AddCtrlPointPenDrag(const int c, const QVector2D & v)
+//{
+//    QVector3D intersect;
+//    bool result = MouseRayIntersect(v, intersect);
+
+//    if (result) {
+
+//        if(bez_curve[c].Points().size() == 0)
+//        {
+//            bez_curve[c].push_back(GetPoint2D(intersect));
+//            bez_curve[c].push_back(GetPoint2D(intersect));
+//        }
+//        bez_curve[c].push_back(GetPoint2D(intersect));
+//        bez_curve[c].push_back(GetPoint2D(intersect));
+//        bez_curve[c].push_back(GetPoint2D(intersect));
+
+//        if(bez_curve[c].Points().size() > 3)
+//            bez_curve[c].SetClosed(true);
+
+//    }
+
+//    //qDebug() << "PlanarSection::AddMouseRayIntersect - " << intersect;
+//    return result;
+//}
+
 
 QVector2D PlanarSection::GetPoint2D(const QVector3D & v) const
 {

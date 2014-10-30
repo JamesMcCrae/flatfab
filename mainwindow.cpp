@@ -214,7 +214,9 @@ void MainWindow::createQuickToolBar()
     // -----
 
 
-    // Push buttons
+    // Push buttons - all buttons are opposite of their boolean counterparts - this is an ugly hack to acheive the right gradient
+
+    //
     QPushButton * button = new QPushButton(QIcon(":/icons/appbar.transform.flip.horizontal.png"),"",this);
     button->setCheckable(true);
     button->setChecked(false); // this is opposite of what it should be - ugly hack to acheive the right gradient
@@ -226,10 +228,23 @@ void MainWindow::createQuickToolBar()
     connect(button, SIGNAL(clicked()), this, SLOT(ToggleLocalSymmetry()));
     button->setFocusPolicy(Qt::NoFocus);
 
+    // Pen method
+    QPushButton * button2 = new QPushButton(QIcon(":/icons/appbar.vector.pen.png"),"",this);
+    button2->setCheckable(true);
+    button2->setChecked(true); // this is opposite of what it should be - ugly hack to acheive the right gradient
+    //button->setIconSize(QSize(25,25));
+    button2->setToolTip("Pen Mode");
+    button2->setStyleSheet("QPushButton {icon-size:35px; max-width:35px; max-height:35px;}"
+                "QPushButton:closed {background-color: #22c024;}"
+                "QPushButton:open {background-color: #fff;}");
+    connect(button2, SIGNAL(clicked()), this, SLOT(TogglePenMode()));
+    button2->setFocusPolicy(Qt::NoFocus);
+
 
     // Setting up layout and widget
     QHBoxLayout * layout = new QHBoxLayout();
     layout->addWidget(button);
+    layout->addWidget(button2);
     QWidget * widget = new QWidget();
     widget->setLayout(layout);
     widget->setFocusPolicy(Qt::NoFocus);
@@ -919,6 +934,11 @@ void MainWindow::ToggleUseMagneticCuts()
 void MainWindow::ToggleLocalSymmetry()
 {
     glWidget.SetDoLocalSymmetry(!glWidget.GetDoLocalSymmetry());
+}
+
+void MainWindow::TogglePenMode()
+{
+    glWidget.SetPenModeOn(!glWidget.GetPenModeOn());
 }
 
 void MainWindow::StartDimensioningTool()

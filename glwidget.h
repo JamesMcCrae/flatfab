@@ -27,7 +27,9 @@ enum GestureState { //states (all with LMB held down, from 1 onward)
     STATE_TRANSFORM_WIDGET, //this state replaces TRANSLATE, ROTATE, SCALE, TRANSLATE_NORMAL
     STATE_ADD_HOLE,
     STATE_DIMENSIONING_FIRST,
-    STATE_DIMENSIONING_SECOND
+    STATE_DIMENSIONING_SECOND,
+    STATE_PEN_POINT,
+    STATE_PEN_DRAG
 };
 
 enum LastOperation {
@@ -113,6 +115,7 @@ public:
 
     bool GetDoMagneticCuts();
     bool GetDoLocalSymmetry();
+    bool GetPenModeOn();
     bool GetDoCyclesTest();
     bool GetDoStabilityTest();
     bool GetDoPhysicsTest();
@@ -203,6 +206,7 @@ public slots:
 
     void SetDoMagneticCuts(const bool b);
     void SetDoLocalSymmetry(const bool b);
+    void SetPenModeOn(const bool b);
     void SetDoCyclesTest(const bool b);
     void SetDoStabilityTest(const bool b);
     void ToggleDoPhysicsTest();
@@ -294,6 +298,8 @@ public slots:
     bool ShowGenerate();
     void AcceptGenerate();
     void CancelGenerate();
+
+    void AcceptPenCurve();
 
     void StartGenerateLinear();
     void StartGenerateBlend();
@@ -410,11 +416,13 @@ private:
     float generate_radial_params[9];
 
     //toggles for various feasibility tests
-    bool do_symmetry;
+    bool do_local_symmetry;
     bool do_cycles_test;
     bool do_stability_test;
     bool do_physics_test;
     bool do_connected_test;
+
+    bool pen_mode;
 
     bool do_show_tnb_frames;
     bool do_show_shadow;

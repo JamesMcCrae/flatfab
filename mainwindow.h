@@ -58,6 +58,7 @@ private slots:
     void CreateSurfacePatches();
     void DeleteSurfacePatches();
     void ToggleUseMagneticCuts();
+    void TogglePenMode();
     void ToggleLocalSymmetry();
     void StartDimensioningTool();
 

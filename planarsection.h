@@ -158,6 +158,7 @@ public:
     void CreateLocalSymmetry();
 
     bool AddMouseRayIntersect(const int c, const QVector2D & v);
+    bool AddCtrlPointPenPress(const int c, const QVector2D & v);
     bool MouseRayIntersect(const QVector2D & v, QVector3D & intersect);
     bool RayIntersect(const QVector3D & p0, const QVector3D & dir, QVector3D & intersect);
     bool MouseOutsideDeadzone(const QVector2D & v, const QVector3D & slot_start, const QVector3D & slot_end, const float deadzone_radius);

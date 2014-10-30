@@ -17,5 +17,6 @@
         <file>icons/physics-hover.png</file>
         <file>icons/physics-normal.png</file>
         <file>icons/appbar.transform.flip.horizontal.png</file>
+        <file>icons/appbar.vector.pen.png</file>
     </qresource>
 </RCC>

@@ -22,11 +22,13 @@ GLWidget::GLWidget() :
     y_symmetry = false;
     z_symmetry = false;
 
-    do_symmetry = true;
+    do_local_symmetry = true;
     do_cycles_test = false;
     do_connected_test = false;
     do_stability_test = false;
     do_physics_test = false;
+
+    pen_mode = false;
 
     do_show_tnb_frames = false;
     do_show_shadow = true;
@@ -1553,12 +1555,36 @@ void GLWidget::paintGL()
     //GLutils::DrawArrow(QVector3D(0, 0, 0), cam.ViewDir());
 
 
+    if (state == STATE_PEN_POINT || state == STATE_PEN_DRAG)
+    {
+        glColor3f(0.25f, 0.60f, 0.25f);
+        active_section.DrawTris();
+
+        glLineWidth(2.0f);
+        glColor3f(0, 0, 0.3f);
+        active_section.DrawCurve();
+
+        if (do_show_templates) {
+            DrawTemplateCut(template_cut);
+        }
+
+        glColor3f(0, 0, 0);
+        glLineWidth(3.0f);
+        active_section.DrawXZPlaneLine();
+        glLineWidth(1.0f);
+
+        active_section.DrawCurveControlPointsHandleStyle(cam.CamWidth(), cam.Eye());
+    }
+
+
+
     //this stuff changes, not for display list
     if (state == STATE_CURVE) {
         glColor3f(0.25f, 0.60f, 0.25f);
         active_section.DrawTris();
         //active_section.DrawInputPolyline();
     }
+
 
     if(current_tool_state == TOOLSTATE_GENERATE)
     {
@@ -1706,7 +1732,7 @@ void GLWidget::paintGL()
         }
 
     }
-    else if (state == STATE_CURVE) {
+    else if (state == STATE_CURVE ) {
 
         //glColor3f(0.3, 0.3, 0.9);
         //sections.last().DrawSketch();                
@@ -1743,7 +1769,7 @@ void GLWidget::paintGL()
     else if (IsSectionSelected()) {
 
         //if (state == STATE_NONE || state == STATE_MANIP_CTRLPOINT) {
-        if (current_tool_state == TOOLSTATE_DEFAULT && state != STATE_CURVE && state != STATE_RESKETCH_CURVE && state != STATE_CAM_TRANSLATE && state != STATE_DEADZONE) {
+        if (current_tool_state == TOOLSTATE_DEFAULT && state != STATE_CURVE && state != STATE_RESKETCH_CURVE && state != STATE_CAM_TRANSLATE && state != STATE_DEADZONE && state != STATE_PEN_POINT && state != STATE_PEN_DRAG) {
 //            glColor3f(1.0, 0.4, 1.0);
             sections[selected].DrawCurveControlPointsHandleStyle(cam.CamWidth(), cam.Eye());
 
@@ -1767,7 +1793,7 @@ void GLWidget::paintGL()
     // grab control point 2D positions
 
     QVector3D slot_start_projected, slot_end_projected;
-    if(do_symmetry && (state == STATE_CURVE || state == STATE_RESKETCH_CURVE || state == STATE_DEADZONE))
+    if(do_local_symmetry && (state == STATE_CURVE || state == STATE_RESKETCH_CURVE || state == STATE_DEADZONE || state == STATE_PEN_POINT || state == STATE_PEN_DRAG))
     {
         slot_start_projected = GLutils::ProjectPoint(slot_start);
         slot_end_projected = GLutils::ProjectPoint(slot_end);
@@ -1777,7 +1803,7 @@ void GLWidget::paintGL()
     cam.DrawGL_Ortho();
 
     // Draw symmetry line when using local symmetry with no planar sections
-    if(do_symmetry)
+    if(do_local_symmetry)
     {
         if(sections.empty())
         {
@@ -1790,7 +1816,7 @@ void GLWidget::paintGL()
             glEnd();
             glLineWidth(1);
         }
-        else if(state == STATE_CURVE || state == STATE_RESKETCH_CURVE || state == STATE_DEADZONE)
+        else if(state == STATE_CURVE || state == STATE_RESKETCH_CURVE || state == STATE_DEADZONE || state == STATE_PEN_POINT || state == STATE_PEN_DRAG)
         {
             QVector3D dir = (slot_start_projected - slot_end_projected).normalized();
             float factor = ( 20.0 * 600.0/height() ) / cam.CamWidth();
@@ -1809,7 +1835,7 @@ void GLWidget::paintGL()
     }
 
 
-    if(current_tool_state == TOOLSTATE_GENERATE)
+    if(current_tool_state == TOOLSTATE_GENERATE || state == STATE_PEN_POINT || state == STATE_PEN_DRAG)
         DrawGenerateInstructions();
 
 //    DrawInfo();
@@ -1828,42 +1854,50 @@ void GLWidget::DrawGenerateInstructions()
     QString text;
 
 
-    switch (gen_state) {
+    if(current_tool_state == TOOLSTATE_GENERATE)
+    {
+        switch (gen_state) {
 
-    case GENSTATE_LINEAR:
-        title = "Generate: Linear";
-        text = "Instructions\n\n 1) Select the base section\n 2) Select a section that intersects the base\n 3) Press Enter to accept or Escape to cancel";
-        break;
+        case GENSTATE_LINEAR:
+            title = "Generate: Linear";
+            text = "Instructions\n\n 1) Select the base section\n 2) Select a section that intersects the base\n 3) Press Enter to accept or Escape to cancel";
+            break;
 
-    case GENSTATE_BLEND:
-        title = "Generate: Blend";
-        text = "Instructions\n\n 1) Select the base section\n 2) Select two sections that intersect the base\n 3) Press Enter to accept or Escape to cancel";
-        break;
+        case GENSTATE_BLEND:
+            title = "Generate: Blend";
+            text = "Instructions\n\n 1) Select the base section\n 2) Select two sections that intersect the base\n 3) Press Enter to accept or Escape to cancel";
+            break;
 
-    case GENSTATE_REVOLVE:
-        title = "Generate: Revolve";
-        text = "Instructions\n\n 1) Select the base section\n 2) Select a section that intersects the base\n 3) Press Enter to accept or Escape to cancel";
-        break;
+        case GENSTATE_REVOLVE:
+            title = "Generate: Revolve";
+            text = "Instructions\n\n 1) Select the base section\n 2) Select a section that intersects the base\n 3) Press Enter to accept or Escape to cancel";
+            break;
 
-    case GENSTATE_GRID:
-        title = "Generate: Grid";
-        text = "Instructions\n\n 1) Select a section to form the grid\n 2) Press Enter to accept or Escape to cancel";
-        break;
+        case GENSTATE_GRID:
+            title = "Generate: Grid";
+            text = "Instructions\n\n 1) Select a section to form the grid\n 2) Press Enter to accept or Escape to cancel";
+            break;
 
-    case GENSTATE_SLICES:
-        title = "Generate: Slices";
-        text = "Instructions\n\n 1) A template obj must be loaded - This can be done in the Guides side panel\n 2) Press Enter to accept or Escape to cancel";
-        break;
+        case GENSTATE_SLICES:
+            title = "Generate: Slices";
+            text = "Instructions\n\n 1) A template obj must be loaded - This can be done in the Guides side panel\n 2) Press Enter to accept or Escape to cancel";
+            break;
 
-        // branching isn't active yet
-    case GENSTATE_BRANCH:
-        title = "Generate: Branch";
-        text = "Instructions\n\n 1) Set the root slot by clicking and dragging on a section\n 2) Add branches 3) Press Enter to accept or Escape to cancel";
-        break;
+            // branching isn't active yet
+        case GENSTATE_BRANCH:
+            title = "Generate: Branch";
+            text = "Instructions\n\n 1) Set the root slot by clicking and dragging on a section\n 2) Add branches 3) Press Enter to accept or Escape to cancel";
+            break;
 
-    case GENSTATE_NUM:
-        break;
+        case GENSTATE_NUM:
+            break;
 
+        }
+    }
+    else if(state == STATE_PEN_POINT || state == STATE_PEN_DRAG)
+    {
+        title = "Pen Mode";
+        text = "Left-click and drag to create a new point and handles";
     }
 
     QFontMetrics metrics = QFontMetrics(font());
@@ -2068,6 +2102,18 @@ b) when there are planes, attempt to select one
 
                 break;
 
+            case STATE_DEADZONE:
+                if(pen_mode)
+                {
+                    state = STATE_PEN_POINT;
+                    active_section.AddCtrlPointPenPress(0, mouse_pos);
+                }
+                break;
+
+            case STATE_PEN_POINT:
+                active_section.AddCtrlPointPenPress(0, mouse_pos);
+                break;
+
             case STATE_RESKETCH_CURVE:
                 break;
 
@@ -2094,7 +2140,13 @@ b) when there are planes, attempt to select one
 
                     active_section.SketchSetEditing(true);
 
-                    state = STATE_CURVE;
+                    if(pen_mode)
+                    {
+                        state = STATE_PEN_POINT;
+                        active_section.AddCtrlPointPenPress(0, mouse_pos);
+                    }
+                    else
+                        state = STATE_CURVE;
 
                 }
                 else {
@@ -2519,7 +2571,7 @@ void GLWidget::mouseMoveEvent(QMouseEvent * event)
 
         case STATE_DEADZONE:
 
-            if (active_section.MouseOutsideDeadzone(mouse_pos, slot_start, slot_end, deadzone_radius)) {
+            if (!pen_mode && active_section.MouseOutsideDeadzone(mouse_pos, slot_start, slot_end, deadzone_radius)) {
                 state = STATE_CURVE;
                 active_section.SketchSetEditing(true);
             }
@@ -2663,7 +2715,10 @@ void GLWidget::mouseReleaseEvent(QMouseEvent *event)
             //if the gesture wasn't completed, remove the section being added
             //sections.removeLast();
             //active_section = null_section;
-            if (selected != -1) {
+            qDebug()<<"pen mode: " << pen_mode;
+            if(pen_mode)
+                state = STATE_PEN_POINT;
+            else if (selected != -1) {
                 SetSelected(-1);
                 UpdateDraw();
             }
@@ -2671,7 +2726,7 @@ void GLWidget::mouseReleaseEvent(QMouseEvent *event)
 
         case STATE_RESKETCH_CURVE:
 
-            if (sections.size() >= 2 && do_symmetry) {
+            if (sections.size() >= 2 && do_local_symmetry) {
                 //do not do symmetry for the very first plane
                 sections[selected].SketchSymmetryTest();
             }
@@ -2684,7 +2739,7 @@ void GLWidget::mouseReleaseEvent(QMouseEvent *event)
                 sections[selected].Update(0, section_error_tolerance);
             }
 
-            if (sections.size() >= 2 && do_symmetry) {
+            if (sections.size() >= 2 && do_local_symmetry) {
                 //do not do symmetry for the very first plane
                 sections[selected].CreateLocalSymmetry();
             }
@@ -2703,7 +2758,7 @@ void GLWidget::mouseReleaseEvent(QMouseEvent *event)
 
                 active_section.SketchSetEditing(false);
 
-                if (do_symmetry) {
+                if (do_local_symmetry) {
                     //do not do symmetry for the very first plane
                     active_section.SketchSymmetryTest();
                 }
@@ -2716,7 +2771,7 @@ void GLWidget::mouseReleaseEvent(QMouseEvent *event)
                     active_section.Update(0, section_error_tolerance);
                 }
 
-                if (do_symmetry) {
+                if (do_local_symmetry) {
                     //do not do symmetry for the very first plane
                     active_section.CreateLocalSymmetry();
                 }
@@ -2765,9 +2820,10 @@ void GLWidget::mouseReleaseEvent(QMouseEvent *event)
         if(state == STATE_ORBIT && current_tool_state == TOOLSTATE_TRANSFORMING)
             state = STATE_TRANSFORM_WIDGET;
 
-        if(state != STATE_TRANSFORM_WIDGET)
+        if(state != STATE_TRANSFORM_WIDGET && state != STATE_PEN_POINT)
             state = STATE_NONE;
-        slot_end = slot_start;       
+        if(state != STATE_PEN_POINT)
+            slot_end = slot_start;
 
     }
     else if (event->button() == Qt::RightButton) {
@@ -2813,7 +2869,10 @@ void GLWidget::keyPressEvent(QKeyEvent *event)
 
     case Qt::Key_Enter:
     case Qt::Key_Return:
-        if(current_tool_state == TOOLSTATE_GENERATE)
+        if(state == STATE_PEN_POINT)
+            AcceptPenCurve();
+
+        else if(current_tool_state == TOOLSTATE_GENERATE)
             AcceptGenerate();
         break;
 
@@ -2900,7 +2959,7 @@ void GLWidget::UpdateCamera() {
     cam.DrawGL_3DOrtho();
 
     if (state == STATE_CAM_TRANSLATE && !cam.InterpActive()) {
-        state = STATE_DEADZONE;
+            state = STATE_DEADZONE;
     }
 
 }
@@ -3478,9 +3537,14 @@ bool GLWidget::GetDoMagneticCuts()
     return do_magnetic_cuts;
 }
 
+bool GLWidget::GetPenModeOn()
+{
+    return pen_mode;
+}
+
 bool GLWidget::GetDoLocalSymmetry()
 {
-    return do_symmetry;
+    return do_local_symmetry;
 }
 
 bool GLWidget::GetDoCyclesTest()
@@ -3620,9 +3684,14 @@ void GLWidget::SetDoMagneticCuts(const bool b)
     //updateGL();
 }
 
+void GLWidget::SetPenModeOn(const bool b)
+{
+    pen_mode = b;
+}
+
 void GLWidget::SetDoLocalSymmetry(const bool b)
 {
-    do_symmetry = b;
+    do_local_symmetry = b;
 }
 
 void GLWidget::SetDoCyclesTest(const bool b)
@@ -5204,7 +5273,8 @@ void GLWidget::UpdateMarkers()
     markers_col.clear();
 
     if (sections.size() >= 1 &&
-            (state == STATE_SLOT || state == STATE_CAM_TRANSLATE || state == STATE_DEADZONE || state == STATE_CURVE)) {
+            (state == STATE_SLOT || state == STATE_CAM_TRANSLATE || state == STATE_DEADZONE ||
+             state == STATE_CURVE || state == STATE_PEN_POINT || state == STATE_PEN_DRAG) ) {
         markers.push_back(slot_start);
         markers_col.push_back(QVector3D(1, 0, 0));
         markers.push_back(slot_end);
@@ -5709,6 +5779,37 @@ void GLWidget::UpdateTemplateCut()
 
     ComputeTemplateCut(active_section.N(), active_section.P(), template_cut);
 
+}
+
+
+void GLWidget::AcceptPenCurve()
+{
+    //add existing planar section set to undo list
+    AddToUndoList(OP_ADD_PLANE);
+
+    active_section.SketchSetEditing(false);
+
+//    if (do_local_symmetry) {
+//        //do not do symmetry for the very first plane
+//        active_section.CreateLocalSymmetry();
+//    }
+
+    //enforce above-ground control points
+    active_section.SetCtrlPointsAboveXZPlane();
+    active_section.UpdateCurveTrisSlab();
+
+    if (!active_section.SliceTriangles().empty()) {
+        sections.push_back(active_section);
+
+        //for the added curve, we now update our physical tests (TODO: checkbox/boolean to disable this)
+        UpdateAllTests();
+
+    }
+
+    SetSelected(-1);
+
+    slot_end = slot_start;
+    state = STATE_NONE;
 }
 
 void GLWidget::AcceptGenerate()
