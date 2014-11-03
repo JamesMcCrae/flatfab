@@ -74,8 +74,7 @@ enum ToolState
 {
     TOOLSTATE_DEFAULT,
     TOOLSTATE_TRANSFORMING,
-    TOOLSTATE_GENERATE,
-    TOOLSTATE_RADIAL
+    TOOLSTATE_GENERATE
 };
 
 // Generate states
@@ -308,8 +307,8 @@ public slots:
     void StartGenerateGrid();
 //    void StartGenerateBranch();
 
-//    void StartRadial();
-    void MakeRadial();
+    void SetSelectedAsRadial();
+    void RemoveRadial();
 
     //physics stuff
     void DoPhysicsAddWeight();
