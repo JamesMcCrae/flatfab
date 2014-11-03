@@ -308,7 +308,8 @@ public slots:
     void StartGenerateGrid();
 //    void StartGenerateBranch();
 
-    void StartRadial();
+//    void StartRadial();
+    void MakeRadial();
 
     //physics stuff
     void DoPhysicsAddWeight();
@@ -557,6 +558,12 @@ private:
 
     QList <PlanarSection> generated_sections; // the temporary generate sections
 
+
+    // Radial Tool
+
+    PlanarSection pre_radial_section;
+    PlanarSection radial_section;
+    int radial_section_index;
 
 
     QErrorMessage errorMessage;

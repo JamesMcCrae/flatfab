@@ -31,6 +31,10 @@ PlanarSection::PlanarSection()
 
     AddNewCurve();
 
+    num_radial_sectors = 0;
+    num_radial_points_per_sector = 0;
+    radial = false;
+
 }
 
 BezierCurve & PlanarSection::GetCurve(const int i)
@@ -209,10 +213,11 @@ void PlanarSection::CreateRadial(QVector2D centre, const float base_rad, const i
 }
 
 
-// This one copies the first pie sector and then rotates it
-void PlanarSection::CreateRadial(QVector2D centre, int points_per_sector)
-{
 
+
+// This rotates and copies each sector - assumes the
+void PlanarSection::CreateRadial(QVector2D centre, int num_sectors, int points_per_sector)
+{
     QList <QLineF> lines;
     QList <QVector2D> pts;
 
@@ -227,16 +232,18 @@ void PlanarSection::CreateRadial(QVector2D centre, int points_per_sector)
         pts.push_back(bez_curve[0].Point(i));
     }
 
-    const float angularLength = lines.back().angleTo(lines.front());
-    const int num_sectors = int( 360.0 / angularLength);
-//    qDebug() << "num sectors: " << 360.0 / angularLength;
-//    qDebug() << "num sectors: " << num_sectors;
-//    qDebug() << "angle: " << angularLength;
+    const float angularLength = 360.0/num_sectors;
+
+//    if(bez_curve[0].SelectedPoint() == 0)
+//    {
+//        lines.back() = QLineF(centre.toPointF(), bez_curve[0].Point(bez_curve[0].Points().size() - 2).toPointF());
+//        lines.back().setAngle(lines.back().angle() - angularLength);
+//        pts.back() = QVector2D(lines.back().x2(), lines.back().y2());
+//    }
 
     for (int i=1; i<num_sectors; ++i) {
 
-        lines[0].setAngle(lines[0].angle() - angularLength);
-        for (int j=1; j<points_per_sector; ++j) {
+        for (int j=0; j<points_per_sector; ++j) {
 
             lines[j].setAngle(lines[j].angle() - angularLength);
             pts.push_back( QVector2D(lines[j].x2(), lines[j].y2()) );
@@ -244,6 +251,7 @@ void PlanarSection::CreateRadial(QVector2D centre, int points_per_sector)
         }
 
     }
+    pts.push_back(pts.front());
 
     bez_curve[0].ClearPoints();
 
@@ -252,8 +260,8 @@ void PlanarSection::CreateRadial(QVector2D centre, int points_per_sector)
     }
 
     UpdateCurveTrisSlab();
-
 }
+
 
 void PlanarSection::CreateRadialHoles(QVector2D centre, const float base_rad, const int num_sectors, const float radii[9])
 {
@@ -556,6 +564,9 @@ void PlanarSection::DrawCurveControlPoints(const float cam_width)
 
 void PlanarSection::DrawCurveControlPointsHandleStyle(const float cam_width, const QVector3D cam_pos)
 {
+    QVector3D colour1(1.0, 0.0, .5);
+    QVector3D colour2(1.0, 0.5, 0.8);;
+    QVector3D colour_rad(0.2, 0.2, 0.6);
 
     for (int c=0; c<bez_curve.size(); ++c) {
         const QList <QVector2D> & pts = bez_curve[c].Points();
@@ -570,10 +581,18 @@ void PlanarSection::DrawCurveControlPointsHandleStyle(const float cam_width, con
 //        glEnable(GL_BLEND);
         glLineWidth(1.5);
 //        glColor4f(1.0f,0.0f,.5f,.5f);
-        glColor3f(1.0f,0.0f,.5f);
+        GLutils::glColor(colour1);
+
+        int num_points = pts.size() - 1;
+//        if(radial)
+//            num_points = num_radial_points_per_sector;
+
         glDisable(GL_DEPTH_TEST);
         glBegin(GL_LINES);
-        for (int i=1; i<pts.size() - 1; ++i) {
+        for (int i=1; i<num_points; ++i) {
+            if(i == num_radial_points_per_sector)
+                GLutils::glColor(colour_rad);
+
             nextPoint = p + (t * (pts[i+1].x())) + (b * (pts[i+1].y()));
 
             if (i%3 == 1) {
@@ -592,7 +611,7 @@ void PlanarSection::DrawCurveControlPointsHandleStyle(const float cam_width, con
         glEnable(GL_DEPTH_TEST);
         glLineWidth(1);
 
-        for (int i=0; i<pts.size() - 1; ++i) {
+        for (int i=0; i<num_points; ++i) {
 
             s = (i == bez_curve[c].SelectedPoint()) ? 0.005f * cam_width : 0.0035f * cam_width;
             //s = 0.0035f * cam_width;
@@ -606,94 +625,37 @@ void PlanarSection::DrawCurveControlPointsHandleStyle(const float cam_width, con
 //                if(i == bez_curve[c].SelectedPoint())
 //                    s = 0.005f * cam_width;
 
+                if(radial && i >= num_radial_points_per_sector)
+                {
+                    GLutils::glColor(colour_rad);
+                    GLutils::DrawDisc(point, point + (cam_pos - point).normalized()*.2, 0.0f, 2*s);
+                }
+                else
+                {
+                    GLutils::glColor(colour2);
+                    GLutils::DrawDisc(point, point + (cam_pos - point).normalized()*.2, 0.0f, 1.5*s);
 
-                glColor3f(1.0f,0.5f,0.8f);
-
-
-//                if(i == pts.size() - 1)
-//                    glColor3f(0.0f,0.0f,1.0f);
-
-//                if(i == pts.size() - 2)
-//                    glColor3f(0.0f,1.0f,0.0f);
-
-//                if(i == 0)
-//                    glColor3f(1.0f,1.0f,0.0f);
-
-//                if(i == 1)
-//                    glColor3f(1.0f,0.0f,0.0f);
+                    GLutils::glColor(colour1);
+                    GLutils::DrawDisc(point, point + (cam_pos - point).normalized()*.2, 1.5*s, 2*s);
+                }
 
 
-//                if((i != bez_curve[c].SelectedPoint()))
-//                    glColor4f(1.0f,0.5f,0.8f,.7f);
-//                else
-//                    glColor3f(1.0f,0.5f,0.8f);
-                GLutils::DrawDisc(point, point + (cam_pos - point).normalized()*.2, 0.0f, 1.5*s);
-                glColor3f(1.0f,0.0f,0.5f);
-                GLutils::DrawDisc(point, point + (cam_pos - point).normalized()*.2, 1.5*s, 2*s);
             }
             else
             {
 //                if(i == bez_curve[c].SelectedPoint())
 //                    s = 0.0075f * cam_width;
 
-                glColor3f(1.0f,0.0f,.5f);
+                if(radial && i >= num_radial_points_per_sector)
+                    GLutils::glColor(colour_rad);
+                else
+                    GLutils::glColor(colour1);
 
-//                if(i == pts.size() - 1)
-//                    glColor3f(0.0f,0.0f,1.0f);
-
-//                if(i == pts.size() - 2)
-//                    glColor3f(0.0f,1.0f,0.0f);
-
-//                if(i == 0)
-//                    glColor3f(1.0f,1.0f,0.0f);
-
-//                if(i == 1)
-//                    glColor3f(1.0f,0.0f,0.0f);
-
-
-//                if((i != bez_curve[c].SelectedPoint()))
-//                    glColor4f(1.0f,0.0f,.5f,.7f);
-//                else
-//                    glColor3f(1.0f,0.0f,.5f);
                 GLutils::DrawDisc(point, point + (cam_pos - point).normalized()*.2, 0, s);
             }
 
 
         }
-
-
-
-//        const float s = (i == bez_curve[c].SelectedPoint()) ? 0.015f * cam_width : 0.0075f * cam_width;
-//        const int numSegs = (i == bez_curve[c].SelectedPoint()) ? 20 : 10;
-
-//        glEnable (GL_BLEND);
-//        glColor3f(1.0f,0.5f,0.8f);
-//        GLutils::DrawFan(p + (t * (pts[i].x())) + (b * (pts[i].y())), s, 10);
-//        glDisable (GL_BLEND);
-//        glColor3f(1.0f,0.0f,.5f);
-//        GLutils::DrawCircle(p + (t * (pts[i].x())) + (b * (pts[i].y())), s, numSegs);
-
-
-
-
-
-
-//        for (int i=3; i<pts.size(); i+=3) {
-
-//            s = (i == bez_curve[c].SelectedPoint()) ? 0.015f * cam_width : 0.0075f * cam_width;
-//            numSegs = (i == bez_curve[c].SelectedPoint()) ? 20 : 10;
-
-
-//            glEnable (GL_BLEND);
-//            glColor3f(1.0f,0.5f,0.8f);
-//            GLutils::DrawFan(p + (t * (pts[i].x())) + (b * (pts[i].y())), s, 10);
-//            glDisable (GL_BLEND);
-//            glColor3f(1.0f,0.0f,.5f);
-//            GLutils::DrawCircle(p + (t * (pts[i].x())) + (b * (pts[i].y())), s, numSegs);
-
-
-//        }
-//        glEnd();
 
     }
 
@@ -2881,14 +2843,30 @@ void PlanarSection::SelectMouseRayIntersect(const QVector2D & v, const float cam
 
     }
 
+    int bez_curve_size = bez_curve.size();
+
+    if(radial)
+        bez_curve_size = 1;
+
+    bool point_found;
     if (selected_weight < 0) {
 
-        for (int c=0; c<bez_curve.size(); ++c) {
+        for (int c=0; c<bez_curve_size; ++c) {
+            point_found = false;
             bez_curve[c].SelectPoint(int_2d, 0.003f * cam_width);
             if (bez_curve[c].SelectedPoint() >= 0) {
-                break;
+
+                if(!radial || bez_curve[c].SelectedPoint() <  num_radial_points_per_sector) // ensure that it's from the first sector when radial
+                {
+                    point_found = true;
+                    break;
+                }
             }
+            if(!point_found)
+                bez_curve[c].UnselectPoint();
         }
+
+
 
     }
 
@@ -2922,7 +2900,16 @@ void PlanarSection::InsertCtrlPoint()
     //qDebug() << "PlanarSection::InsertCtrlPoint() " << bez_curve.SelectedPoint();
     for (int c=0; c<bez_curve.size(); ++c) {
         if (bez_curve[c].SelectedPoint() >= 0) {
-            bez_curve[c].InsertSelectedPoint();
+            if(radial && bez_curve[c].SelectedPoint() <  num_radial_points_per_sector)
+            {
+                bez_curve[c].InsertSelectedPoint();
+                num_radial_points_per_sector+=3;
+                UpdateRadial();
+            }
+            else
+                bez_curve[c].InsertSelectedPoint();
+
+
         }
     }
 
@@ -2940,7 +2927,17 @@ void PlanarSection::DeleteCtrlPoint()
                 --c;
             }
             else {
-                bez_curve[c].DeleteSelectedPoint();
+                if(radial && bez_curve[c].SelectedPoint() <  num_radial_points_per_sector)
+                {
+                    if(num_radial_points_per_sector >= 6)
+                    {
+                        bez_curve[c].DeleteSelectedPoint();
+                        num_radial_points_per_sector-=3;
+                        UpdateRadial();
+                    }
+                }
+                else
+                    bez_curve[c].DeleteSelectedPoint();
             }
 
         }
@@ -2999,9 +2996,14 @@ void PlanarSection::MoveCtrlPointMouseRayIntersect(const QVector2D & mouse_pos, 
 
     for (int c=0; c<bez_curve.size(); ++c) {
         if (bez_curve[c].SelectedPoint() >= 0) {
-            bez_curve[c].MoveSelectedPoint(int_2d, keep_g1, equal_lengths);
+
+            if(!radial || bez_curve[c].SelectedPoint() <  num_radial_points_per_sector)
+                bez_curve[c].MoveSelectedPoint(int_2d, keep_g1, equal_lengths);
         }
     }
+
+    if(radial)
+        UpdateRadial();
 
 }
 
@@ -3878,4 +3880,47 @@ void PlanarSection::DrawWeights()
 float PlanarSection::GetPointDistance(const QVector3D & v)
 {
     return QVector3D::dotProduct(n, (v - p));
+}
+
+
+void PlanarSection::SetRadial(bool b)
+{
+    radial = b;
+}
+
+bool PlanarSection::IsRadial()
+{
+    return radial;
+}
+
+
+void PlanarSection::SetNumRadialSectors(int num_sectors)
+{
+    num_radial_sectors = num_sectors;
+}
+
+int PlanarSection::GetNumRadialSectors()
+{
+    return num_radial_sectors;
+}
+
+void PlanarSection::MakeRadial(int num_sectors, int points_per_sector)
+{
+    QVector2D min_v;
+    QVector2D max_v;
+    GetBoundingBox2D(min_v, max_v);
+
+    const QVector2D centre = (min_v + max_v) * 0.5f;
+    const float rad = (max_v.x() - min_v.x() + max_v.y() - min_v.y()) * 0.25f;
+    CreateCircle(centre, rad, num_sectors);
+
+    radial = true;
+    num_radial_sectors = num_sectors;
+    num_radial_points_per_sector = points_per_sector;
+    radial_centre = centre;
+}
+
+void PlanarSection::UpdateRadial()
+{
+    CreateRadial(radial_centre, num_radial_sectors, num_radial_points_per_sector);
 }

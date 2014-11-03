@@ -109,6 +109,9 @@ public:
     static void CurvesFromLineSegments(QList <QVector2D> & segments, QList <QList <QVector2D> > & curves);
     static int GetClosestPoint(const QList <QVector2D> & pts, const QVector2D & p);
 
+    inline static void glColor(QVector3D c) { glColor3f(c.x(), c.y(), c.z()); }
+    inline static void glColor(QVector4D c) { glColor4f(c.x(), c.y(), c.z(), c.w()); }
+
 private:
 
     static void ReadPixelColor(const int x, const int y, unsigned char & r, unsigned char & g, unsigned char & b);

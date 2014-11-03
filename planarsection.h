@@ -63,7 +63,7 @@ public:
     void CreateRectangle(QVector2D min_v, QVector2D max_v);
     void CreateCircle(QVector2D centre, const float radius, int num_sections = 16);
     void CreateRadial(QVector2D centre, const float base_rad, const int num_sectors, const float radii[9]);
-    void CreateRadial(QVector2D centre, int points_per_sector);
+    void CreateRadial(QVector2D centre, int num_sectors, int points_per_sector);
     void CreateRadialHoles(QVector2D centre, const float base_rad, const int num_sectors, const float radii[9]);
 
     void AddWeight(const QVector2D & pos_2d, const float mass);
@@ -217,6 +217,13 @@ public:
 
     float GetPointDistance(const QVector3D & v);
 
+    void SetRadial(bool b);
+    bool IsRadial();
+    void SetNumRadialSectors(int num_sectors);
+    int GetNumRadialSectors();
+    void MakeRadial(int num_sectors, int points_per_sector);
+    void UpdateRadial();
+
 private:  
 
     void WidenSlot(const float factor, QList <QVector2D> & slot);
@@ -266,6 +273,11 @@ private:
     //GLuint slab_disp_list;
     //bool update_slabcurves_disp_list;
     //GLuint slabcurves_disp_list;
+
+    bool radial;
+    int num_radial_sectors;
+    int num_radial_points_per_sector;
+    QVector2D radial_centre;
 
 };
 

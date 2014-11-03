@@ -829,7 +829,7 @@ QWidget * GLWidget::GetEditWidget()
     // Radial group
 
     QPushButton * radialButton = new QPushButton("Make Radial");
-    connect(radialButton, SIGNAL(clicked()), this, SLOT(StartRadial()));
+    connect(radialButton, SIGNAL(clicked()), this, SLOT(MakeRadial()));
 
     QSlider * radial_sectors_slider = new QSlider();
     radial_sectors_slider->setRange(1, 40);
@@ -6678,11 +6678,57 @@ void GLWidget::StartGenerateGrid()
 
 
 
-void GLWidget::StartRadial()
+//void GLWidget::StartRadial()
+//{
+//    current_tool_state = TOOLSTATE_RADIAL;
+
+////    radial_section_index = selected;
+////    pre_radial_section = sections[selected];
+////    radial_section = pre_radial_section;
+////    radial_section =
+
+////    SetSelected(-1);
+
+
+//    pre_radial_section = sections[selected];
+
+//    QVector2D min_v;
+//    QVector2D max_v;
+//    sections[selected].GetBoundingBox2D(min_v, max_v);
+
+//    //2.  parameterize circle based on dimensions
+//    const QVector2D centre = (min_v + max_v) * 0.5f;
+//    const float rad = (max_v.x() - min_v.x() + max_v.y() - min_v.y()) * 0.25f;
+//    sections[selected].CreateCircle(centre, rad, generate_radial_sectors);
+
+//    AddToUndoList(OP_GENERATE_MAKE_RADIAL);
+
+////    DoGenerateMakeRadial();
+//}
+
+
+
+void GLWidget::MakeRadial()
 {
-    //current_tool_state = TOOLSTATE_RADIAL;
-    DoGenerateMakeRadial();
+    sections[selected].MakeRadial(generate_radial_sectors,3);
+//    sections[selected].SetRadial(true);
+//    sections[selected].CreateCircle(centre, rad, generate_radial_sectors);
 }
+
+
+//void GLWidget::CancelRadial()
+//{
+
+//}
+
+//void GLWidget::UpdateRadial()
+//{
+//    QVector2D min_v;
+//    QVector2D max_v;
+//    sections[selected].GetBoundingBox2D(min_v, max_v);
+//    const QVector2D centre = (min_v + max_v) * 0.5f;
+//    sections[selected].CreateRadial(centre, generate_radial_sectors);
+//}
 
 
 void GLWidget::DoGenerateBranchingSetRoot()
