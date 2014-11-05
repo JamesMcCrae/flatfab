@@ -299,6 +299,7 @@ public slots:
     void CancelGenerate();
 
     void AcceptPenCurve();
+    void CancelPenCurve();
 
     void StartGenerateLinear();
     void StartGenerateBlend();

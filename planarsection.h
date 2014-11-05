@@ -173,7 +173,8 @@ public:
     void UnselectCtrlPoint();
     void SetCtrlPointsAboveXZPlane();
     void InsertCtrlPoint();
-    void DeleteCtrlPoint();
+    void DeleteSelectedCtrlPoint();
+    void DeleteCtrlPoint(int bez_curve_index, int ctrl_point_index);
 
     bool IsWeightSelected();
     void InsertWeight(const QVector2D & mouse_pos, const float mass);

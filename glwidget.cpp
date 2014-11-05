@@ -1888,7 +1888,7 @@ void GLWidget::DrawGenerateInstructions()
     else if(state == STATE_PEN_POINT || state == STATE_PEN_DRAG)
     {
         title = "Pen Mode";
-        text = "Left-click and drag to create a new point and handles\nPress enter to finish";
+        text = "Left-click and drag to create a new point and handles\nPress Enter to accept or Escape to cancel";
     }
 
     QFontMetrics metrics = QFontMetrics(font());
@@ -2094,13 +2094,6 @@ b) when there are planes, attempt to select one
                 break;
 
             case STATE_DEADZONE:
-
-                // Make a pen point change the state
-                if(pen_mode)
-                {
-                    state = STATE_PEN_POINT;
-                    active_section.AddCtrlPointPenPress(0, mouse_pos);
-                }
                 break;
 
             case STATE_PEN_POINT:
@@ -2139,6 +2132,7 @@ b) when there are planes, attempt to select one
                     {
                         state = STATE_PEN_POINT;
                         active_section.AddCtrlPointPenPress(0, mouse_pos);
+                        active_section.SelectCtrlPoint(active_section.GetCurve(0).Points().size() - 3); // the last two points in the curve attach to the first point
                     }
                     else
                         state = STATE_CURVE;
@@ -2269,6 +2263,12 @@ b) when there are planes, attempt to select one
             UpdateDraw();
         }
 
+        else if(state == STATE_PEN_POINT)
+        {
+            if (active_section.IsCtrlPointSelected())
+                state = STATE_PEN_DRAG;
+        }
+
         else if (IsSectionSelected()) {
 
             if (sections[selected].IsCtrlPointSelected()) {
@@ -2292,6 +2292,8 @@ b) when there are planes, attempt to select one
             }
 
         }
+
+
         else {
             const int new_select = PickSection(mouse_pos, false);
             if (new_select != selected) {
@@ -2661,7 +2663,12 @@ void GLWidget::mouseMoveEvent(QMouseEvent * event)
     }
     else if (event->buttons() & Qt::RightButton) {
 
-        if (IsSectionSelected()) {
+        if(state == STATE_PEN_DRAG)
+        {
+            active_section.MoveCtrlPointMouseRayIntersect(mouse_pos, !ctrl_held);
+            active_section.UpdateCurveTrisSlab();
+        }
+        else if (IsSectionSelected()) {
 
             if (state == STATE_MANIP_WEIGHT) {
                 sections[selected].MoveWeightMouseRayIntersect(mouse_pos);
@@ -2677,12 +2684,18 @@ void GLWidget::mouseMoveEvent(QMouseEvent * event)
 
         }
 
+
     }
     else {  
 
-        if (IsSectionSelected()) {
+        if(state == STATE_PEN_POINT)
+        {
+            active_section.SelectMouseRayIntersect(mouse_pos, cam.CamWidth());
+        }
+        else if (IsSectionSelected()) {
             sections[selected].SelectMouseRayIntersect(mouse_pos, cam.CamWidth());
         }
+
 
 
     }
@@ -2832,7 +2845,11 @@ void GLWidget::mouseReleaseEvent(QMouseEvent *event)
     else if (event->button() == Qt::RightButton) {
 
 
-        if (IsSectionSelected()) {
+        if(state == STATE_PEN_DRAG)
+        {
+            state = STATE_PEN_POINT;
+        }
+        else if (IsSectionSelected()) {
 
             sections[selected].SetCtrlPointsAboveXZPlane();
             sections[selected].UpdateCurveTrisSlab();
@@ -2842,6 +2859,7 @@ void GLWidget::mouseReleaseEvent(QMouseEvent *event)
             state = STATE_NONE;
 
         }
+
 
         UpdateAllTests();
 
@@ -2882,6 +2900,8 @@ void GLWidget::keyPressEvent(QKeyEvent *event)
     case Qt::Key_Escape:
         if(current_tool_state == TOOLSTATE_GENERATE)
             CancelGenerate();
+        else if(state == STATE_PEN_POINT)
+            CancelPenCurve();
         break;
     }
 
@@ -2907,11 +2927,28 @@ void GLWidget::keyReleaseEvent(QKeyEvent *event)
 
     case Qt::Key_Minus:
 
-        if (IsSectionSelected()) {
+        if(state == STATE_PEN_POINT) {
+            // need something different since it's less than 7 points
+//            if(active_section.GetCurve(0).GetNumControlPoints() < 4)
+//                active_section = PlanarSection();
+//            else
+//            {
+
+                active_section.DeleteCtrlPoint(0, active_section.GetCurve(0).GetNumControlPoints() - 3);
+
+//            qDebug()<<"points: " << active_section.GetCurve(0).GetNumControlPoints();
+//            active_section.SelectCtrlPoint(active_section.GetCurve(0).Points().size() - 3);
+//            active_section.DeleteSelectedCtrlPoint();
+//            active_section.UnselectCtrlPoint();
+//            }
+            active_section.UpdateCurveTrisSlab();
+        }
+        else if (IsSectionSelected()) {
+
 
             if (sections[selected].IsCtrlPointSelected()) {
                 AddToUndoList(OP_DELETE_CTRLPOINT);
-                sections[selected].DeleteCtrlPoint();
+                sections[selected].DeleteSelectedCtrlPoint();
             }
             else if (sections[selected].IsWeightSelected()) {
                 AddToUndoList(OP_DELETE_WEIGHT);
@@ -3690,6 +3727,8 @@ void GLWidget::SetDoMagneticCuts(const bool b)
 void GLWidget::SetPenModeOn(const bool b)
 {
     pen_mode = b;
+    if(state == STATE_PEN_POINT)
+        CancelPenCurve();
 }
 
 void GLWidget::SetDoLocalSymmetry(const bool b)
@@ -4107,7 +4146,7 @@ void GLWidget::Redo()
 void GLWidget::DeleteSelected()
 {
 
-    if (!IsSectionSelected()) {
+    if (state == STATE_PEN_POINT || !IsSectionSelected()) {
         return;
     }
 
@@ -5244,6 +5283,15 @@ void GLWidget::ClearAll()
 
     undo_index = -1;
 
+    state = STATE_NONE;
+    current_tool_state = TOOLSTATE_DEFAULT;
+    generated_sections.clear();
+    generate_selections.clear();
+
+    ctrl_held = false;
+    alt_held = false;
+    shift_held = false;
+
     //physics.ClearProblem();
     //physics_solved.ClearProblem();
 
@@ -5798,10 +5846,10 @@ void GLWidget::AcceptPenCurve()
 
     active_section.SketchSetEditing(false);
 
-//    if (do_local_symmetry) {
-//        //do not do symmetry for the very first plane
-//        active_section.CreateLocalSymmetry();
-//    }
+    if (do_local_symmetry) {
+        //do not do symmetry for the very first plane
+        active_section.CreateLocalSymmetry();
+    }
 
     //enforce above-ground control points
     active_section.SetCtrlPointsAboveXZPlane();
@@ -5817,6 +5865,14 @@ void GLWidget::AcceptPenCurve()
 
     SetSelected(-1);
 
+    slot_end = slot_start;
+    state = STATE_NONE;
+}
+
+
+void GLWidget::CancelPenCurve()
+{
+    active_section.SketchSetEditing(false);
     slot_end = slot_start;
     state = STATE_NONE;
 }
