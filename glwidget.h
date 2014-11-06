@@ -149,6 +149,7 @@ public:
 protected:
 
     void initializeGL();
+    void paintEvent(QPaintEvent *); // this is now needed for QPainter
     void paintGL();
     void resizeGL(int width, int height);
     void mousePressEvent(QMouseEvent *event);
@@ -162,7 +163,7 @@ protected:
     void DrawSymmetryPlanes();
     void DrawSection(const int i);
     void DrawInfo();
-    void DrawGenerateInstructions();
+    void DrawInstructions(QPainter &painter);
     void DrawMarkers();
     void DrawSlot(QVector3D start, QVector3D end);
     void DrawDimensionTool();
@@ -567,6 +568,7 @@ private:
 
 
     QErrorMessage errorMessage;
+    QPainter painter;
 
 
 

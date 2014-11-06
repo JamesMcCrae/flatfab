@@ -363,6 +363,12 @@ void BezierCurve::Draw2D()
 
 }
 
+
+bool BezierCurve::IsClosed()
+{
+    return closed;
+}
+
 void BezierCurve::SetSamplesPerSegment(const int i)
 {
     samples_per_segment = i;

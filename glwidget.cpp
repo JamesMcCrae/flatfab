@@ -144,6 +144,9 @@ GLWidget::GLWidget() :
     selections_per_gen_type[GENSTATE_GRID] = 1;
     selections_per_gen_type[GENSTATE_BRANCH] = 1;
 
+//    painter.set
+//    painter.setRenderHint(QPainter::Antialiasing);
+
 }
 
 GLWidget::~GLWidget()
@@ -1455,6 +1458,23 @@ QWidget * GLWidget::GetViewWidget()
 }
 
 
+// This is needed to allow QPainter to work with standard GL functions
+void GLWidget::paintEvent(QPaintEvent *)
+{
+    makeCurrent();
+
+    paintGL();
+
+    QPainter painter(this);
+    painter.setRenderHint(QPainter::Antialiasing);
+
+    DrawInstructions(painter);
+
+    painter.end();
+
+}
+
+
 
 
 void GLWidget::paintGL()
@@ -1826,8 +1846,6 @@ void GLWidget::paintGL()
     }
 
 
-    if(current_tool_state == TOOLSTATE_GENERATE || state == STATE_PEN_POINT || state == STATE_PEN_DRAG)
-        DrawGenerateInstructions();
 
 //    DrawInfo();
 
@@ -1835,11 +1853,10 @@ void GLWidget::paintGL()
 
 
 
-void GLWidget::DrawGenerateInstructions()
+void GLWidget::DrawInstructions(QPainter & painter)
 {
-
-    QPainter painter(this);
-    painter.setRenderHint(QPainter::Antialiasing);
+    if(!(current_tool_state == TOOLSTATE_GENERATE || state == STATE_PEN_POINT || state == STATE_PEN_DRAG))
+        return;
 
     QString title;
     QString text;
@@ -1899,6 +1916,7 @@ void GLWidget::DrawGenerateInstructions()
                                       Qt::AlignLeft | Qt::TextWordWrap, text);
     rect.setHeight(rect.height() + 20); // This accounts for the title
 
+//    painter.begin(this);
     painter.setRenderHint(QPainter::TextAntialiasing);
     painter.fillRect(QRect(0, 0, width(), rect.height() + 2*border),
                      QColor(245, 245, 245, 127));
@@ -1918,7 +1936,7 @@ void GLWidget::DrawGenerateInstructions()
                       rect.width(), rect.height(),
                       Qt::AlignLeft | Qt::TextWordWrap, text);
 
-    painter.end();
+//    painter.end();
 
 
 
@@ -2928,19 +2946,7 @@ void GLWidget::keyReleaseEvent(QKeyEvent *event)
     case Qt::Key_Minus:
 
         if(state == STATE_PEN_POINT) {
-            // need something different since it's less than 7 points
-//            if(active_section.GetCurve(0).GetNumControlPoints() < 4)
-//                active_section = PlanarSection();
-//            else
-//            {
-
-                active_section.DeleteCtrlPoint(0, active_section.GetCurve(0).GetNumControlPoints() - 3);
-
-//            qDebug()<<"points: " << active_section.GetCurve(0).GetNumControlPoints();
-//            active_section.SelectCtrlPoint(active_section.GetCurve(0).Points().size() - 3);
-//            active_section.DeleteSelectedCtrlPoint();
-//            active_section.UnselectCtrlPoint();
-//            }
+            active_section.DeleteCtrlPoint(0, active_section.GetCurve(0).GetNumControlPoints() - 3);
             active_section.UpdateCurveTrisSlab();
         }
         else if (IsSectionSelected()) {
@@ -5846,10 +5852,10 @@ void GLWidget::AcceptPenCurve()
 
     active_section.SketchSetEditing(false);
 
-    if (do_local_symmetry) {
-        //do not do symmetry for the very first plane
-        active_section.CreateLocalSymmetry();
-    }
+//    if (do_local_symmetry) {
+//        //do not do symmetry for the very first plane
+//        active_section.CreateLocalSymmetry();
+//    }
 
     //enforce above-ground control points
     active_section.SetCtrlPointsAboveXZPlane();

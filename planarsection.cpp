@@ -2526,107 +2526,11 @@ void PlanarSection::SketchSymmetryTest()
 void PlanarSection::CreateLocalSymmetry()
 {
 
-//    BezierCurve newCurve;
-
-
-//    int sign = 1;
-//    if(bez_curve[0].Point(0).x() < 0)
-//        sign = -1;
-
-//    qDebug() <<"sign: " << sign;
-
-//    // first half of curve
-
-//    newCurve.AddPoint(bez_curve[0].Point(0));
-//    newCurve.AddPoint(bez_curve[0].Point(1));
-
-//    // forward walk for the first section
-//    int index = 3;
-//    int smallest_x = 0;
-//    int second_smallest_x = 0;
-
-//    while(sign*bez_curve[0].Point(index).x() > 0.0f && index<bez_curve[0].GetNumControlPoints()-2)
-//    {
-//        newCurve.AddPoint(bez_curve[0].Point(index-1));
-//        newCurve.AddPoint(bez_curve[0].Point(index));
-//        newCurve.AddPoint(bez_curve[0].Point(index+1));
-
-//        if(bez_curve[0].Point(index).x() < bez_curve[0].Point(smallest_x).x())
-//        {
-//            second_smallest_x = smallest_x;
-//            smallest_x = index;
-//        }
-
-//        index+=3;
-//    }
-
-//    // this means the curve is completely on one side
-//    if(index >= bez_curve[0].GetNumControlPoints()-2)
-//    {
-//        // find the points that are closest to the line of symmetry
-//        if(smallest_x < second_smallest_x)
-//        {
-//            start_of_flipped = smallest_x;
-//            end_of_flipped = second_smallest_x;
-//        }
-//        else
-//        {
-//            start_of_flipped = second_smallest_x;
-//            end_of_flipped = smallest_x;
-//        }
-
-//        // reverse the first section
-//        for (int i=0; i<=start_of_flipped; i++)
-//        {
-//           newCurve.InsertPoint(QVector2D(-newCurve.Point(i).x(), newCurve.Point(i).y()));
-//        }
-
-//        // reverse the second section
-//        for (int i=start_of_flipped; i>=0; i--)
-//        {
-//           newCurve.AddPoint(QVector2D(-newCurve.Point(i).x(), newCurve.Point(i).y()));
-//        }
-
-//    }
-
-//    // reverse the first section
-//    for (int i=newCurve.GetNumControlPoints()-1; i>=0; i--)
-//    {
-//       newCurve.AddPoint(QVector2D(-newCurve.Point(i).x(), newCurve.Point(i).y()));
-//    }
-
-//    int lowerSectionLastPointIndex = newCurve.GetNumControlPoints()-1;
-
-//    // reverse second last point
-//    newCurve.AddPoint(QVector2D(-bez_curve[0].Point(bez_curve[0].GetNumControlPoints()-2).x(), bez_curve[0].Point(bez_curve[0].GetNumControlPoints()-2).y()));
-
-//    // backward walk to get reversed last part
-//    index = bez_curve[0].GetNumControlPoints()-4;
-//    while(sign*bez_curve[0].Point(index).x() > 0.0f && index>2)
-//    {
-//        newCurve.AddPoint(bez_curve[0].Point(index+1));
-//        newCurve.AddPoint(bez_curve[0].Point(index));
-//        newCurve.AddPoint(bez_curve[0].Point(index-1));
-
-//        index-=3;
-//    }
-
-//    // reverse the last section
-//    for (int i=newCurve.GetNumControlPoints()-1; i>=lowerSectionLastPointIndex; i--)
-//    {
-//       newCurve.AddPoint(QVector2D(-newCurve.Point(i).x(), newCurve.Point(i).y()));
-//    }
-
-//    bez_curve[0] = newCurve;
-
-
     QList <QVector2D> new_points;
 
     int sign = 1;
     if(bez_curve[0].Point(0).x() < 0)
         sign = -1;
-
-    qDebug() <<"sign: " << sign;
 
     // first half of curve
 
@@ -3097,8 +3001,11 @@ void PlanarSection::DeleteCtrlPoint(int bez_curve_index, int ctrl_point_index)
                 bez_curve[bez_curve_index] = BezierCurve();
             else
             {
+                bool is_closed = bez_curve[bez_curve_index].IsClosed();
+                // Set closed allows DeletePoint to work for smaller than 7 points
                 bez_curve[bez_curve_index].SetClosed(false);
                 bez_curve[bez_curve_index].DeletePoint(ctrl_point_index);
+                bez_curve[bez_curve_index].SetClosed(is_closed);
             }
         }
     }

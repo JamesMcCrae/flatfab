@@ -49,6 +49,7 @@ public:
     void GetPointsTangentsAlongCurve(const int num, QVector <QVector2D> & points, QVector <QVector2D> & tangents) const;
 
     void SetClosed(bool b);
+    bool IsClosed();
     void Draw2D();
 
     void SetSamplesPerSegment(const int i);
@@ -79,6 +80,7 @@ public:
     float Length() const;
     void Reverse();
     void GetSubCurve(const BezierCurvePoint & b1, const BezierCurvePoint & b2, BezierCurve & sub_curve);
+
 
 private:
 
