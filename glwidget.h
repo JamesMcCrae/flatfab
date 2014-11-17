@@ -86,6 +86,7 @@ enum GenerateState
     GENSTATE_SLICES,
     GENSTATE_GRID,
     GENSTATE_BRANCH,
+    GENSTATE_SURFACE_FACETS,
     GENSTATE_NUM //note: enum declaration guaranteed to be in order: 0, 1, 2... therefore this enum is the # of previously defined enums
 };
 
@@ -160,7 +161,6 @@ protected:
     void DrawGroundPlane();    
     void DrawSymmetryPlanes();
     void DrawSection(const int i);
-    void DrawInfo();
     void DrawInstructions(QPainter &painter);
     void DrawMarkers();
     void DrawSlot(QVector3D start, QVector3D end);
@@ -282,10 +282,6 @@ public slots:
     //procedural modelling extras
     void DoGenerateBranchingSetRoot();
     void DoGenerateBranching();
-    //void DoGenerateLinear();
-    //void DoGenerateBlend();
-    //void DoGenerateGrid();
-    //void DoGenerateRevolve();
     void DoGenerateMakeCircle();
     void DoGenerateMakeRectangle();    
     void DoGenerateMakeRadialHole();    

@@ -1,6 +1,11 @@
 ﻿#include "glwidget.h"
 
-GLWidget::GLWidget()
+GLWidget::GLWidget() :
+    editWidget(NULL),
+    genWidget(NULL),
+    guidesWidget(NULL),
+    physicsWidget(NULL),
+    viewWidget(NULL)
 {
 
     setMouseTracking(true);
@@ -128,20 +133,15 @@ GLWidget::GLWidget()
     //physics.Solve(100,20);
     //physics.PrintJointForce();
 
-    editWidget = NULL;
-    genWidget = NULL;
-    guidesWidget = NULL;
-    physicsWidget = NULL;
-    viewWidget = NULL;
-
     current_tool_state = TOOLSTATE_DEFAULT;
 
     selections_per_gen_type[GENSTATE_BLEND] = 3;
     selections_per_gen_type[GENSTATE_LINEAR] = 2;
-    selections_per_gen_type[GENSTATE_REVOLVE] = 2;
-    selections_per_gen_type[GENSTATE_SLICES] = 0;
+    selections_per_gen_type[GENSTATE_REVOLVE] = 2;    
     selections_per_gen_type[GENSTATE_GRID] = 1;
     selections_per_gen_type[GENSTATE_BRANCH] = 1;
+    selections_per_gen_type[GENSTATE_SLICES] = 0;
+    selections_per_gen_type[GENSTATE_SURFACE_FACETS] = 0;
 
 }
 
@@ -169,6 +169,24 @@ GLWidget::~GLWidget()
         viewWidget = NULL;
     }
 
+    if (grid_sizex_label != NULL) {
+        delete grid_sizex_label;
+    }
+    if (grid_sizey_label != NULL) {
+        delete grid_sizey_label;
+    }
+
+    /*
+    grid_sizex_label = new QLabel(QString::number(GetGenerateGridSizeX()));
+    grid_sizey_label = new QLabel(QString::number(GetGenerateGridSizeX()));
+    grid_staple_label = new QLabel(QString::number(GetGenerateGridStapleSize()));
+    linear_spacing_label = new QLabel(QString::number(GetGenerateLinearSpacing()));
+    slices_spacing_label = new QLabel(QString::number(GetGenerateSlicesSpacing()));
+    num_blend_sections_label = new QLabel(QString::number(GetGenerateBlendSections()));
+    num_revolve_sections_label = new QLabel(QString::number(GetGenerateRevolveSections()));
+    branching_scalechild_label = new QLabel(QString::number(GetGenerateBranchingScaleChild()));
+    radial_sectors_label = new QLabel(QString::number(GetGenerateRadialSectors()));
+    */
 
     if (template_image_tex > 0) {
         glDeleteTextures(1, &template_image_tex);
@@ -1150,7 +1168,7 @@ void GLWidget::paintGL()
 
 
     //draw the transform widget
-    if (selected >= 0 && current_tool_state == TOOLSTATE_TRANSFORMING) {
+    if (IsSectionSelected() && current_tool_state == TOOLSTATE_TRANSFORMING) {
         transform_widget.SetP(sections[selected].P());
         transform_widget.SetX(sections[selected].T());
         transform_widget.SetY(sections[selected].N());
@@ -1307,7 +1325,6 @@ void GLWidget::DrawInstructions(QPainter & painter)
     QString title;
     QString text;
 
-
     if (current_tool_state == TOOLSTATE_GENERATE) {
 
         switch (gen_state) {
@@ -1337,8 +1354,12 @@ void GLWidget::DrawInstructions(QPainter & painter)
             text = "Instructions\n\n 1) A template obj must be loaded - This can be done in the Guides side panel\n 2) Press Enter to accept or Escape to cancel";
             break;
 
-            // branching isn't active yet
-        case GENSTATE_BRANCH:
+        case GENSTATE_SURFACE_FACETS:
+            title = "Generate: Surface Facets";
+            text = "Instructions\n\n 1) A template obj must be loaded - This can be done in the Guides side panel\n 2) Press Enter to accept or Escape to cancel";
+            break;
+
+        case GENSTATE_BRANCH: // branching isn't active yet
             title = "Generate: Branch";
             text = "Instructions\n\n 1) Set the root slot by clicking and dragging on a section\n 2) Add branches 3) Press Enter to accept or Escape to cancel";
             break;
@@ -1380,115 +1401,6 @@ void GLWidget::DrawInstructions(QPainter & painter)
     painter.drawText(border, border + 20,
                       rect.width(), rect.height(),
                       Qt::AlignLeft | Qt::TextWordWrap, text);
-
-}
-
-
-void GLWidget::DrawInfo()
-{
-
-    //vec3 view_dir = cam.ViewDir();
-    //vec3 eye = cam.Eye();
-    //float theta = cam.Theta();
-    //float phi = cam.Phi();
-
-    //QString cam_info = QString("Cam:") + QString("(theta ") + QString::number(theta) + QString(") ") + QString("(phi ") + QString::number(phi) + QString(") ");
-    //this->renderText(200.0, 4.0, 0.0, cam_info);
-
-    QString render_text;
-
-    render_text += QString(" UndoHistory: ") + QString::number(qMin(undo_index+2, undo_sections.size())) + QString("/") + QString::number(undo_sections.size()) + QString(" ");
-    render_text += QString(" Sections: ") + QString::number(sections.size()) + QString(" ");
-
-    switch (state) {
-
-    case STATE_NONE:
-        render_text += "State: NONE";
-        break;
-
-    case STATE_SLOT:
-        render_text += "State: SLOT";
-        break;
-
-    case STATE_CAM_TRANSLATE:
-        render_text += "State: CAM_TRANSLATE";
-        break;
-
-    case STATE_DEADZONE:
-        render_text += "State: DEADZONE";
-        break;
-
-    case STATE_CURVE:
-        render_text += "State: CURVE";
-        break;
-
-    case STATE_ORBIT:
-        render_text += "State: ORBIT";
-        break;
-
-    case STATE_MANIP_CTRLPOINT:
-        render_text += "State: MANIP_CTRLPOINT";
-        break;
-
-    case STATE_RECURSIVE_SETUP_SLOT:
-        render_text += "State: RECURSIVE_SETUP_SLOT";
-        break;
-
-    case STATE_RECURSIVE_SLOT:
-        render_text += "State: RECURSIVE_SLOT";
-        break;
-
-    case STATE_MANIP_WEIGHT:
-        render_text += "State: MANIP_WEIGHT";
-        break;
-
-    case STATE_RESKETCH_CURVE:
-        render_text += "State: RESKETCH_CURVE";
-        break;
-
-    case STATE_TRANSFORM_WIDGET:
-        render_text += "State: TRANSFORM_WIDGET";
-        break;
-
-    case STATE_ADD_HOLE:
-        render_text += "State: ADD_HOLE";
-        break;
-
-    case STATE_DIMENSIONING_FIRST:
-        render_text += "State: DIMENSIONING_FIRST";
-        break;
-
-    case STATE_DIMENSIONING_SECOND:
-        render_text += "State: DIMENSIONING_SECOND";
-        break;
-
-    case STATE_PEN_POINT:
-        render_text += "State: PEN_POINT";
-        break;
-
-    case STATE_PEN_DRAG:
-        render_text += "State: PEN_DRAG";
-        break;
-
-    default:
-        render_text += "State: DEFAULT";
-        break;
-
-    }   
-
-    if (IsSectionSelected()) {
-        render_text += QString(" Selected: ") + QString::number(selected);
-    }
-
-    if (!last_selected.empty()) {
-        render_text += QString(" Last Selected:");
-        for (int i=0; i<last_selected.size(); ++i) {
-            render_text += QString(" ") + QString::number(last_selected[i]);
-        }
-    }
-
-    glColor3f(0, 0, 0);
-    this->renderText(4.0, 4.0, 0.0, render_text);
 
 }
 
@@ -5341,8 +5253,9 @@ bool GLWidget::ShowGenerate()
 
             UpdateAllTests();
             UpdateDraw();
-            if(current_tool_state == TOOLSTATE_DEFAULT) // this is should only be shown during AcceptGenerate()
+            if (current_tool_state == TOOLSTATE_DEFAULT) { // this is should only be shown during AcceptGenerate()
                 QMessageBox::warning ( this, "Generate Slices Error", "Can't Accept Generate Slices - Template is empty (either no vertices or faces).");
+            }
 
             return false;
         }
@@ -6057,8 +5970,9 @@ bool GLWidget::ShowGenerate()
 
 void GLWidget::StartGenerateLinear()
 {
-    if(current_tool_state == TOOLSTATE_GENERATE)
+    if (current_tool_state == TOOLSTATE_GENERATE) {
         CancelGenerate();
+    }
 
     gen_state = GENSTATE_LINEAR;
     current_tool_state = TOOLSTATE_GENERATE;
@@ -6071,8 +5985,9 @@ void GLWidget::StartGenerateLinear()
 
 void GLWidget::StartGenerateBlend()
 {
-    if(current_tool_state == TOOLSTATE_GENERATE)
+    if (current_tool_state == TOOLSTATE_GENERATE) {
         CancelGenerate();
+    }
 
     gen_state = GENSTATE_BLEND;
     current_tool_state = TOOLSTATE_GENERATE;
@@ -6084,8 +5999,9 @@ void GLWidget::StartGenerateBlend()
 
 void GLWidget::StartGenerateRevolve()
 {
-    if(current_tool_state == TOOLSTATE_GENERATE)
+    if (current_tool_state == TOOLSTATE_GENERATE) {
         CancelGenerate();
+    }
 
     gen_state = GENSTATE_REVOLVE;
     current_tool_state = TOOLSTATE_GENERATE;
@@ -6100,7 +6016,7 @@ void GLWidget::StartGenerateSlices()
 
     //sideWidget->setCurrentIndex(1);
 
-    if(current_tool_state == TOOLSTATE_GENERATE) {
+    if (current_tool_state == TOOLSTATE_GENERATE) {
         CancelGenerate();
     }
 
@@ -6115,8 +6031,9 @@ void GLWidget::StartGenerateSlices()
 
 void GLWidget::StartGenerateGrid()
 {
-    if(current_tool_state == TOOLSTATE_GENERATE)
+    if (current_tool_state == TOOLSTATE_GENERATE) {
         CancelGenerate();
+    }
 
     gen_state = GENSTATE_GRID;
     current_tool_state = TOOLSTATE_GENERATE;
@@ -6130,14 +6047,14 @@ void GLWidget::StartGenerateGrid()
 
 void GLWidget::SetSelectedAsRadial()
 {
-    if (selected >= 0 && selected < sections.size()) {
+    if (IsSectionSelected() ) {
         sections[selected].MakeRadial(generate_radial_sectors,3);
     }
 }
 
 void GLWidget::RemoveRadial()
 {
-    if (selected >= 0 && selected < sections.size()) {
+    if (IsSectionSelected() ) {
         sections[selected].SetRadial(false);
     }
 }
@@ -6162,27 +6079,6 @@ void GLWidget::DoGenerateBranching()
 
     QList <PlanarSection> last_sections = sections;
 
-    //if (last_sections.empty()) {
-//        last_sections = sections;
-//    }
-
-    //assumption: first section in list is the parent node
-    //we need to duplicate this exact structure, onto the slit for every node which intersects the parent node
-    //no branching, nothing complex, just a straight up copy of the data structure moved around in space for each new branch
-    /*
-    QVector <QVector <bool> > graph;
-    PlanarSection::ComputeConstraintGraph(sections, graph);
-    QVector <bool> visited(sections.size(), false);
-
-    //qDebug() << graph;
-    DoRecurseOperationHelper(graph, visited, 0, new_sections, QVector3D(0, 0, 0));
-
-    //finally, put the base section in
-    //new_sections.push_front(sections.first());
-    sections = new_sections;
-
-    qDebug() << "Done!";
-    */
 
     //if there are n planar sections now, and root has k children, new tree consists of kn + 1 sections
     QList <PlanarSection> new_sections;
@@ -6196,7 +6092,7 @@ void GLWidget::DoGenerateBranching()
         }
     }
 
-    qDebug() << "Recursing one level: " << sections.size() << "sections -> " << sections.size() * num_kids + 1 << "sections";   
+    //qDebug() << "Recursing one level: " << sections.size() << "sections -> " << sections.size() * num_kids + 1 << "sections";
 
     for (int i=1; i<intersectors.size(); ++i) {
 
@@ -6223,9 +6119,7 @@ void GLWidget::DoGenerateBranching()
                     (*sections_to_use)[j].N(), 1.0f, 1.0f, 1.0f);
             QVector3D new_b = GLutils::GetVectorNewBasis(sections[0].T(), sections[0].N(), sections[0].B(), QVector3D(0, 0, 0),
                     sections[i].T(), sections[i].N(), sections[i].B(), QVector3D(0, 0, 0),
-                    (*sections_to_use)[j].B(), 1.0f, 1.0f, 1.0f);
-            //QVector3D new_p = GLutils::GetVectorNewBasis(sections[0].T(), sections[0].N(), sections[0].B(), sections[0].P() * generate_branching_scalechild,
-            //        sections[i].T(), sections[i].N(), sections[i].B(), sections[i].P(), (*sections_to_use)[j].P() * generate_branching_scalechild);
+                    (*sections_to_use)[j].B(), 1.0f, 1.0f, 1.0f);            
             QVector3D new_p = GLutils::GetVectorNewBasis(sections[0].T(), sections[0].N(), sections[0].B(), sections[0].P(),
                     sections[i].T(), sections[i].N(), sections[i].B(), sections[i].P(),
                     (*sections_to_use)[j].P(), generate_branching_scalechild, generate_branching_scalechild, generate_branching_scalechild);
@@ -6248,7 +6142,7 @@ void GLWidget::DoGenerateBranching()
     last_sections = sections;
     sections = new_sections;
 
-    qDebug() << "Done.  Sections:" << sections.size();
+    //qDebug() << "Done.  Sections:" << sections.size();
 
     UpdateAllTests();
     UpdateDraw();
@@ -6423,15 +6317,6 @@ void GLWidget::DoPhysicsTest()
         }
     }  
 
-    /*
-    physics_solved = physics;
-    physics_solved.Solve_InsidePlane();
-    physics_solved.Solve_InterPlane();
-    //physics_solved.PrintJointForce();
-    */
-
-    //physics.Solve_InterPlane();
-    //physics.Solve_InsidePlane();
     physics.CutSlit();
     physics.Solve();
 
@@ -6508,7 +6393,7 @@ void GLWidget::SetPhysicsMaterialDensity(const double d)
 
 void GLWidget::SetPhysicsMaximumStress(const double d)
 {
-    physics_max_stress = d * 1000000.0;
+    physics_max_stress = d * 1000000.0; //conversion to MPa (millions of Pascals)
     physics.SetMaximumStress(physics_max_stress);
 
     UpdateAllTests();
@@ -6517,8 +6402,6 @@ void GLWidget::SetPhysicsMaximumStress(const double d)
 
 void GLWidget::DoGenerateMakeCircle()
 {
-
-    //sideWidget->setCurrentIndex(1);
 
     if (!IsSectionSelected()) {
         return;
@@ -6544,8 +6427,6 @@ void GLWidget::DoGenerateMakeCircle()
 void GLWidget::DoGenerateMakeRectangle()
 {
 
-    //sideWidget->setCurrentIndex(1);
-
     if (!IsSectionSelected()) {
         return;
     }
@@ -6567,8 +6448,6 @@ void GLWidget::DoGenerateMakeRectangle()
 
 void GLWidget::DoGenerateMakeRadialHole()
 {
-
-    //sideWidget->setCurrentIndex(1);
 
     if (!IsSectionSelected()) {
         return;
@@ -6768,7 +6647,6 @@ void GLWidget::ToggleDrawTemplates()
 {
     do_show_templates = !do_show_templates;
     toggleTemplatesButton->setChecked(do_show_templates); //keeps the menu option and button synced
-
 }
 
 
@@ -6784,8 +6662,9 @@ void GLWidget::ToggleDoCyclesTest()
     show_cycles_test_checkbox->setChecked(do_cycles_test);
     update_sections_disp_list = true;
 
-    if(do_cycles_test)
+    if (do_cycles_test) {
         DoCyclesConnectedTest();
+    }
 }
 
 void GLWidget::ToggleDoStabilityTest()
@@ -6794,8 +6673,9 @@ void GLWidget::ToggleDoStabilityTest()
     show_stability_checkbox->setChecked(do_stability_test);
     update_sections_disp_list = true;
 
-    if(do_stability_test)
+    if (do_stability_test) {
         DoStabilityTest();
+    }
 }
 
 void GLWidget::ToggleShowShadow()
@@ -6811,11 +6691,10 @@ void GLWidget::ToggleDoConnectedTest()
     show_connectivity_checkbox->setChecked(do_connected_test);
     update_sections_disp_list = true;
 
-    if(do_connected_test)
+    if (do_connected_test) {
         DoCyclesConnectedTest();
+    }
 }
-
-
 
 void GLWidget::SetDrawDeformed(bool b)
 {
@@ -6846,7 +6725,3 @@ void GLWidget::SetDrawSectionMoment(bool b)
     physics.SetDrawSectionMoment(b);
     moment_checkbox->setChecked(b);
 }
-
-
-
-
