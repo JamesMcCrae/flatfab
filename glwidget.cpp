@@ -2245,48 +2245,45 @@ b) when there are planes, attempt to select one
     else if (event->button() == Qt::RightButton) {           
 
         //if something already selected, maybe we are trying to move it
-        if(state == STATE_TRANSFORM_WIDGET)
-        {
+        if (state == STATE_TRANSFORM_WIDGET) {
             transform_widget.SetState(NONE);
             state = STATE_NONE;
         }
 
         // If selectiing sections for the generate tools
-        if(current_tool_state == TOOLSTATE_GENERATE)
-        {
+        if (current_tool_state == TOOLSTATE_GENERATE) {
+
             const int new_select = PickSection(mouse_pos, false);
-            if(generate_selections.size() < selections_per_gen_type[gen_state]  || gen_state == GENSTATE_GRID)
-            {
-                bool already_selected = false;
-                for(int i = 0; i < generate_selections.size(); i++)
-                {
-                    if(generate_selections[i] == new_select)
-                    {
-                        already_selected = true;
-                        break;
-                    }
-                }
-                if(!already_selected)
-                {
-                    if(gen_state == GENSTATE_GRID && generate_selections.size() == 1)
+
+            //bugfix: only add the selection index to the list if there is an actual selection (new_select >= 0)
+            if (new_select < 0) {
+                generate_selections.clear();
+                ShowGenerate();
+            }
+            else if (generate_selections.size() < selections_per_gen_type[gen_state]  || gen_state == GENSTATE_GRID) {
+
+                if (!generate_selections.contains(new_select)) {
+                    if (gen_state == GENSTATE_GRID && generate_selections.size() == 1) {
                         generate_selections[0] = new_select; // this allows the user to switch sections during grid generation
-                    else
+                    }
+                    else {
                         generate_selections.append(new_select);
+                    }
                 }
 
             }
-            if(generate_selections.size() == selections_per_gen_type[gen_state]  )
+
+            if (generate_selections.size() == selections_per_gen_type[gen_state]) {
                 ShowGenerate();
+            }
 
             UpdateDraw();
         }
-
-        else if(state == STATE_PEN_POINT)
-        {
-            if (active_section.IsCtrlPointSelected())
+        else if (state == STATE_PEN_POINT) {
+            if (active_section.IsCtrlPointSelected()) {
                 state = STATE_PEN_DRAG;
+            }
         }
-
         else if (IsSectionSelected()) {
 
             if (sections[selected].IsCtrlPointSelected()) {
@@ -2324,8 +2321,9 @@ b) when there are planes, attempt to select one
 
     }
 
-    if(state != STATE_ORBIT && state != STATE_TRANSFORM_WIDGET && current_tool_state == TOOLSTATE_TRANSFORMING)
+    if (state != STATE_ORBIT && state != STATE_TRANSFORM_WIDGET && current_tool_state == TOOLSTATE_TRANSFORMING) {
         current_tool_state = TOOLSTATE_DEFAULT;
+    }
 
 }
 
@@ -2851,19 +2849,23 @@ void GLWidget::mouseReleaseEvent(QMouseEvent *event)
 
         }
 
-        if(state == STATE_ORBIT && current_tool_state == TOOLSTATE_TRANSFORMING)
+        if (state == STATE_ORBIT && current_tool_state == TOOLSTATE_TRANSFORMING) {
             state = STATE_TRANSFORM_WIDGET;
+        }
 
-        if(state != STATE_TRANSFORM_WIDGET && state != STATE_PEN_POINT)
+        if (state != STATE_TRANSFORM_WIDGET && state != STATE_PEN_POINT) {
             state = STATE_NONE;
-        if(state != STATE_PEN_POINT)
+        }
+
+        if (state != STATE_PEN_POINT) {
             slot_end = slot_start;
+        }
 
     }
     else if (event->button() == Qt::RightButton) {
 
 
-        if(state == STATE_PEN_DRAG)
+        if (state == STATE_PEN_DRAG)
         {
             state = STATE_PEN_POINT;
         }
@@ -6531,7 +6533,7 @@ bool GLWidget::ShowGenerate()
 
     case GENSTATE_GRID:
     {
-        //1.  need to ensure at least 3 sections were selected
+
         if (generate_selections.size() < 1) {
             qDebug() << "GLWidget::DoGenerateGrid() - Warning, 1 section must be selected";
 
@@ -6543,6 +6545,7 @@ bool GLWidget::ShowGenerate()
             return false;
         }
 
+        //qDebug() << sections.size() << generate_selections.size() << generate_selections[0];
         PlanarSection & section1 = sections[generate_selections[0]];
 
         //TODO: this stuff should eventually be moved into planarsection class, and only parameters passed
