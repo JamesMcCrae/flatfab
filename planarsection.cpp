@@ -585,7 +585,7 @@ void PlanarSection::DrawCurveControlPointsHandleStyle(const float cam_width, con
         }
 
         float s;
-        int numSegs;
+        //int numSegs;
 
         QVector3D lastPoint = p + (t * (pts[0].x())) + (b * (pts[0].y()));
         QVector3D point = p + (t * (pts[1].x())) + (b * (pts[1].y()));
@@ -625,7 +625,7 @@ void PlanarSection::DrawCurveControlPointsHandleStyle(const float cam_width, con
 
             s = (i == bez_curve[c].SelectedPoint()) ? 0.005f * cam_width : 0.0035f * cam_width;
 
-            numSegs = (i == bez_curve[c].SelectedPoint()) ? 20 : 10;
+            //numSegs = (i == bez_curve[c].SelectedPoint()) ? 20 : 10;
 
             point = p + (t * (pts[i].x())) + (b * (pts[i].y()));
 
@@ -1751,7 +1751,7 @@ void PlanarSection::GetSlots(const PlanarSection & other, QList <QVector2D> & my
 
     //qDebug() << "PlanarSection::GetSlots() - made it here" << p0_isecs_3d.size() << p1_isecs_3d.size();
 
-    bool found_anything = false;
+    //bool found_anything = false;
 
     for (int i=0; i+1<p0_isecs_3d.size(); i+=2) { //iterate over THIS's intervals
 
@@ -1807,7 +1807,7 @@ void PlanarSection::GetSlots(const PlanarSection & other, QList <QVector2D> & my
                 slot_rect1.push_back(slot_start_2d + p0_slot_ortho * other.SlabThickness() * 0.5f);
                 my_slots_rect.push_back(slot_rect1);
 
-                found_anything = true;
+                //found_anything = true;
 
             }
 
@@ -2425,6 +2425,38 @@ void PlanarSection::SketchSymmetryTest()
 
 }
 
+void PlanarSection::MirrorControlPoints()
+{
+
+    if (bez_curve.empty()) {
+        return;
+    }
+
+    if (bez_curve.first().GetNumControlPoints() < 2) {
+        return;
+    }
+
+    BezierCurve & curve = bez_curve.first();
+
+    QList <QVector2D> points = curve.Points();
+    QList <QVector2D> new_points = points;
+
+    new_points.pop_back(); //remove last 2 ctrl points
+    new_points.pop_back();
+
+    for (int i=points.size()-3; i>=0; --i) { //copy the middle bit
+        new_points.push_back(points[i]);
+        new_points.last().setX(-new_points.last().x()); //flip it
+    }
+
+    new_points.push_back(points[points.size()-2]); //copy the tangent going into the "start/end" point
+    new_points.last().setX(-new_points.last().x());
+
+    new_points.push_back(points[points.size()-2]); //copy the two final points on the original side to cap it off
+    new_points.push_back(points[points.size()-1]);
+
+    curve.SetPoints(new_points);
+}
 
 void PlanarSection::CreateLocalSymmetry()
 {

@@ -154,8 +154,9 @@ public:
     void SnapSketchToTemplateCut(const QList <QVector3D> & cut_segments, const float snap_dist_3d);
 
     bool CurveClockwise(const int c);
-    void SketchSymmetryTest();
+    void SketchSymmetryTest();    
     void CreateLocalSymmetry();   
+    void MirrorControlPoints();
 
     bool AddMouseRayIntersect(const int c, const QVector2D & v);
     bool AddCtrlPointPenPress(const int c, const QVector2D & v);

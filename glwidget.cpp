@@ -1031,14 +1031,7 @@ void GLWidget::paintGL()
         glColor3f(0.25f, 0.60f, 0.25f);
 
         if (do_local_symmetry) {
-            active_section_symmetry = active_section;
-
-            active_section_symmetry.SketchSymmetryTest();
-            active_section_symmetry.Update(0, section_error_tolerance);
-            active_section_symmetry.CreateLocalSymmetry();
-
             active_section_symmetry.DrawTris();
-            //active_section_symmetry.DrawCurveControlPoints(10.0f);
         }
         else {
             active_section.DrawTris();
@@ -1980,24 +1973,20 @@ void GLWidget::mouseMoveEvent(QMouseEvent * event)
 
             active_section.SetLocalSymmetryMode(do_local_symmetry);
             active_section.MoveCtrlPointMouseRayIntersect(mouse_pos, !ctrl_held, true);            
-
-            //if (do_local_symmetry) {
-                //qDebug() << "active section ctrl points" << active_section.GetCurves().first().GetNumControlPoints();
-                //active_section.CreateLocalSymmetry();
-            //}
-
             active_section.UpdateCurveTrisSlab();
+
+            if (do_local_symmetry) {
+                active_section_symmetry = active_section;
+                active_section_symmetry.MirrorControlPoints();
+                active_section_symmetry.UpdateCurveTrisSlab();
+            }
+
             break;
 
         case STATE_CURVE:
 
             active_section.SetLocalSymmetryMode(do_local_symmetry);
             active_section.AddMouseRayIntersect(0, mouse_pos);            
-
-//            if (sections.size() >= 1 && do_symmetry) {
-//                //do not do symmetry for the very first plane
-//                active_section.SketchSymmetryTest();
-//            }
 
             //if we have a template, do snapping
             if (do_show_templates && !template_cut.empty()) {
@@ -2008,18 +1997,16 @@ void GLWidget::mouseMoveEvent(QMouseEvent * event)
                 active_section.Update(0, section_error_tolerance);
             }
 
+            if (do_local_symmetry) {
+                active_section_symmetry = active_section;
 
-//            if (sections.size() >= 1 && do_symmetry) {
-//                //do not do symmetry for the very first plane
-//                active_section.CreateLocalSymmetry();
+                active_section_symmetry.SketchSymmetryTest();
+                active_section_symmetry.Update(0, section_error_tolerance);
+                active_section_symmetry.CreateLocalSymmetry();
+                //active_section_symmetry.SetCtrlPointsAboveXZPlane();
+                active_section_symmetry.UpdateCurveTrisSlab();
 
-
-//                //enforce above-ground control points
-//                active_section.UpdateCurveTrisSlab();
-
-
-//            }
-
+            }
 
             break;
 
@@ -2048,6 +2035,12 @@ void GLWidget::mouseMoveEvent(QMouseEvent * event)
         if (state == STATE_PEN_DRAG) {
             active_section.MoveCtrlPointMouseRayIntersect(mouse_pos, !ctrl_held);
             active_section.UpdateCurveTrisSlab();
+
+            if (do_local_symmetry) {
+                active_section_symmetry = active_section;
+                active_section_symmetry.MirrorControlPoints();
+                active_section_symmetry.UpdateCurveTrisSlab();
+            }
         }
         else if (IsSectionSelected()) {
 
@@ -2297,6 +2290,12 @@ void GLWidget::keyReleaseEvent(QKeyEvent *event)
         if(state == STATE_PEN_POINT) {
             active_section.DeleteCtrlPoint(0, active_section.GetCurve(0).GetNumControlPoints() - 3);
             active_section.UpdateCurveTrisSlab();
+
+            if (do_local_symmetry) {
+                active_section_symmetry = active_section;
+                active_section_symmetry.MirrorControlPoints();
+                active_section_symmetry.UpdateCurveTrisSlab();
+            }
         }
         else if (IsSectionSelected()) {
 
@@ -5058,14 +5057,14 @@ void GLWidget::AcceptPenCurve()
 
     active_section.SketchSetEditing(false);
 
-//    if (do_local_symmetry) {
-//        //do not do symmetry for the very first plane
-//        active_section.CreateLocalSymmetry();
-//    }
+    if (do_local_symmetry) {
+        active_section.MirrorControlPoints();
+        active_section.UpdateCurveTrisSlab();
+    }
 
     //enforce above-ground control points
     active_section.SetCtrlPointsAboveXZPlane();
-    active_section.UpdateCurveTrisSlab();
+    active_section.UpdateCurveTrisSlab();   
 
     if (!active_section.SliceTriangles().empty()) {
         sections.push_back(active_section);
