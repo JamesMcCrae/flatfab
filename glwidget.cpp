@@ -1308,17 +1308,17 @@ void GLWidget::DrawInstructions(QPainter & painter)
 
         case GENSTATE_LINEAR:
             title = "Generate: Linear";
-            text = "Instructions\n\n 1) Select the base section\n 2) Select a section that intersects the base\n 3) Press Enter to accept or Escape to cancel";
+            text = "Instructions\n\n 1) Select the base section (right-click away from sections to reset selection)\n 2) Select a section that intersects the base\n 3) Press Enter to accept or Escape to cancel";
             break;
 
         case GENSTATE_BLEND:
             title = "Generate: Blend";
-            text = "Instructions\n\n 1) Select the base section\n 2) Select two sections that intersect the base\n 3) Press Enter to accept or Escape to cancel";
+            text = "Instructions\n\n 1) Select the base section (right-click away from sections to reset selection)\n 2) Select two sections that intersect the base\n 3) Press Enter to accept or Escape to cancel";
             break;
 
         case GENSTATE_REVOLVE:
             title = "Generate: Revolve";
-            text = "Instructions\n\n 1) Select the base section\n 2) Select a section that intersects the base\n 3) Press Enter to accept or Escape to cancel";
+            text = "Instructions\n\n 1) Select the base section (right-click away from sections to reset selection)\n 2) Select a section that intersects the base\n 3) Press Enter to accept or Escape to cancel";
             break;
 
         case GENSTATE_GRID:
@@ -1675,7 +1675,6 @@ void GLWidget::mouseMoveEvent(QMouseEvent * event)
 
         switch (state) {
 
-
         case STATE_TRANSFORM_WIDGET:
 
             if (IsSectionSelected()) {
@@ -1929,6 +1928,8 @@ void GLWidget::mouseMoveEvent(QMouseEvent * event)
         case STATE_RESKETCH_CURVE:
 
             if (IsSectionSelected()) {
+
+                sections[selected].SetLocalSymmetryMode(do_local_symmetry);
                 sections[selected].AddMouseRayIntersect(0, mouse_pos);
 
                 //if we have a template, do snapping
@@ -1955,13 +1956,22 @@ void GLWidget::mouseMoveEvent(QMouseEvent * event)
             break;
 
         case STATE_PEN_POINT:
-            active_section.MoveCtrlPointMouseRayIntersect(mouse_pos, !ctrl_held, true);
+
+            active_section.SetLocalSymmetryMode(do_local_symmetry);
+            active_section.MoveCtrlPointMouseRayIntersect(mouse_pos, !ctrl_held, true);            
+
+            //if (do_local_symmetry) {
+                //qDebug() << "active section ctrl points" << active_section.GetCurves().first().GetNumControlPoints();
+                //active_section.CreateLocalSymmetry();
+            //}
+
             active_section.UpdateCurveTrisSlab();
             break;
 
         case STATE_CURVE:
 
-            active_section.AddMouseRayIntersect(0, mouse_pos);
+            active_section.SetLocalSymmetryMode(do_local_symmetry);
+            active_section.AddMouseRayIntersect(0, mouse_pos);            
 
 //            if (sections.size() >= 1 && do_symmetry) {
 //                //do not do symmetry for the very first plane
@@ -2014,8 +2024,7 @@ void GLWidget::mouseMoveEvent(QMouseEvent * event)
     }
     else if (event->buttons() & Qt::RightButton) {
 
-        if(state == STATE_PEN_DRAG)
-        {
+        if (state == STATE_PEN_DRAG) {
             active_section.MoveCtrlPointMouseRayIntersect(mouse_pos, !ctrl_held);
             active_section.UpdateCurveTrisSlab();
         }
@@ -2079,8 +2088,9 @@ void GLWidget::mouseReleaseEvent(QMouseEvent *event)
             //if the gesture wasn't completed, remove the section being added
             //sections.removeLast();
             //active_section = null_section;
-            if(pen_mode)
+            if (pen_mode) {
                 state = STATE_PEN_POINT;
+            }
             else if (selected != -1) {
                 SetSelected(-1);
                 UpdateDraw();
@@ -3003,8 +3013,9 @@ void GLWidget::SetDoMagneticCuts(const bool b)
 void GLWidget::SetPenModeOn(const bool b)
 {
     pen_mode = b;
-    if(state == STATE_PEN_POINT)
+    if (state == STATE_PEN_POINT) {
         CancelPenCurve();
+    }
 }
 
 void GLWidget::SetDoLocalSymmetry(const bool b)

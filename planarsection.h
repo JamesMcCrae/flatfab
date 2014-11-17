@@ -155,7 +155,7 @@ public:
 
     bool CurveClockwise(const int c);
     void SketchSymmetryTest();
-    void CreateLocalSymmetry();
+    void CreateLocalSymmetry();   
 
     bool AddMouseRayIntersect(const int c, const QVector2D & v);
     bool AddCtrlPointPenPress(const int c, const QVector2D & v);
@@ -218,12 +218,14 @@ public:
 
     float GetPointDistance(const QVector3D & v);
 
-    void SetRadial(bool b);
+    void SetRadial(const bool b);
     bool IsRadial();
     void SetNumRadialSectors(int num_sectors);
     int GetNumRadialSectors();
     void MakeRadial(int num_sectors, int points_per_sector);
-    void UpdateRadial();
+    void UpdateRadial();   
+
+    void SetLocalSymmetryMode(const bool b);
 
 private:  
 
@@ -274,6 +276,8 @@ private:
     //GLuint slab_disp_list;
     //bool update_slabcurves_disp_list;
     //GLuint slabcurves_disp_list;
+
+    bool local_symmetry_mode;
 
     bool radial;
     int num_radial_sectors;

@@ -33,7 +33,9 @@ PlanarSection::PlanarSection()
 
     num_radial_sectors = 0;
     num_radial_points_per_sector = 0;
+
     radial = false;
+    local_symmetry_mode = false;
 
 }
 
@@ -219,8 +221,7 @@ void PlanarSection::CreateRadial(QVector2D centre, const float base_rad, const i
 void PlanarSection::CopySectorRadially(QVector2D centre, int num_sectors, int points_per_sector)
 {
 
-    if(!radial)
-    {
+    if (!radial) {
         qDebug()<< "Error - Section is not radial";
         return;
     }
@@ -228,18 +229,17 @@ void PlanarSection::CopySectorRadially(QVector2D centre, int num_sectors, int po
     QList <QLineF> lines;
     QList <QVector2D> pts;
 
-
-    if(bez_curve[0].GetNumControlPoints() < points_per_sector)
+    if (bez_curve[0].GetNumControlPoints() < points_per_sector) {
         return;
+    }
 
     // Convert QVector2Ds to QLineFs
-    for(int i = 0; i < points_per_sector; i++)
-    {
-        lines.push_back( QLineF(centre.toPointF(), bez_curve[0].Point(i).toPointF()) );
+    for(int i = 0; i < points_per_sector; i++) {
+        lines.push_back(QLineF(centre.toPointF(), bez_curve[0].Point(i).toPointF()));
         pts.push_back(bez_curve[0].Point(i));
     }
 
-    const float angularLength = 360.0/num_sectors;
+    const float angularLength = 360.0f/num_sectors;
 
 //    // This ensures that keep_g1 is satisfied
 //    if(bez_curve[0].SelectedPoint() == 0)
@@ -254,7 +254,7 @@ void PlanarSection::CopySectorRadially(QVector2D centre, int num_sectors, int po
         for (int j=0; j<points_per_sector; ++j) {
 
             lines[j].setAngle(lines[j].angle() - angularLength);
-            pts.push_back( QVector2D(lines[j].x2(), lines[j].y2()) );
+            pts.push_back(QVector2D(lines[j].x2(), lines[j].y2()));
 
         }
 
@@ -266,7 +266,6 @@ void PlanarSection::CopySectorRadially(QVector2D centre, int num_sectors, int po
     for (int i=0; i<pts.size(); ++i) {
         bez_curve[0].AddPoint(pts[i]);
     }
-
 
     UpdateCurveTrisSlab();
 }
@@ -2429,18 +2428,17 @@ void PlanarSection::CreateLocalSymmetry()
     QList <QVector2D> new_points;
 
     int sign = 1;
-    if(bez_curve[0].Point(0).x() < 0)
+    if (bez_curve[0].Point(0).x() < 0) {
         sign = -1;
+    }
 
     // first half of curve
-
     new_points.push_back(bez_curve[0].Point(0));
     new_points.push_back(bez_curve[0].Point(1));
 
     // forward walk for the first section
     int index = 3;
     int smallest_x = 0;
-    //int second_smallest_x = 0;
 
     while (sign*bez_curve[0].Point(index).x() > 0.0f && index<bez_curve[0].GetNumControlPoints()-2) {
 
@@ -2449,50 +2447,12 @@ void PlanarSection::CreateLocalSymmetry()
         new_points.push_back(bez_curve[0].Point(index+1));
 
         if (bez_curve[0].Point(index).x() < bez_curve[0].Point(smallest_x).x()) {
-            //second_smallest_x = smallest_x;
             smallest_x = index;
         }
 
         index+=3;
 
     }
-
-//    // this means the curve is completely on one side
-//    if(index >= bez_curve[0].GetNumControlPoints()-2)
-//    {
-//        // find the points that are closest to the line of symmetry
-//        if(smallest_x < second_smallest_x)
-//        {
-//            start_of_flipped = smallest_x;
-//            end_of_flipped = second_smallest_x;
-//        }
-//        else
-//        {
-//            start_of_flipped = second_smallest_x;
-//            end_of_flipped = smallest_x;
-//        }
-
-//        // reverse the first section
-//        int index = start_of_flipped;
-//        for (int i=start_of_flipped; i>=0; i--)
-//        {
-//           new_points.insert(start_of_flipped, QVector2D(-new_points[i].x(), new_points[i].y()));
-//           index++;
-//        }
-
-////        // reverse second last point
-////        new_points.push_back(QVector2D(-bez_curve[0].Point(bez_curve[0].GetNumControlPoints()-2).x(), bez_curve[0].Point(bez_curve[0].GetNumControlPoints()-2).y()));
-
-//        // reverse the second section
-//        for (int i=bez_curve[0].GetNumControlPoints()-2; i>=end_of_flipped; i--)
-//        {
-//           newCurve.insert(index, QVector2D(-bez_curve[0].Point(i).x(), bez_curve[0].Point(i).y()));
-//           index++;
-//        }
-
-//        // add last two points
-
-//    }
 
     // reverse the first section
     for (int i=new_points.size()-1; i>=0; i--)
@@ -2969,18 +2929,20 @@ void PlanarSection::MoveCtrlPointMouseRayIntersect(const QVector2D & mouse_pos, 
     for (int c=0; c<bez_curve.size(); ++c) {
         if (bez_curve[c].SelectedPoint() >= 0) {
 
-            if(!radial || bez_curve[c].SelectedPoint() <  num_radial_points_per_sector)
-            {
-                if(radial && bez_curve[c].SelectedPoint() == 0)
+            if (!radial || bez_curve[c].SelectedPoint() <  num_radial_points_per_sector) {
+                if (radial && bez_curve[c].SelectedPoint() == 0) {
                     bez_curve[c].MoveSelectedPoint(int_2d, false, equal_lengths);
-                else
+                }
+                else {
                     bez_curve[c].MoveSelectedPoint(int_2d, keep_g1, equal_lengths);
+                }
             }
         }
     }
 
-    if(radial)
+    if (radial) {
         UpdateRadial();
+    }
 
 }
 
@@ -3837,7 +3799,7 @@ float PlanarSection::GetPointDistance(const QVector3D & v)
 }
 
 
-void PlanarSection::SetRadial(bool b)
+void PlanarSection::SetRadial(const bool b)
 {
     radial = b;
 }
@@ -3877,4 +3839,9 @@ void PlanarSection::MakeRadial(int num_sectors, int points_per_sector)
 void PlanarSection::UpdateRadial()
 {
     CopySectorRadially(radial_centre, num_radial_sectors, num_radial_points_per_sector);
+}
+
+void PlanarSection::SetLocalSymmetryMode(const bool b)
+{
+    local_symmetry_mode = b;
 }

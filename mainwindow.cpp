@@ -143,22 +143,21 @@ void MainWindow::ShowAppWidgets()
 
     mb.setMinimumSize(500, 300);
     mb.setTextFormat(Qt::RichText);
-    mb.setWindowTitle ( "Getting Started" );
+    mb.setWindowTitle ( "Welcome to FlatFab" );
     mb.setText("<p><font size='6'><b>Getting Started</b></font></p>"
 
                "<p>Start by drawing your first shape with the left mouse button held</p>"
 
                "<p><font size='4'><b>Create a New Section</b></font>"
                "<table> <tr><td>- Left click on a section and drag to the section edge to form a slit<br>"
-               "- Now draw the new section while holding the left mouse button</td></tr></table><br></p>"
-
+               "- Now draw the new section while holding the left mouse button</td></tr></table></p>"
 
                "<p><font size='4'><b>Selecting a Section</b></font>"
                "<table> <tr><td>- Sections must be selected to perform editing operation<br>"
-               "- Click on a section with the left or right mouse button to select it</td></tr></table></p>"
+               "- Click on a section with the right mouse button to select it</td></tr></table></p>"
 
                "<p><font size='4'><b>Delete a Section</b></font>"
-               "<table> <tr><td>- Press <b>Backspace</b> to delete the selected section</td></tr></p>"
+               "<table> <tr><td>- Press <b>Delete</b>/<b>Backspace</b> to delete the selected section</td></tr></p>"
 
                "<p><font size='4'><b>Editing Section Control Points</b></font>"
                "<table> <tr> <td>- Right click and drag the control points to modify the section shape (hold ctrl to create sharp corners)<br>"
