@@ -4,7 +4,7 @@ MainWindow::MainWindow()
 {   
 
     //title/window stuff
-    window_title = "FlatFab (0.6 beta)";
+    window_title = "FlatFab 0.6 (beta)";
     setWindowTitle(window_title);
 
     //release 0.6 -
@@ -146,28 +146,28 @@ void MainWindow::ShowAppWidgets()
     mb.setWindowTitle ( "Getting Started" );
     mb.setText("<p><font size='6'><b>Getting Started</b></font></p>"
 
-               "<p>Start by drawing your first shape with the left mouse button held<br></p>"
+               "<p>Start by drawing your first shape with the left mouse button held</p>"
 
                "<p><font size='4'><b>Create a New Section</b></font>"
-               "<table> <td>-<br>-</td>  <td>Left click on a section and drag to the section edge to form a slit<br>"
-               "Now draw the new section while holding the left mouse button</td></table><br></p>"
+               "<table> <tr><td>- Left click on a section and drag to the section edge to form a slit<br>"
+               "- Now draw the new section while holding the left mouse button</td></tr></table><br></p>"
 
 
                "<p><font size='4'><b>Selecting a Section</b></font>"
-               "<table> <td>-<br>-</td>  <td>Sections must be selected to perform editing operation<br>"
-               "Click on a section with the left or right mouse button to select it</td></table><br></p>"
+               "<table> <tr><td>- Sections must be selected to perform editing operation<br>"
+               "- Click on a section with the left or right mouse button to select it</td></tr></table></p>"
 
                "<p><font size='4'><b>Delete a Section</b></font>"
-               "<table> <td>-</td>  <td>Press <b>Backspace</b> to delete the selected section<br></p>"
+               "<table> <tr><td>- Press <b>Backspace</b> to delete the selected section</td></tr></p>"
 
                "<p><font size='4'><b>Editing Section Control Points</b></font>"
-               "<table> <td>-<br>-<td>  <td>Right click and drag the control points to modify the section shape<br>"
-               "While hovering over a control point press <b>-</b> to delete a handle or <b>+</b> to add one</td></table><br></p>"
+               "<table> <tr> <td>- Right click and drag the control points to modify the section shape (hold ctrl to create sharp corners)<br>"
+               "- While hovering over a control point press <b>-</b> to delete a handle or <b>+</b> to add one</td></tr></table></p>"
 
                "<p><font size='4'><b>Camera Controls</b></font>"
                "<table> <tr><td><b>orbit</b><br><b>zoom</b><br><b>dolly</b></td>"
-               "<td>left-click + ctrl (command on Mac OSX)<br>"
-               "left-click + alt<br>"
+               "<td>left-click (anywhere off the model)<br>"
+               "left-click + ctrl (command on Mac OSX)<br>"
                "left-click + shift</td> </table>");
 
     mb.setStandardButtons(QMessageBox::Ok);
