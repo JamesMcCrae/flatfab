@@ -163,26 +163,7 @@ GLWidget::~GLWidget()
     if (viewWidget != NULL) {
         delete viewWidget;
         viewWidget = NULL;
-    }
-
-    if (grid_sizex_label != NULL) {
-        delete grid_sizex_label;
-    }
-    if (grid_sizey_label != NULL) {
-        delete grid_sizey_label;
-    }
-
-    /*
-    grid_sizex_label = new QLabel(QString::number(GetGenerateGridSizeX()));
-    grid_sizey_label = new QLabel(QString::number(GetGenerateGridSizeX()));
-    grid_staple_label = new QLabel(QString::number(GetGenerateGridStapleSize()));
-    linear_spacing_label = new QLabel(QString::number(GetGenerateLinearSpacing()));
-    slices_spacing_label = new QLabel(QString::number(GetGenerateSlicesSpacing()));
-    num_blend_sections_label = new QLabel(QString::number(GetGenerateBlendSections()));
-    num_revolve_sections_label = new QLabel(QString::number(GetGenerateRevolveSections()));
-    branching_scalechild_label = new QLabel(QString::number(GetGenerateBranchingScaleChild()));
-    radial_sectors_label = new QLabel(QString::number(GetGenerateRadialSectors()));
-    */
+    }   
 
     if (template_image_tex > 0) {
         glDeleteTextures(1, &template_image_tex);
