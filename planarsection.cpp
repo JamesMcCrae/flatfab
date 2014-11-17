@@ -3587,7 +3587,6 @@ void PlanarSection::SaveConnectionsToOBJ(const QList <PlanarSection> & sections,
 void PlanarSection::SplitAlongLine(const QVector2D & split_p, const QVector2D & split_d, QList <PlanarSection> & split_sections)
 {
 
-
     //test if bounding box crosses the line
     QVector2D min_v, max_v;
     GetBoundingBox2D(min_v, max_v);
@@ -3600,11 +3599,8 @@ void PlanarSection::SplitAlongLine(const QVector2D & split_p, const QVector2D & 
     QList <QVector2D> int_index;
 
     //algorithm to split (roughly):
-    //march clockwise along curve (starting anywhere)
-    //during marching test to see if split line is crossed (if never crossed, no split)
-
-    //if the splitting line is crossed, march along splitting line (in clockwise direction) until another part of the curve is encountered.  eventually we get back to 1st point
-
+    //1. march clockwise along curve (starting anywhere). during marching test to see if split line is crossed (if never crossed, no split)
+    //2. if the splitting line is crossed, march along splitting line (in clockwise direction) until another part of the curve is encountered.  eventually we get back to 1st point
     //we also want to continue along that point of intersection along the curve, as this defines another piece on the other side
 
     QList <BezierCurve> curves;
@@ -3616,25 +3612,6 @@ void PlanarSection::SplitAlongLine(const QVector2D & split_p, const QVector2D & 
         new_section.UpdateCurveTrisSlab();
         split_sections.push_back(new_section);
     }
-
-    /*
-    const QList <QVector2D> & samples = bez_curve.Samples();
-
-    for (int i=0; i<samples.size(); ++i) {
-
-        int i1 = i;
-        int i2 = (i+1)%samples.size();
-        QVector2D intersect;
-
-        if (samples[i1].x() < p.x() || samples[i2].x() < p.x()) {
-            if (GLutils::LineRayIntersection(samples[i1], samples[i2], split_p, split_d, intersect)) {
-                //TODO: do something...
-
-            }
-        }
-
-    }
-    */
 
 }
 

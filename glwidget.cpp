@@ -5712,8 +5712,9 @@ bool GLWidget::ShowGenerate()
 
             UpdateAllTests();
             UpdateDraw();
-            if(current_tool_state == TOOLSTATE_DEFAULT) // this is should only be shown during AcceptGenerate()
+            if (current_tool_state == TOOLSTATE_DEFAULT) { // this is should only be shown during AcceptGenerate()
                 QMessageBox::warning ( this, "Generate Grid Error", "Can't Accept Generate Grid - 1 section must be selected");
+            }
 
             return false;
         }

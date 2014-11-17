@@ -86,6 +86,7 @@ private:
 
     void SamplePointsForSegment(const int i, QVector <QVector2D> & sample_segment) const;
 
+    void Subdivide(const int i, const float t);
     static void Subdivide(const BezierCurve & c, const int i, const float t, QList <QVector2D> & subdiv_pts);
     static void SamplePoint(const QVector2D & p1, const QVector2D & t1, const QVector2D & t2, const QVector2D & p2, const float t, QVector2D & point);
     static void SampleTangent(const QVector2D & p1, const QVector2D & t1, const QVector2D & t2, const QVector2D & p2, const float t, QVector2D & tangent);

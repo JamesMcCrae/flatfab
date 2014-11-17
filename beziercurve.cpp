@@ -612,18 +612,7 @@ void BezierCurve::InsertPoint(const int segment_index)
 
     QList <QVector2D> subdiv_pts;
 
-    Subdivide((*this), index, 0.5f, subdiv_pts);
-
-    //remove the two inner tangents
-    pts.removeAt(index+1);
-    pts.removeAt(index+1);
-
-    //add in the middle ctrl points
-    pts.insert(index+1, subdiv_pts[5]);
-    pts.insert(index+1, subdiv_pts[4]);
-    pts.insert(index+1, subdiv_pts[3]);
-    pts.insert(index+1, subdiv_pts[2]);
-    pts.insert(index+1, subdiv_pts[1]);
+    Subdivide(index, 0.5f);
 
 }
 
@@ -694,6 +683,46 @@ bool BezierCurve::IsPointInside(const QVector2D & p)
 
 }
 
+void BezierCurve::Subdivide(const int i, const float t)
+{
+
+    const float omt = 1.0f - t;
+
+    const QVector2D p00 = pts[i];
+    const QVector2D p01 = pts[i+1];
+    const QVector2D p02 = pts[i+2];
+    const QVector2D p03 = pts[i+3];
+
+    const QVector2D p10 = p00 * omt + p01 * t;
+    const QVector2D p11 = p01 * omt  + p02 * t;
+    const QVector2D p12 = p02 * omt  + p03 * t;
+
+    const QVector2D p20 = p10 * omt  + p11 * t;
+    const QVector2D p21 = p11 * omt  + p12 * t;
+
+    const QVector2D p30 = p20 * omt  + p21 * t;
+
+    //Use these:
+    //first ctrl point - p00
+    //start tangent - p10
+    //end tangent - p20
+    //new endpoint - p30
+    //start tangent - p21
+    //end tangent - p12
+    //end ctrl point - p03
+
+    //add in the middle ctrl points
+    pts.removeAt(i+1);
+    pts.removeAt(i+1);
+
+    pts.insert(i+1, p10);
+    pts.insert(i+2, p20);
+    pts.insert(i+3, p30);
+    pts.insert(i+4, p21);
+    pts.insert(i+5, p12);
+
+}
+
 void BezierCurve::Subdivide(const BezierCurve & c, const int i, const float t, QList <QVector2D> & subdiv_pts)
 {
 
@@ -734,6 +763,8 @@ void BezierCurve::Subdivide(const BezierCurve & c, const int i, const float t, Q
 void BezierCurve::GetLineIntersections(const QVector2D & line_p, const QVector2D & line_d, QList <BezierCurvePoint> & intersects)
 {
 
+    intersects.clear();
+
     QVector <float> segment_line_dists = QVector <float> (tests_sample_rate+1);
 
     QVector2D line_n(-line_d.y(), line_d.x());
@@ -767,6 +798,17 @@ void BezierCurve::GetLineIntersections(const QVector2D & line_p, const QVector2D
 
         }
 
+    }
+
+    //sort intersections along the ray direction
+    for (int i=0; i<intersects.size(); ++i) {
+        for (int j=i+1; j<intersects.size(); ++j) {
+
+            if (QVector2D::dotProduct(intersects[i].point, line_d) > QVector2D::dotProduct(intersects[j].point, line_d)) {
+                intersects.swap(i, j);
+            }
+
+        }
     }
 
 }
@@ -823,16 +865,15 @@ void BezierCurve::SplitAlongLine(const QVector2D & split_p, const QVector2D & sp
         return;
     }
 
-    //sort split points along the ray
-    for (int i=0; i<split.size(); ++i) {
-        for (int j=i+1; j<split.size(); ++j) {
+    //subdivide if two adjacent split point share the same segment
+    //TODO!!!: special case where split_segment[start] and split_segment[start+1] are the same
+    //(i.e. no position ctrl points on one side, but interpolated curve crosses)
+    for (int i=0; i+1<split.size(); i+=2) {
+        if (split[i].segment == split[i+1].segment) {
+            Subdivide(split[i].segment, (split[i].t + split[i+1].t) * 0.5f);
 
-            if (QVector2D::dotProduct(split[i].point, split_d) > QVector2D::dotProduct(split[j].point, split_d)) {
-                BezierCurvePoint temp = split[i];
-                split[i] = split[j];
-                split[j] = temp;
-            }
-
+            //reprocess intersections (since curve parameterization changed)
+            GetLineIntersections(split_p, split_d, split);
         }
     }
 
@@ -848,12 +889,12 @@ void BezierCurve::SplitAlongLine(const QVector2D & split_p, const QVector2D & sp
 
         //figure out split to start at and direction
         for (int i=0; i<visited_backward.size(); i+=2) {
-            if (visited_forward[i] == false) {
+            if (!visited_forward[i]) {
                 start = i;
                 go_forward = true;
                 break;
             }
-            if (visited_backward[i] == false) {
+            if (!visited_backward[i]) {
                 start = i;
                 go_forward = false;
                 break;
@@ -869,17 +910,14 @@ void BezierCurve::SplitAlongLine(const QVector2D & split_p, const QVector2D & sp
         int i0;
 
         BezierCurve new_curve;
-        new_curve.SetClosed(true);
+        new_curve.SetClosed(true);       
 
-        //TODO!!!: special case where split_segment[start] and split_segment[start+1] are the same
-        //(i.e. no position ctrl points on one side, but interpolated curve crosses)
+        QList <QVector2D> subdiv_pts;
+        Subdivide((*this), split[start].segment, split[start].t, subdiv_pts);
+        QList <QVector2D> next_subdiv_pts;
+        Subdivide((*this), split[start+1].segment, split[start+1].t, next_subdiv_pts);
 
         if (go_forward) {
-
-            QList <QVector2D> subdiv_pts;
-            Subdivide((*this), split[start].segment, split[start].t, subdiv_pts);
-            QList <QVector2D> next_subdiv_pts;
-            Subdivide((*this), split[start+1].segment, split[start+1].t, next_subdiv_pts);
 
             new_curve.AddPoint(subdiv_pts[0]);
             new_curve.AddPoint(subdiv_pts[1]);
@@ -899,12 +937,7 @@ void BezierCurve::SplitAlongLine(const QVector2D & split_p, const QVector2D & sp
             i = split[start+1].segment;
 
         }
-        else {
-
-            QList <QVector2D> subdiv_pts;
-            Subdivide((*this), split[start].segment, split[start].t, subdiv_pts);
-            QList <QVector2D> next_subdiv_pts;
-            Subdivide((*this), split[start+1].segment, split[start+1].t, next_subdiv_pts);
+        else {           
 
             new_curve.AddPoint(next_subdiv_pts[0]);
             new_curve.AddPoint(next_subdiv_pts[1]);
