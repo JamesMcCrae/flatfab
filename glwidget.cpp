@@ -13,10 +13,6 @@ GLWidget::GLWidget() :
     setAutoFillBackground(false);
     setFocusPolicy(Qt::ClickFocus);
 
-    shift_held = false;
-    ctrl_held = false;
-    alt_held = false;
-
     grid_size = 10;
 
     max_undo_sections = 1000;
@@ -1427,14 +1423,19 @@ b) when there are planes, attempt to select one
 
 */
 
+    const bool ctrl_held = ((event->modifiers() & Qt::ControlModifier) > 0);
+    const bool shift_held = ((event->modifiers() & Qt::ShiftModifier) > 0);
+    const bool alt_held = ((event->modifiers() & Qt::AltModifier) > 0);
+
     UpdateCamera();
 
     mouse_pos = QVector2D(event->x(), height() - event->y()); 
 
     if (event->button() == Qt::LeftButton) {
 
-        if(!(pen_mode && state == STATE_PEN_POINT) && (ctrl_held || shift_held || alt_held) )
+        if(!(pen_mode && state == STATE_PEN_POINT) && (ctrl_held || shift_held || alt_held) ) {
             state = STATE_ORBIT;
+        }
         else
         {
 
@@ -1690,6 +1691,9 @@ b) when there are planes, attempt to select one
 
 void GLWidget::mouseMoveEvent(QMouseEvent * event)
 {   
+
+    const bool ctrl_held = ((event->modifiers() & Qt::ControlModifier) > 0);
+    const bool shift_held = ((event->modifiers() & Qt::ShiftModifier) > 0);
 
     //qDebug() << "GLWidget::mouseMoveEvent() - state " << state;
     QVector2D mouse_diff = mouse_pos - QVector2D(event->x(), height() - event->y());
@@ -2256,33 +2260,27 @@ void GLWidget::keyPressEvent(QKeyEvent *event)
 
     switch (event->key()) {
 
-    case Qt::Key_Shift:
-
-        shift_held = true;
-        break;
-
-    case Qt::Key_Control:
-        ctrl_held = true;
-        break;
-
-    case Qt::Key_Alt:
-        alt_held = true;
-        break;
-
     case Qt::Key_Enter:
     case Qt::Key_Return:
-        if(state == STATE_PEN_POINT)
-            AcceptPenCurve();
 
-        else if(current_tool_state == TOOLSTATE_GENERATE)
+        if (state == STATE_PEN_POINT) {
+            AcceptPenCurve();
+        }
+        else if (current_tool_state == TOOLSTATE_GENERATE) {
             AcceptGenerate();
+        }
+
         break;
 
     case Qt::Key_Escape:
-        if(current_tool_state == TOOLSTATE_GENERATE)
+
+        if (current_tool_state == TOOLSTATE_GENERATE) {
             CancelGenerate();
-        else if(state == STATE_PEN_POINT)
+        }
+        else if (state == STATE_PEN_POINT) {
             CancelPenCurve();
+        }
+
         break;
     }
 
@@ -2292,19 +2290,6 @@ void GLWidget::keyReleaseEvent(QKeyEvent *event)
 {
 
     switch (event->key()) {
-
-    case Qt::Key_Shift:
-
-        shift_held = false;
-        break;
-
-    case Qt::Key_Control:
-        ctrl_held = false;
-        break;
-
-    case Qt::Key_Alt:
-        alt_held = false;
-        break;  
 
     case Qt::Key_Minus:
 
@@ -3043,7 +3028,6 @@ void GLWidget::SetDoMagneticCuts(const bool b)
     do_magnetic_cuts = b;
 
     UpdateTemplateCut();
-    //updateGL();
 }
 
 void GLWidget::SetPenModeOn(const bool b)
@@ -3062,22 +3046,14 @@ void GLWidget::SetDoCyclesTest(const bool b)
 {
     do_cycles_test = b;
 
-//    for (int i=0; i<sections.size(); ++i) {
-//        sections[i].SetPartOfCycle(false);
-//    }
-
     DoCyclesConnectedTest();
     update_sections_disp_list = true;
-
-    //updateGL();
-
 }
 
 void GLWidget::SetDoStabilityTest(const bool b)
 {
     do_stability_test = b;
     DoStabilityTest();
-    //updateGL();
 }
 
 void GLWidget::SetDoPhysicsTest(const bool b)
@@ -3087,8 +3063,6 @@ void GLWidget::SetDoPhysicsTest(const bool b)
     DoPhysicsTest();
 
     update_sections_disp_list = true;
-
-    //updateGL();
 
     testPhysicsButton->setChecked(do_physics_test);
 }
@@ -3102,8 +3076,6 @@ void GLWidget::ToggleDoPhysicsTest()
 
     update_sections_disp_list = true;
 
-    //updateGL();
-
     testPhysicsButton->setChecked(do_physics_test);
 
 }
@@ -3115,33 +3087,26 @@ void GLWidget::ToggleDoPhysicsTest()
      DoCyclesConnectedTest();
 
      update_sections_disp_list = true;
-
-     //updateGL();
  }
 
  void GLWidget::SetShowTNBFrames(const bool b)
  {
      do_show_tnb_frames = b;
-     //updateGL();
  }
 
  void GLWidget::SetShowShadow(const bool b)
  {
      do_show_shadow = b;
      update_sections_disp_list = true;
-     //updateGL();
  }
 
  void GLWidget::SetShowTemplates(const bool b)
  {
      do_show_templates = b;
-     //updateGL();
  }
 
 void GLWidget::SetSlabThickness(const double d)
 {
-
-    //slab_thickness = float(i) / 100.0f;
     slab_thickness = d;
 
     if (last_op == OP_GENERATE_SURFACE_FACETS) {
@@ -3158,14 +3123,12 @@ void GLWidget::SetSlabThickness(const double d)
 
     UpdateAllTests();
     UpdateDraw();
-
 }
 
 void GLWidget::SetCalibrationFactor(const int i)
 {
     calibration_factor = float(i) / 100.0f;
     calibration_label->setText(QString::number(calibration_factor * 100.0f) + QString("%"));
-
 }
 
 void GLWidget::SetQualitySamples(const int i)
@@ -3185,18 +3148,14 @@ void GLWidget::SetQualitySamples(const int i)
 
 void GLWidget::SetRotationDuration(const int i)
 {
-
     cam_animate_duration = float(i * 100);
     rotate_label->setText(QString::number(i * 100) + QString(" ms"));
-
 }
 
 void GLWidget::SetRotationAngle(const int i)
 {
-
     cam_animate_angle = float(i);
     rotate_angle_label->setText(QString::number(i) + QString(" degrees"));
-
 }
 
 void GLWidget::SetGenerateGridSizeX(const int i)
@@ -3204,13 +3163,9 @@ void GLWidget::SetGenerateGridSizeX(const int i)
     generate_grid_sizex = float(i) / 10.0f;
     grid_sizex_label->setText(QString::number(generate_grid_sizex));
 
-//    if (last_op == OP_GENERATE_GRID) {
-//        Undo(OP_GENERATE_GRID);
-//        DoGenerateGrid();
-//    }
-
-    if(current_tool_state == TOOLSTATE_GENERATE && gen_state == GENSTATE_GRID)
+    if (current_tool_state == TOOLSTATE_GENERATE && gen_state == GENSTATE_GRID) {
         ShowGenerate();
+    }
 }
 
 void GLWidget::SetGenerateGridSizeY(const int i)
@@ -3218,13 +3173,9 @@ void GLWidget::SetGenerateGridSizeY(const int i)
     generate_grid_sizey = float(i) / 10.0f;
     grid_sizey_label->setText(QString::number(generate_grid_sizey));
 
-//    if (last_op == OP_GENERATE_GRID) {
-//        Undo(OP_GENERATE_GRID);
-//        DoGenerateGrid();
-//    }
-
-    if(current_tool_state == TOOLSTATE_GENERATE && gen_state == GENSTATE_GRID)
+    if (current_tool_state == TOOLSTATE_GENERATE && gen_state == GENSTATE_GRID) {
         ShowGenerate();
+    }
 }
 
 void GLWidget::SetGenerateGridStapleSize(const int i)
@@ -3232,13 +3183,9 @@ void GLWidget::SetGenerateGridStapleSize(const int i)
     generate_grid_staplesize = float(i) / 20.0f;
     grid_staple_label->setText(QString::number(generate_grid_staplesize));
 
-//    if (last_op == OP_GENERATE_GRID) {
-//        Undo(OP_GENERATE_GRID);
-//        DoGenerateGrid();
-//    }
-
-    if(current_tool_state == TOOLSTATE_GENERATE && gen_state == GENSTATE_GRID)
+    if(current_tool_state == TOOLSTATE_GENERATE && gen_state == GENSTATE_GRID) {
         ShowGenerate();
+    }
 }
 
 void GLWidget::SetGenerateLinearSpacing(const int i)
@@ -3246,39 +3193,27 @@ void GLWidget::SetGenerateLinearSpacing(const int i)
     generate_linear_spacing = float(i) / 10.0f;
     linear_spacing_label->setText(QString::number(generate_linear_spacing));
 
-//    if (last_op == OP_GENERATE_LINEAR) {
-//        Undo(OP_GENERATE_LINEAR);
-//        DoGenerateLinear();
-//    }
-
-    if(current_tool_state == TOOLSTATE_GENERATE && gen_state == GENSTATE_LINEAR)
+    if (current_tool_state == TOOLSTATE_GENERATE && gen_state == GENSTATE_LINEAR) {
         ShowGenerate();
+    }
 }
 
 void GLWidget::SetGenerateLinearScaleX(const bool b)
 {
     generate_linear_scalex = b;
 
-//    if (last_op == OP_GENERATE_LINEAR) {
-//        Undo(OP_GENERATE_LINEAR);
-//        DoGenerateLinear();
-//    }
-
-    if(current_tool_state == TOOLSTATE_GENERATE && gen_state == GENSTATE_LINEAR)
+    if (current_tool_state == TOOLSTATE_GENERATE && gen_state == GENSTATE_LINEAR) {
         ShowGenerate();
+    }
 }
 
 void GLWidget::SetGenerateLinearScaleY(const bool b)
 {
     generate_linear_scaley = b;
 
-//    if (last_op == OP_GENERATE_LINEAR) {
-//        Undo(OP_GENERATE_LINEAR);
-//        DoGenerateLinear();
-//    }
-
-    if(current_tool_state == TOOLSTATE_GENERATE && gen_state == GENSTATE_LINEAR)
+    if (current_tool_state == TOOLSTATE_GENERATE && gen_state == GENSTATE_LINEAR) {
         ShowGenerate();
+    }
 }
 
 void GLWidget::UpdateGenerateSlicesSpacing()
@@ -3298,24 +3233,27 @@ void GLWidget::SetGenerateSlicesX(const bool b)
 {
     generate_slices_x = b;
 
-    if(current_tool_state == TOOLSTATE_GENERATE && gen_state == GENSTATE_SLICES)
+    if (current_tool_state == TOOLSTATE_GENERATE && gen_state == GENSTATE_SLICES) {
         ShowGenerate();
+    }
 }
 
 void GLWidget::SetGenerateSlicesY(const bool b)
 {
     generate_slices_y = b;
 
-    if(current_tool_state == TOOLSTATE_GENERATE && gen_state == GENSTATE_SLICES)
+    if (current_tool_state == TOOLSTATE_GENERATE && gen_state == GENSTATE_SLICES) {
         ShowGenerate();
+    }
 }
 
 void GLWidget::SetGenerateSlicesZ(const bool b)
 {
     generate_slices_z = b;
 
-    if(current_tool_state == TOOLSTATE_GENERATE && gen_state == GENSTATE_SLICES)
+    if (current_tool_state == TOOLSTATE_GENERATE && gen_state == GENSTATE_SLICES) {
         ShowGenerate();
+    }
 }
 
 void GLWidget::SetGenerateBranchingScaleChild(const int i)
@@ -3352,13 +3290,9 @@ void GLWidget::SetGenerateBlendSections(const int i)
     generate_blend_sections = i;
     num_blend_sections_label->setText(QString::number(generate_blend_sections));
 
-//    if (last_op == OP_GENERATE_BLEND) {
-//        Undo(OP_GENERATE_BLEND);
-//        DoGenerateBlend();
-//    }
-
-    if(current_tool_state == TOOLSTATE_GENERATE && gen_state == GENSTATE_BLEND)
+    if (current_tool_state == TOOLSTATE_GENERATE && gen_state == GENSTATE_BLEND) {
         ShowGenerate();
+    }
 }
 
 void GLWidget::SetGenerateRevolveSections(const int i)
@@ -3366,13 +3300,9 @@ void GLWidget::SetGenerateRevolveSections(const int i)
     generate_revolve_sections = i; 
     num_revolve_sections_label->setText(QString::number(generate_revolve_sections));
 
-//    if (last_op == OP_GENERATE_REVOLVE) {
-//        Undo(OP_GENERATE_REVOLVE);
-//        DoGenerateRevolve();
-//    }
-
-    if(current_tool_state == TOOLSTATE_GENERATE && gen_state == GENSTATE_REVOLVE)
+    if (current_tool_state == TOOLSTATE_GENERATE && gen_state == GENSTATE_REVOLVE) {
         ShowGenerate();
+    }
 }
 
 void GLWidget::AddToUndoList(const LastOperation op)
@@ -3406,8 +3336,9 @@ void GLWidget::AddToUndoList(const LastOperation op)
 void GLWidget::Undo(const LastOperation op)
 {
 
-    if(current_tool_state == TOOLSTATE_GENERATE)
+    if (current_tool_state == TOOLSTATE_GENERATE) {
         return;
+    }
 
     //add the existing sections to the undo list, but ONLY if we are at the end
     if (undo_index == undo_sections.size()-1) {
@@ -3427,8 +3358,9 @@ void GLWidget::Undo(const LastOperation op)
 
 void GLWidget::Redo()
 {
-    if(current_tool_state == TOOLSTATE_GENERATE)
+    if (current_tool_state == TOOLSTATE_GENERATE) {
         return;
+    }
 
     if (undo_index < undo_sections.size()-2) {
         sections = undo_sections[undo_index+2];
@@ -3439,8 +3371,6 @@ void GLWidget::Redo()
     if (!IsSectionSelected()) {
         selected = -1;
     }
-
-    //updateGL();
 
 }
 
@@ -3600,26 +3530,16 @@ void GLWidget::SnapToMajorAxis()
 
     sections[selected].UpdateCurveTrisSlab();
 
-    //updateGL();
-
 }
 
 void GLWidget::AddHoleBoundary()
 {
-
     if (!IsSectionSelected()) {
         return;
     }
 
     AddToUndoList(OP_ADD_HOLE);
-
-    //sections[selected].SketchClear();
-    //sections[selected].Update(section_error_tolerance);
-
     state = STATE_ADD_HOLE;
-
-    //updateGL();
-
 }
 
 void GLWidget::RemoveHolesBoundary()
@@ -3632,8 +3552,6 @@ void GLWidget::RemoveHolesBoundary()
 
     sections[selected].RemoveHoles();
     sections[selected].UpdateCurveTrisSlab();
-
-    //updateGL();
 }
 
 void GLWidget::ResketchCurve()
@@ -3648,8 +3566,6 @@ void GLWidget::ResketchCurve()
     sections[selected].Update(0, section_error_tolerance);
 
     state = STATE_RESKETCH_CURVE;
-
-    //updateGL();
 }
 
 void GLWidget::NewPlaneSketch()
@@ -4588,13 +4504,6 @@ void GLWidget::ClearAll()
     current_tool_state = TOOLSTATE_DEFAULT;
     generated_sections.clear();
     generate_selections.clear();
-
-    ctrl_held = false;
-    alt_held = false;
-    shift_held = false;
-
-    //physics.ClearProblem();
-    //physics_solved.ClearProblem();
 
 }
 

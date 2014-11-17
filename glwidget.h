@@ -363,9 +363,6 @@ private:
     int animate_mouseupdates;
 
     QVector2D mouse_pos;
-    bool ctrl_held;
-    bool shift_held;
-    bool alt_held;
 
     int grid_size;
     QVector3D default_lookat;
