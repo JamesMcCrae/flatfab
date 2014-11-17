@@ -6561,12 +6561,12 @@ bool GLWidget::ShowGenerate()
         QList <QVector2D> split_pts;
         QList <QVector2D> split_dirs;
 
-        for (float x=min_bb.x()+(generate_grid_sizex*offset); x-generate_grid_sizex<=max_bb.x(); x += generate_grid_sizex) {
+        for (float x=min_bb.x()+(generate_grid_sizex*offset); x<=max_bb.x(); x += generate_grid_sizex) {
             split_pts.push_back(QVector2D(x, 0));
             split_dirs.push_back(QVector2D(0, 1));
         }
 
-        for (float y=min_bb.y()+(generate_grid_sizey*offset); y-generate_grid_sizey<=max_bb.y(); y += generate_grid_sizey) {
+        for (float y=min_bb.y()+(generate_grid_sizey*offset); y<=max_bb.y(); y += generate_grid_sizey) {
             split_pts.push_back(QVector2D(0, y));
             split_dirs.push_back(QVector2D(1, 0));
         }
