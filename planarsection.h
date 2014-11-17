@@ -212,7 +212,7 @@ public:
     void SplitAlongLine(const QVector2D & split_p, const QVector2D & split_d, QList <PlanarSection> & split_sections);
     bool IsIntersectingSection(const PlanarSection & other) const;
 
-    void GetCurveBetweenSections(const int my_index, const PlanarSection & section1, const int section1_index, const PlanarSection & section2, const int section2_index, BezierCurve & curve);
+    void GetCurveBetweenSections(const PlanarSection & section1, const PlanarSection & section2, BezierCurve & curve);
     void GetCurveAroundSection(const PlanarSection & section, BezierCurve & curve);
     void GetSectionsAlongCurve(const PlanarSection & start_section, const BezierCurve & curve, const int num_frames, QList <PlanarSection> & sections);
 

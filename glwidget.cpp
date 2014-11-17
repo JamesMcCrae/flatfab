@@ -144,9 +144,6 @@ GLWidget::GLWidget() :
     selections_per_gen_type[GENSTATE_GRID] = 1;
     selections_per_gen_type[GENSTATE_BRANCH] = 1;
 
-//    painter.set
-//    painter.setRenderHint(QPainter::Antialiasing);
-
 }
 
 GLWidget::~GLWidget()
@@ -1461,21 +1458,16 @@ QWidget * GLWidget::GetViewWidget()
 // This is needed to allow QPainter to work with standard GL functions
 void GLWidget::paintEvent(QPaintEvent *)
 {
-    makeCurrent();
 
+    //makeCurrent(); //not needed - paintGL does this implicitly
     paintGL();
 
     QPainter painter(this);
     painter.setRenderHint(QPainter::Antialiasing);
-
     DrawInstructions(painter);
-
     painter.end();
 
 }
-
-
-
 
 void GLWidget::paintGL()
 {         
@@ -1845,8 +1837,6 @@ void GLWidget::paintGL()
         }
     }
 
-
-
 //    DrawInfo();
 
 }
@@ -1855,15 +1845,16 @@ void GLWidget::paintGL()
 
 void GLWidget::DrawInstructions(QPainter & painter)
 {
-    if(!(current_tool_state == TOOLSTATE_GENERATE || state == STATE_PEN_POINT || state == STATE_PEN_DRAG))
+    if (current_tool_state != TOOLSTATE_GENERATE && state != STATE_PEN_POINT && state != STATE_PEN_DRAG) {
         return;
+    }
 
     QString title;
     QString text;
 
 
-    if(current_tool_state == TOOLSTATE_GENERATE)
-    {
+    if (current_tool_state == TOOLSTATE_GENERATE) {
+
         switch (gen_state) {
 
         case GENSTATE_LINEAR:
@@ -1901,9 +1892,9 @@ void GLWidget::DrawInstructions(QPainter & painter)
             break;
 
         }
+
     }
-    else if(state == STATE_PEN_POINT || state == STATE_PEN_DRAG)
-    {
+    else if (state == STATE_PEN_POINT || state == STATE_PEN_DRAG) {
         title = "Pen Mode";
         text = "Left-click and drag to create a new point and handles\nPress Enter to accept or Escape to cancel";
     }
@@ -1916,7 +1907,6 @@ void GLWidget::DrawInstructions(QPainter & painter)
                                       Qt::AlignLeft | Qt::TextWordWrap, text);
     rect.setHeight(rect.height() + 20); // This accounts for the title
 
-//    painter.begin(this);
     painter.setRenderHint(QPainter::TextAntialiasing);
     painter.fillRect(QRect(0, 0, width(), rect.height() + 2*border),
                      QColor(245, 245, 245, 127));
@@ -1935,10 +1925,6 @@ void GLWidget::DrawInstructions(QPainter & painter)
     painter.drawText(border, border + 20,
                       rect.width(), rect.height(),
                       Qt::AlignLeft | Qt::TextWordWrap, text);
-
-//    painter.end();
-
-
 
 }
 
@@ -2019,6 +2005,18 @@ void GLWidget::DrawInfo()
 
     case STATE_DIMENSIONING_SECOND:
         render_text += "State: DIMENSIONING_SECOND";
+        break;
+
+    case STATE_PEN_POINT:
+        render_text += "State: PEN_POINT";
+        break;
+
+    case STATE_PEN_DRAG:
+        render_text += "State: PEN_DRAG";
+        break;
+
+    default:
+        render_text += "State: DEFAULT";
         break;
 
     }   
@@ -2288,9 +2286,7 @@ b) when there are planes, attempt to select one
 
             if (sections[selected].IsCtrlPointSelected()) {
                 state = STATE_MANIP_CTRLPOINT;
-//                if(last_op != OP_GENERATE_MAKE_RADIAL)
-                    AddToUndoList(OP_MANIP_CTRLPOINT);
-
+                AddToUndoList(OP_MANIP_CTRLPOINT);
             }
             else if (sections[selected].IsWeightSelected()) {
                 state = STATE_MANIP_WEIGHT;
@@ -2307,9 +2303,7 @@ b) when there are planes, attempt to select one
             }
 
         }
-
-
-        else {
+        else {         
             const int new_select = PickSection(mouse_pos, false);
             if (new_select != selected) {
                 last_op = OP_SELECTION;
@@ -3281,6 +3275,7 @@ int GLWidget::PickTransformWidgetElement(const QVector2D & mouse_pos)
 int GLWidget::PickSection(const QVector2D & mouse_pos, const bool only_test_selected)
 {   
 
+    glEnable(GL_DEPTH_TEST);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     if (only_test_selected && IsSectionSelected()) {
@@ -3288,7 +3283,7 @@ int GLWidget::PickSection(const QVector2D & mouse_pos, const bool only_test_sele
         sections[selected].DrawForPicking(selected);
     }
     else {
-        //draw all planes... which of them do we want?
+        //draw all planes... which of them do we want?        
         for (int i=0; i<sections.size(); ++i) {
             sections[i].DrawForPicking(i);
         }
@@ -3298,7 +3293,7 @@ int GLWidget::PickSection(const QVector2D & mouse_pos, const bool only_test_sele
     int index;
 
     GLutils::ReadPixelColor_BackBuffer(mouse_pos.x(), mouse_pos.y(), r, g, b);   
-    GLutils::PixelColorToIndex(r, g, b, index);
+    GLutils::PixelColorToIndex(r, g, b, index);   
 
     if (index >= 0 && index < sections.size()) {
         return index;        
@@ -3308,54 +3303,6 @@ int GLWidget::PickSection(const QVector2D & mouse_pos, const bool only_test_sele
     }
 
 }
-
-/*
-void GLWidget::PickDisc(const vec2 & mouse_pos)
-{
-
-    UpdateCamera();
-
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    for (int i=0; i<discs.size(); ++i) {
-        discs[i].DrawForPicking(i);
-    }
-
-    unsigned char r, g, b;
-    GLutils::ReadPixelColor_BackBuffer(mouse_pos[0], mouse_pos[1], r, g, b);
-
-    int index;
-
-    GLutils::PixelColorToIndex(r, g, b, index);
-
-    if (index >= 0 && index < discs.size()) {
-        disc_selected = index;
-        discs[disc_selected].SetMouseCursor(mouse_pos);
-    }
-    else {
-        disc_selected = -1;
-    }
-
-}
-*/
-
-/*
-void GLWidget::SetViewIso()
-{
-
-    isocam = cam;
-    isocam.SetTheta(45.0f);
-    isocam.SetPhi(45.0f);
-    isocam.SetViewDist(10.0f);
-    isocam.SetLookAt(QVector3D(0, grid_size/4, 0));
-
-    cam.SetInterpCamera(isocam, cam_animate_duration);
-    StartAnimation(cam_animate_duration);
-
-    updateGL();
-
-}
-*/
 
 void GLWidget::SetUnitsToInches()
 {
@@ -6317,7 +6264,7 @@ bool GLWidget::ShowGenerate()
 
             //3.  we need to find the interval of section 1's boundary to regularly add sections to
             BezierCurve curve;
-            section1.GetCurveBetweenSections(generate_selections[0], section2, generate_selections[1], section3, generate_selections[2], curve);
+            section1.GetCurveBetweenSections(section2, section3, curve);
             /*
             const QList <QVector2D> & samples = curve.Samples();
             markers2.clear();
@@ -7409,7 +7356,7 @@ void GLWidget::DoGenerateBlend()
 
     //3.  we need to find the interval of section 1's boundary to regularly add sections to
     BezierCurve curve;
-    section1.GetCurveBetweenSections(last_selected[ls-3], section2, last_selected[ls-2], section3, last_selected[ls-1], curve);
+    section1.GetCurveBetweenSections(section2, section3, curve);
     /*
     const QList <QVector2D> & samples = curve.Samples();
     markers2.clear();

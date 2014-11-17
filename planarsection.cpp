@@ -2223,106 +2223,6 @@ void PlanarSection::ComputeIntersectionGraph(const QList <PlanarSection> & secti
 
 }
 
-//this code bad/inefficient
-/*
-void PlanarSection::ComputeCycles(const QVector <QVector <bool> > & graph, QList <QList <int> > & cyc, QList <QList <int> > & all_paths)
-{
-
-    //qDebug() << "Detecting all cycles in mesh...";
-    const int max_depth = 13;
-    QList <QList <int> > verts_walked;
-    QList <QSet <int> > edges_walked;
-
-    for (int i=0; i<graph.size(); ++i) {
-        QList <int> each_cyc;
-        each_cyc.push_back(i);
-        verts_walked.push_back(each_cyc);
-
-        QSet <int> each_walk;
-        edges_walked.push_back(each_walk);
-    }
-
-    //qDebug() << "Starting...";
-    for (int i=0; i<verts_walked.size(); ++i) { //note that verts_walked gets bigger as we iterate!
-
-        //qDebug() << "verts_walked_size at iteration" << i << verts_walked << edges_walked;
-
-        //last vertex in this path
-        const int first_vert = verts_walked[i].first();
-        const int cur_vert = verts_walked[i].last();
-
-        for (int j=0; j<graph.size(); ++j) {
-
-            const int next_vert = j;
-
-            //no self-cycles
-            if (cur_vert == next_vert) {
-                continue;
-            }
-
-            //there is no edge to vertex j
-            if (!graph[cur_vert][next_vert]) {
-                continue;
-            }
-
-            //we do not walk edges walked already
-            //note edge key needs to be symmetric (i.e. edge i-j key is same as edge j-i key)
-            const int edge_key = qMax(cur_vert, next_vert) * graph.size() + qMin(cur_vert, next_vert);
-            if (edges_walked[i].contains(edge_key)) {
-                continue;
-            }
-
-            if (verts_walked[i].size() > 1 && first_vert == j) {
-
-                //qDebug() << "Cycle detected!" << verts_walked[i];
-                cyc.push_back(verts_walked[i]);
-
-            }
-            else {
-
-
-                //path is new, add it
-                QList <int> new_path = verts_walked[i];
-                new_path.push_back(j);
-
-                QSet <int> new_edges_walked = edges_walked[i];
-                //new_edges_walked.push_back(edge_key);
-                new_edges_walked.insert(edge_key);
-
-                if (new_path.size() >= max_depth) {
-                    continue;
-                }
-
-                //test we haven't walked this same set of edges before
-                bool dup_found = false;
-                for (int k=0; k<verts_walked.size(); ++k) {
-                    if (edges_walked[k] == new_edges_walked) {
-                        //qDebug() << "duplicate edge set detected" << new_edges_walked;
-                        dup_found = true;
-                        break;
-                    }
-                }
-
-                if (dup_found) {
-                    continue;
-                }
-
-                //qDebug() << "adding" << new_path << new_edges_walked;
-                verts_walked.push_back(new_path);
-                edges_walked.push_back(new_edges_walked);
-
-            }
-
-        }
-
-    }
-    //qDebug() << "Done";
-
-    all_paths = verts_walked;
-
-}
-*/
-
 void PlanarSection::TestConnectedness(QList <PlanarSection> & sections, QList <QList <int> > & all_paths)
 {
 
@@ -2540,21 +2440,21 @@ void PlanarSection::CreateLocalSymmetry()
     // forward walk for the first section
     int index = 3;
     int smallest_x = 0;
-    int second_smallest_x = 0;
+    //int second_smallest_x = 0;
 
-    while(sign*bez_curve[0].Point(index).x() > 0.0f && index<bez_curve[0].GetNumControlPoints()-2)
-    {
+    while (sign*bez_curve[0].Point(index).x() > 0.0f && index<bez_curve[0].GetNumControlPoints()-2) {
+
         new_points.push_back(bez_curve[0].Point(index-1));
         new_points.push_back(bez_curve[0].Point(index));
         new_points.push_back(bez_curve[0].Point(index+1));
 
-        if(bez_curve[0].Point(index).x() < bez_curve[0].Point(smallest_x).x())
-        {
-            second_smallest_x = smallest_x;
+        if (bez_curve[0].Point(index).x() < bez_curve[0].Point(smallest_x).x()) {
+            //second_smallest_x = smallest_x;
             smallest_x = index;
         }
 
         index+=3;
+
     }
 
 //    // this means the curve is completely on one side
@@ -3801,7 +3701,7 @@ void PlanarSection::WidenSlot(const float factor, QList <QVector2D> & slot)
 
 }
 
-void PlanarSection::GetCurveBetweenSections(const int my_index, const PlanarSection & section1, const int section1_index, const PlanarSection & section2, const int section2_index, BezierCurve & curve)
+void PlanarSection::GetCurveBetweenSections(const PlanarSection & section1, const PlanarSection & section2, BezierCurve & curve)
 {
 
     //1.  Find the segments and t values on the 2 curves that these sections intersect.

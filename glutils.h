@@ -44,15 +44,8 @@ public:
     static void DisableBlending();
 
     //projection related
-    //static vec2 ProjectPoint(const vec3 & p);
     static QVector3D ProjectPoint(const QVector3D & p);
-    //static QVector <vec2> ProjectPoints(const QVector <vec3> & pts);
-    //static vec2 ProjectVector(const vec3 & p1, const vec3 & p2);
-    //static vec2 ProjectUnitVector(const vec3 & p1, const vec3 & p2);
-    //static void ProjectCurve(const QList <vec4> & c, QList <vec4> & proj_c);
-    //static void UnProjectPoint(const vec2 & p, const float depth_value, vec3 & unproj_pt);
     static void UnProjectPoint(const QVector2D & v, const float depth_value, QVector3D & unproj_pt);
-    //static void UnProjectCurve(const QList <vec2> & c, const QVector <float> depth_values, QList <vec3> & unproj_curve);
 
     static void ReadPixelColor_FrontBuffer(const int x, const int y, unsigned char & r, unsigned char & g, unsigned char & b);
     static void ReadPixelColor_BackBuffer(const int x, const int y, unsigned char & r, unsigned char & g, unsigned char & b);

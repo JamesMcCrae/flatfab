@@ -323,88 +323,6 @@ QVector3D GLutils::ProjectPoint(const QVector3D & p)
 
 }
 
-/*
-QVector <vec2> GLutils::ProjectPoints(const QVector <vec3> & pts)
-{
-
-    GLdouble model_view[16];
-    GLdouble projection[16];
-    GLint viewport[4];
-    GLdouble winx, winy, winz;
-
-    glGetDoublev(GL_MODELVIEW_MATRIX, model_view);
-    glGetDoublev(GL_PROJECTION_MATRIX, projection);
-    glGetIntegerv(GL_VIEWPORT, viewport);
-
-    QVector <vec2> proj_pts(pts.size());
-
-    for (int i=0; i<pts.size(); ++i) {
-        gluProject(pts[i][0], pts[i][1], pts[i][2], model_view, projection, viewport, &winx, &winy, &winz);
-        proj_pts[i] = vec2(winx, winy);
-    }
-
-    return proj_pts;
-
-}
-
-vec2 GLutils::ProjectVector(const vec3 & p1, const vec3 & p2)
-{
-
-    vec2 tangent = GLutils::ProjectPoint(p2) - GLutils::ProjectPoint(p1);
-    return tangent;
-
-}
-
-vec2 GLutils::ProjectUnitVector(const vec3 & p1, const vec3 & p2)
-{
-
-    vec2 tangent = GLutils::ProjectPoint(p2) - GLutils::ProjectPoint(p1);
-    tangent.normalize();
-    return tangent;
-
-}
-
-void GLutils::ProjectCurve(const QList <vec4> & c, QList <vec4> & proj_c)
-{
-
-    GLdouble model_view[16];
-    GLdouble projection[16];
-    GLint viewport[4];
-    GLdouble winx, winy, winz;
-
-    glGetDoublev(GL_MODELVIEW_MATRIX, model_view);
-    glGetDoublev(GL_PROJECTION_MATRIX, projection);
-    glGetIntegerv(GL_VIEWPORT, viewport);
-
-    proj_c.clear();
-    for (int i=0; i<c.size(); ++i) {
-
-        gluProject(c[i][0], c[i][1], c[i][2], model_view, projection, viewport, &winx, &winy, &winz);
-        proj_c.push_back(vec4(winx, winy, 0.0, c[i][3]));
-
-    }
-
-}
-
-void GLutils::UnProjectPoint(const vec2 & p, const float depth_value, vec3 & unproj_pt)
-{
-
-    GLdouble model_view[16];
-    GLdouble projection[16];
-    GLint viewport[4];
-    GLdouble objx, objy, objz;
-
-    glGetDoublev(GL_MODELVIEW_MATRIX, model_view);
-    glGetDoublev(GL_PROJECTION_MATRIX, projection);
-    glGetIntegerv(GL_VIEWPORT, viewport);
-
-    gluUnProject(p[0], p[1], depth_value, model_view, projection, viewport, &objx, &objy, &objz);
-
-    unproj_pt = vec3(objx, objy, objz);
-
-}
-*/
-
 void GLutils::UnProjectPoint(const QVector2D & v, const float depth_value, QVector3D & unproj_pt)
 {
 
@@ -422,32 +340,6 @@ void GLutils::UnProjectPoint(const QVector2D & v, const float depth_value, QVect
     unproj_pt = QVector3D(objx, objy, objz);
 
 }
-
-/*
-void GLutils::UnProjectCurve(const QList <vec2> & c, const QVector <float> depth_values, QList <vec3> & unproj_curve)
-{
-
-    unproj_curve.clear();
-
-    GLdouble model_view[16];
-    GLdouble projection[16];
-    GLint viewport[4];
-    GLdouble objx, objy, objz;
-
-    glGetDoublev(GL_MODELVIEW_MATRIX, model_view);
-    glGetDoublev(GL_PROJECTION_MATRIX, projection);
-    glGetIntegerv(GL_VIEWPORT, viewport);
-
-    for (int i=0; i<c.size(); ++i) {
-
-        gluUnProject(c[i][0], c[i][1], depth_values[i], model_view, projection, viewport, &objx, &objy, &objz);
-
-        unproj_curve.push_back(vec3(objx, objy, objz));
-
-    }
-
-}
-*/
 
 void GLutils::EnableBlending()
 {

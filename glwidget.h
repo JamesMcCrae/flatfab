@@ -149,7 +149,7 @@ public:
 protected:
 
     void initializeGL();
-    void paintEvent(QPaintEvent *); // this is now needed for QPainter
+    void paintEvent(QPaintEvent *);
     void paintGL();
     void resizeGL(int width, int height);
     void mousePressEvent(QMouseEvent *event);
@@ -525,9 +525,7 @@ private:
     bool update_sections_disp_list;
     GLuint sections_disp_list;
 
-
     //---- Needed to connect to menus in mainWindow
-
     QCheckBox * deformed_checkbox;
     QCheckBox * skeleton_checkbox;
     QCheckBox * forces_checkbox;
@@ -543,11 +541,7 @@ private:
     QCheckBox * show_shadow_checkbox;
     QCheckBox * show_connectivity_checkbox;
 
-
-
     QString open_filename;
-    //----
-
 
     ToolState current_tool_state;
     GenerateState gen_state;
@@ -559,18 +553,12 @@ private:
 
     QList <PlanarSection> generated_sections; // the temporary generate sections
 
-
     // Radial Tool
-
     PlanarSection pre_radial_section;
     PlanarSection radial_section;
     int radial_section_index;
 
-
-    QErrorMessage errorMessage;
-    QPainter painter;
-
-
+    QErrorMessage errorMessage;    
 
 };
 
