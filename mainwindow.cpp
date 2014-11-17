@@ -36,10 +36,10 @@ MainWindow::MainWindow()
     // made 80 degrees the default rotation angle        
 
     //side dock widget stuff
-    sideWidget = glWidget.GetSideWidget();
-    dockWidget = new QDockWidget();
-    dockWidget->setWindowTitle("Settings");
-    dockWidget->setWidget(sideWidget);
+    //sideWidget = glWidget.GetSideWidget();
+    //dockWidget = new QDockWidget();
+    //dockWidget->setWindowTitle("Settings");
+    //dockWidget->setWidget(sideWidget);
 
     //web view stuff
     webView = new QWebView(this);
@@ -642,9 +642,8 @@ void MainWindow::createActions()
     connect(multisample16Act, SIGNAL(triggered()), this, SLOT(SetMultisampling16()));
 
     //generate menu actions
-    generateBranchingSetRootAct = new QAction(tr("Branching (Set &Root Slit)"), this);
-    generateBranchingSetRootAct->setStatusTip(tr("Set the slit for the root node to generate branching planar sections."));
-    generateBranchingSetRootAct->setShortcut(QKeySequence("Ctrl+R"));
+    generateBranchingSetRootAct = new QAction(tr("Branching (Set Root Slit)"), this);
+    generateBranchingSetRootAct->setStatusTip(tr("Set the slit for the root node to generate branching planar sections."));    
     connect(generateBranchingSetRootAct, SIGNAL(triggered()), this, SLOT(GenerateBranchingSetRoot()));
 
     generateBranchingAct = new QAction(tr("&Branching"), this);
@@ -667,25 +666,30 @@ void MainWindow::createActions()
     generateGridAct->setShortcut(QKeySequence("Ctrl+G"));
     connect(generateGridAct, SIGNAL(triggered()), this, SLOT(GenerateGrid()));
 
-    generateRevolveAct = new QAction(tr("Re&volve"), this);
+    generateRevolveAct = new QAction(tr("&Revolve"), this);
     generateRevolveAct->setStatusTip(tr("Generate a sequence of planar sections which revolve around a base section."));
+    generateRevolveAct->setShortcut(QKeySequence("Ctrl+R"));
     connect(generateRevolveAct, SIGNAL(triggered()), this, SLOT(GenerateRevolve()));
 
-    generateMakeCircleAct = new QAction(tr("Make &Circle"), this);
+    generateMakeCircleAct = new QAction(tr("Set &Circle"), this);
     generateMakeCircleAct->setStatusTip(tr("Mkae the boundary of an existing planar section a circle."));
     connect(generateMakeCircleAct, SIGNAL(triggered()), this, SLOT(GenerateMakeCircle()));
 
-    generateMakeRectangleAct = new QAction(tr("Make Rec&tangle"), this);
+    generateMakeRectangleAct = new QAction(tr("Set Rec&tangle"), this);
     generateMakeRectangleAct->setStatusTip(tr("Mkae the boundary of an existing planar section a rectangle."));
     connect(generateMakeRectangleAct, SIGNAL(triggered()), this, SLOT(GenerateMakeRectangle()));
 
-    generateMakeRadialAct = new QAction(tr("Make Radial"), this);
+    generateMakeRadialAct = new QAction(tr("Set R&adial"), this);
     generateMakeRadialAct->setStatusTip(tr("Make the boundary of an existing planar section a radial pattern."));
     connect(generateMakeRadialAct, SIGNAL(triggered()), this, SLOT(GenerateMakeRadial()));
 
     generateMakeRadialHoleAct = new QAction(tr("Make Radial Holes"), this);
     generateMakeRadialHoleAct->setStatusTip(tr("Make a radial set of holes in a selected planar section."));
     connect(generateMakeRadialHoleAct, SIGNAL(triggered()), this, SLOT(GenerateMakeRadialHole()));
+
+    generateSlicesAct = new QAction(tr("&Slices"), this);
+    generateSlicesAct->setStatusTip(tr("Create regularly sampled sections from a template surface."));
+    connect(generateSlicesAct, SIGNAL(triggered()), this, SLOT(GenerateSlices()));
 
     generateSurfaceFacetsAct = new QAction(tr("Surface &Facets"), this);
     generateSurfaceFacetsAct->setStatusTip(tr("Create sections from the planar facets of a template surface."));
@@ -779,6 +783,13 @@ void MainWindow::createMenus()
     editMenu->addSeparator();
     editMenu->addAction(addHoleBoundaryAct);
     editMenu->addAction(removeHolesBoundaryAct);
+
+    editMenu->addSeparator();
+    editMenu->addAction(generateMakeCircleAct);
+    editMenu->addAction(generateMakeRadialAct);
+    //editMenu->addAction(generateMakeRadialHoleAct);
+    editMenu->addAction(generateMakeRectangleAct);
+
     editMenu->addSeparator();
     editMenu->addAction(dimensioningToolAct);
     editMenu->addSeparator();
@@ -815,12 +826,9 @@ void MainWindow::createMenus()
     generateMenu->addAction(generateBranchingAct);
     generateMenu->addAction(generateGridAct);    
     generateMenu->addAction(generateLinearAct);
-    generateMenu->addAction(generateMakeCircleAct);
-    generateMenu->addAction(generateMakeRadialAct);
-//    generateMenu->addAction(generateMakeRadialHoleAct);
-    generateMenu->addAction(generateMakeRectangleAct);    
     generateMenu->addAction(generateRevolveAct);
-//    generateMenu->addAction(generateSurfaceFacetsAct);
+    generateMenu->addAction(generateSlicesAct);
+    generateMenu->addAction(generateSurfaceFacetsAct);
 
     physicsMenu = menuBar()->addMenu(tr("&Physics"));
     physicsMenu->addAction(testPhysicsAct);
@@ -1089,57 +1097,102 @@ void MainWindow::ToggleShowTemplates()
 
 void MainWindow::GenerateBranchingSetRoot()
 {
+    if (!docks[1]->isVisible()) {
+        openGenerateWidget();
+    }
     glWidget.DoGenerateBranchingSetRoot();
 }
 
 void MainWindow::GenerateBranching()
 {
+    if (!docks[1]->isVisible()) {
+        openGenerateWidget();
+    }
     glWidget.DoGenerateBranching();
 }
 
 void MainWindow::GenerateLinear()
 {
-    glWidget.DoGenerateLinear();
+    if (!docks[1]->isVisible()) {
+        openGenerateWidget();
+    }
+    //glWidget.DoGenerateLinear();
+    glWidget.StartGenerateLinear();
 }
 
 void MainWindow::GenerateBlend()
 {
-    glWidget.DoGenerateBlend();
+    if (!docks[1]->isVisible()) {
+        openGenerateWidget();
+    }
+    //glWidget.DoGenerateBlend();
+    glWidget.StartGenerateBlend();
 }
 
 void MainWindow::GenerateGrid()
 {
-    glWidget.DoGenerateGrid();
+    if (!docks[1]->isVisible()) {
+        openGenerateWidget();
+    }
+    //glWidget.DoGenerateGrid();
+    glWidget.StartGenerateGrid();
 }
 
 void MainWindow::GenerateRevolve()
 {
-    glWidget.DoGenerateRevolve();
+    if (!docks[1]->isVisible()) {
+        openGenerateWidget();
+    }
+    //glWidget.DoGenerateRevolve();
+    glWidget.StartGenerateRevolve();
 }
 
 void MainWindow::GenerateMakeCircle()
 {
+    if (!docks[0]->isVisible()) {
+        openEditWidget();
+    }
     glWidget.DoGenerateMakeCircle();
 }
 
 void MainWindow::GenerateMakeRectangle()
 {
+    if (!docks[0]->isVisible()) {
+        openEditWidget();
+    }
     glWidget.DoGenerateMakeRectangle();
 }
 
 void MainWindow::GenerateMakeRadial()
 {
-    glWidget.DoGenerateMakeRadial();
+    if (!docks[0]->isVisible()) {
+        openEditWidget();
+    }
+    glWidget.SetSelectedAsRadial();
 }
 
 void MainWindow::GenerateMakeRadialHole()
 {
+    if (!docks[0]->isVisible()) {
+        openEditWidget();
+    }
     glWidget.DoGenerateMakeRadialHole();
 }
 
 void MainWindow::GenerateSurfaceFacets()
 {
+    if (!docks[1]->isVisible()) {
+        openGenerateWidget();
+    }
     glWidget.DoGenerateSurfaceFacets();
+}
+
+void MainWindow::GenerateSlices()
+{
+    if (!docks[1]->isVisible()) {
+        openGenerateWidget();
+    }
+    glWidget.StartGenerateSlices();
 }
 
 void MainWindow::TogglePhysicsTest()
@@ -1322,7 +1375,7 @@ void MainWindow::setPhysicsMenuChecks()
 
 
 
-void MainWindow::resizeEvent(QResizeEvent * event)
+void MainWindow::resizeEvent(QResizeEvent *)
 {
     //QMainWindow::resizeEvent(event);
 
@@ -1335,7 +1388,7 @@ void MainWindow::resizeEvent(QResizeEvent * event)
 
 }
 
-void MainWindow::moveEvent(QMoveEvent * event)
+void MainWindow::moveEvent(QMoveEvent *)
 {
     //QMainWindow::moveEvent(event);
 

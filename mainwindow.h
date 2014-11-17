@@ -92,6 +92,7 @@ private slots:
     void GenerateMakeRadial();
     void GenerateMakeRadialHole();
     void GenerateSurfaceFacets();
+    void GenerateSlices();
 
     void TogglePhysicsTest();
     void TogglePhysicsDeformed();
@@ -194,6 +195,7 @@ private:
     QAction *generateMakeRectangleAct;
     QAction *generateMakeRadialAct;
     QAction *generateMakeRadialHoleAct;
+    QAction *generateSlicesAct;
     QAction *generateSurfaceFacetsAct;
 
     QMenu *physicsMenu;
@@ -207,7 +209,7 @@ private:
     QAction *removeExternalWeightsAct;
 
     GLWidget glWidget;
-    QWidget * sideWidget;
+    //QWidget * sideWidget;
     QDockWidget * dockWidget;
 
     QWidget * bottomWidget;

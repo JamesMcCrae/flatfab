@@ -97,9 +97,7 @@ class GLWidget : public QGLWidget
 public:
 
     GLWidget();
-    ~GLWidget();
-    
-    QWidget * GetSideWidget();
+    ~GLWidget();        
 
     QWidget * GetEditWidget();
     QWidget * GetGenerateWidget();
@@ -240,8 +238,7 @@ public slots:
     void SetGenerateSlicesZ(const bool b);
     void SetGenerateBlendSections(const int i);
     void SetGenerateRevolveSections(const int i);
-    void SetGenerateBranchingScaleChild(const int i);
-    void SetGenerateRadialParams();
+    void SetGenerateBranchingScaleChild(const int i);    
     void SetGenerateRadialSectors(const int i);
 
     void ToggleDrawDeformed();
@@ -285,15 +282,14 @@ public slots:
     //procedural modelling extras
     void DoGenerateBranchingSetRoot();
     void DoGenerateBranching();
-    void DoGenerateLinear();
-    void DoGenerateBlend();
-    void DoGenerateGrid();
-    void DoGenerateRevolve();    
+    //void DoGenerateLinear();
+    //void DoGenerateBlend();
+    //void DoGenerateGrid();
+    //void DoGenerateRevolve();
     void DoGenerateMakeCircle();
-    void DoGenerateMakeRectangle();
-    void DoGenerateMakeRadial();
-    void DoGenerateMakeRadialHole();
-    void DoGenerateSurfaceFacets();
+    void DoGenerateMakeRectangle();    
+    void DoGenerateMakeRadialHole();    
+    void DoGenerateSurfaceFacets();        
 
     bool ShowGenerate();
     void AcceptGenerate();
@@ -355,7 +351,7 @@ private:
 
     void QVector3DToArray(const QVector3D & p, double array[3]);
 
-    QTabWidget * sideWidget;
+    //QTabWidget * sideWidget;
 
     QWidget *editWidget;
     QWidget *genWidget;

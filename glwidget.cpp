@@ -1,7 +1,6 @@
 ﻿#include "glwidget.h"
 
-GLWidget::GLWidget() :
-    sideWidget(NULL)
+GLWidget::GLWidget()
 {
 
     setMouseTracking(true);
@@ -149,12 +148,6 @@ GLWidget::GLWidget() :
 GLWidget::~GLWidget()
 {
 
-    if (sideWidget != NULL) {
-        delete sideWidget;
-        sideWidget = NULL;
-    }
-
-
     if (editWidget != NULL) {
         delete editWidget;
         editWidget = NULL;
@@ -189,271 +182,31 @@ CPhysics & GLWidget::GetPhysics()
     return physics;
 }
 
-QWidget * GLWidget::GetSideWidget()
+void GLWidget::initializeGL()
 {
 
-    if (sideWidget != NULL) {
-        return sideWidget;
+    glEnable(GL_NORMALIZE);
+    glEnable(GL_DEPTH_TEST);
+
+    glEnable(GL_POINT_SMOOTH);
+    glEnable(GL_LINE_SMOOTH);
+
+    glShadeModel(GL_SMOOTH);
+
+    glClearColor(1, 1, 1, 1);
+
+    glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
+
+    glEnable(GL_COLOR_MATERIAL);
+    glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
+
+}
+
+QWidget * GLWidget::GetEditWidget()
+{
+    if (editWidget != NULL) {
+        return editWidget;
     }
-
-    //views
-    const int viewbtnwidth = 50;
-    QPushButton * viewisobtn1 = new QPushButton("Iso1");
-    viewisobtn1->setMaximumWidth(viewbtnwidth);
-    connect(viewisobtn1, SIGNAL(clicked()), this, SLOT(SetViewIso1()));
-    QPushButton * viewisobtn2 = new QPushButton("Iso2");
-    viewisobtn2->setMaximumWidth(viewbtnwidth);
-    connect(viewisobtn2, SIGNAL(clicked()), this, SLOT(SetViewIso2()));
-    QPushButton * viewisobtn3 = new QPushButton("Iso3");
-    viewisobtn3->setMaximumWidth(viewbtnwidth);
-    connect(viewisobtn3, SIGNAL(clicked()), this, SLOT(SetViewIso3()));
-    QPushButton * viewisobtn4 = new QPushButton("Iso4");
-    viewisobtn4->setMaximumWidth(viewbtnwidth);
-    connect(viewisobtn4, SIGNAL(clicked()), this, SLOT(SetViewIso4()));
-
-    QPushButton * viewxbtn = new QPushButton("X");
-    viewxbtn->setMaximumWidth(viewbtnwidth);
-    connect(viewxbtn, SIGNAL(clicked()), this, SLOT(SetViewX()));
-    QPushButton * viewybtn = new QPushButton("Y");
-    viewybtn->setMaximumWidth(viewbtnwidth);
-    connect(viewybtn, SIGNAL(clicked()), this, SLOT(SetViewY()));
-    QPushButton * viewzbtn = new QPushButton("Z");
-    viewzbtn->setMaximumWidth(viewbtnwidth);
-    connect(viewzbtn, SIGNAL(clicked()), this, SLOT(SetViewZ()));
-    QPushButton * viewpartbtn = new QPushButton("Part");
-    viewpartbtn->setMaximumWidth(viewbtnwidth);
-    connect(viewpartbtn, SIGNAL(clicked()), this, SLOT(SetViewPart()));
-
-    //symmetry planes
-    QCheckBox * xsym_checkbox = new QCheckBox("X");
-    xsym_checkbox->setChecked(false);
-    connect(xsym_checkbox, SIGNAL(toggled(bool)), this, SLOT(SetXSymmetry(bool)));
-    QCheckBox * ysym_checkbox = new QCheckBox("Y");
-    ysym_checkbox->setChecked(false);
-    connect(ysym_checkbox, SIGNAL(toggled(bool)), this, SLOT(SetYSymmetry(bool)));
-    QCheckBox * zsym_checkbox = new QCheckBox("Z");
-    zsym_checkbox->setChecked(false);
-    connect(zsym_checkbox, SIGNAL(toggled(bool)), this, SLOT(SetZSymmetry(bool)));
-
-    QPushButton * load_template_obj = new QPushButton("Template OBJ");
-    connect(load_template_obj, SIGNAL(clicked()), this, SLOT(LoadTemplateOBJ()));
-
-    QPushButton * export_slice_obj = new QPushButton("Slice OBJ");
-    connect(export_slice_obj, SIGNAL(clicked()), this, SLOT(SaveSliceOBJ()));
-    QPushButton * export_slab_obj = new QPushButton("Slab OBJ");
-    connect(export_slab_obj, SIGNAL(clicked()), this, SLOT(SaveSlabOBJ()));
-    QPushButton * export_surface_obj = new QPushButton("Surface OBJ");
-    connect(export_surface_obj, SIGNAL(clicked()), this, SLOT(SaveSurfaceOBJ()));
-
-    QPushButton * export_svg = new QPushButton("Slice SVG");
-    connect(export_svg, SIGNAL(clicked()), this, SLOT(SaveSVG()));
-
-    //QPushButton * load_planesketch = new QPushButton("PlaneSketch");
-    //connect(load_planesketch, SIGNAL(clicked()), this, SLOT(LoadPlaneSketch()));
-    //QPushButton * save_planesketch = new QPushButton("PlaneSketch");
-    //connect(save_planesketch, SIGNAL(clicked()), this, SLOT(SavePlaneSketch()));
-
-    QPushButton * save_physicsoutput = new QPushButton("PhysicsOutput");
-    connect(save_physicsoutput, SIGNAL(clicked()), this, SLOT(SavePhysicsOutput()));
-
-    QCheckBox * physics_checkbox = new QCheckBox("Physics");
-    physics_checkbox->setChecked(true);
-    connect(physics_checkbox, SIGNAL(toggled(bool)), this, SLOT(SetDoPhysicsTest(bool)));
-
-    QCheckBox * local_checkbox = new QCheckBox("Local");
-    local_checkbox->setChecked(true);
-    connect(local_checkbox, SIGNAL(toggled(bool)), this, SLOT(SetDoLocalSymmetry(bool)));
-
-    QCheckBox * fabrication_checkbox = new QCheckBox("Cycles/Connect");
-    fabrication_checkbox->setChecked(false);
-    connect(fabrication_checkbox, SIGNAL(toggled(bool)), this, SLOT(SetDoCyclesTest(bool)));
-
-    QCheckBox * stability_checkbox = new QCheckBox("Stability");
-    stability_checkbox->setChecked(false);
-    connect(stability_checkbox, SIGNAL(toggled(bool)), this, SLOT(SetDoStabilityTest(bool)));
-
-    /*
-    QSlider * thick_slider = new QSlider();
-    thick_slider->setValue(6);
-    thick_slider->setRange(1, 20);
-    thick_slider->setOrientation(Qt::Horizontal);
-    connect(thick_slider, SIGNAL(valueChanged(int)), this, SLOT(SetSlabThickness(int)));
-    */
-    QDoubleSpinBox * thick_spinbox = new QDoubleSpinBox();
-    thick_spinbox->setRange(0.001, 0.5);
-    thick_spinbox->setDecimals(4);
-    thick_spinbox->setSingleStep(0.001);
-    thick_spinbox->setValue(slab_thickness);
-    //thick_spinbox->setFocusPolicy(Qt::ClickFocus);
-    connect(thick_spinbox, SIGNAL(valueChanged(double)), this, SLOT(SetSlabThickness(double)));
-
-    QSlider * calibration_slider = new QSlider();
-    calibration_slider->setRange(50, 100);
-    calibration_slider->setOrientation(Qt::Horizontal);
-    calibration_slider->setValue(calibration_factor * 100.0f);
-    connect(calibration_slider, SIGNAL(valueChanged(int)), this, SLOT(SetCalibrationFactor(int)));
-
-    QSlider * quality_slider = new QSlider();
-    quality_slider->setRange(1, 30);
-    quality_slider->setOrientation(Qt::Horizontal);
-    quality_slider->setValue(quality_samples);
-    connect(quality_slider, SIGNAL(valueChanged(int)), this, SLOT(SetQualitySamples(int)));
-
-    QSlider * rotation_slider = new QSlider();    
-    rotation_slider->setRange(1, 30);
-    rotation_slider->setOrientation(Qt::Horizontal);
-    rotation_slider->setValue(cam_animate_duration / 100.0f);
-    connect(rotation_slider, SIGNAL(valueChanged(int)), this, SLOT(SetRotationDuration(int)));
-
-    QSlider * rotation_angle_slider = new QSlider();    
-    rotation_angle_slider->setRange(0, 90);
-    rotation_angle_slider->setOrientation(Qt::Horizontal);
-    rotation_angle_slider->setValue(cam_animate_angle);
-    connect(rotation_angle_slider, SIGNAL(valueChanged(int)), this, SLOT(SetRotationAngle(int)));
-
-    QSlider * grid_sizex_slider = new QSlider();
-    grid_sizex_slider->setRange(1, 50);
-    grid_sizex_slider->setValue(GetGenerateGridSizeX() * 10);
-    grid_sizex_slider->setOrientation(Qt::Horizontal);
-    connect(grid_sizex_slider, SIGNAL(valueChanged(int)), this, SLOT(SetGenerateGridSizeX(int)));
-
-    QSlider * grid_sizey_slider = new QSlider();
-    grid_sizey_slider->setRange(1, 50);    
-    grid_sizey_slider->setOrientation(Qt::Horizontal);
-    grid_sizey_slider->setValue(GetGenerateGridSizeY() * 10);
-    connect(grid_sizey_slider, SIGNAL(valueChanged(int)), this, SLOT(SetGenerateGridSizeY(int)));
-
-    QSlider * grid_staplesize_slider = new QSlider();
-    grid_staplesize_slider->setRange(1, 40);    
-    grid_staplesize_slider->setOrientation(Qt::Horizontal);
-    grid_staplesize_slider->setValue(GetGenerateGridStapleSize() * 20);
-    connect(grid_staplesize_slider, SIGNAL(valueChanged(int)), this, SLOT(SetGenerateGridStapleSize(int)));
-
-    QSlider * linear_spacing_slider = new QSlider();    
-    linear_spacing_slider->setRange(1, 50);
-    linear_spacing_slider->setOrientation(Qt::Horizontal);
-    linear_spacing_slider->setValue(GetGenerateLinearSpacing()*10);
-    connect(linear_spacing_slider, SIGNAL(valueChanged(int)), this, SLOT(SetGenerateLinearSpacing(int)));
-
-    QCheckBox * linear_scalex_checkbox = new QCheckBox("Scale X");
-    linear_scalex_checkbox ->setChecked(GetGenerateLinearScaleX());
-    connect(linear_scalex_checkbox , SIGNAL(toggled(bool)), this, SLOT(SetGenerateLinearScaleX(bool)));
-
-    QCheckBox * linear_scaley_checkbox = new QCheckBox("Scale Y");
-    linear_scaley_checkbox ->setChecked(GetGenerateLinearScaleY());
-    connect(linear_scaley_checkbox , SIGNAL(toggled(bool)), this, SLOT(SetGenerateLinearScaleY(bool)));
-
-    QSlider * num_blend_sections_slider = new QSlider();    
-    num_blend_sections_slider->setRange(3, 40);
-    num_blend_sections_slider->setOrientation(Qt::Horizontal);
-    num_blend_sections_slider->setValue(GetGenerateBlendSections());
-    connect(num_blend_sections_slider, SIGNAL(valueChanged(int)), this, SLOT(SetGenerateBlendSections(int)));
-
-    QSlider * num_revolve_sections_slider = new QSlider();    
-    num_revolve_sections_slider->setRange(2, 40);
-    num_revolve_sections_slider->setOrientation(Qt::Horizontal);
-    num_revolve_sections_slider->setValue(GetGenerateRevolveSections());
-    connect(num_revolve_sections_slider, SIGNAL(valueChanged(int)), this, SLOT(SetGenerateRevolveSections(int)));
-
-    QSlider * branching_scalechild_slider = new QSlider();    
-    branching_scalechild_slider->setRange(1, 200);
-    branching_scalechild_slider->setOrientation(Qt::Horizontal);
-    branching_scalechild_slider->setValue(this->GetGenerateBranchingScaleChild()*100);
-    connect(branching_scalechild_slider, SIGNAL(valueChanged(int)), this, SLOT(SetGenerateBranchingScaleChild(int)));
-
-    QSlider * radial_sectors_slider = new QSlider();   
-    radial_sectors_slider->setRange(1, 40);
-    radial_sectors_slider->setOrientation(Qt::Horizontal);
-    radial_sectors_slider->setValue(this->GetGenerateRadialSectors());
-    connect(radial_sectors_slider, SIGNAL(valueChanged(int)), this, SLOT(SetGenerateRadialSectors(int)));
-
-    for (int i=0; i<9; ++i) {
-        radial_slider[i] = new QSlider();
-        radial_slider[i]->setRange(1, 40);
-        radial_slider[i]->setOrientation(Qt::Horizontal);
-        radial_slider[i]->setValue(generate_radial_params[i] * 20);
-        connect(radial_slider[i], SIGNAL(valueChanged(int)), this, SLOT(SetGenerateRadialParams()));
-    }
-
-    QPushButton * mirror_copy_x = new QPushButton("X");
-    mirror_copy_x->setMaximumWidth(40);
-    connect(mirror_copy_x, SIGNAL(clicked()), this, SLOT(CopyMirrorX()));
-    QPushButton * mirror_copy_z = new QPushButton("Z");
-    mirror_copy_z->setMaximumWidth(40);
-    connect(mirror_copy_z, SIGNAL(clicked()), this, SLOT(CopyMirrorZ()));
-    QPushButton * rotate_copy_y = new QPushButton("rotY");
-    rotate_copy_y->setMaximumWidth(40);
-    connect(rotate_copy_y, SIGNAL(clicked()), this, SLOT(CopyRotateY()));
-
-    QSlider * imagex_spinbox = new QSlider();
-    imagex_spinbox->setRange(-250, 250);
-    imagex_spinbox->setValue(template_pos.x() * 20.0f);
-    imagex_spinbox->setOrientation(Qt::Horizontal);
-    connect(imagex_spinbox, SIGNAL(valueChanged(int)), this, SLOT(SetTemplateImageX(int)));
-
-    QSlider * imagey_spinbox = new QSlider();
-    imagey_spinbox->setRange(-250, 250);
-    imagey_spinbox->setValue(template_pos.y() * 20.0f);
-    imagey_spinbox->setOrientation(Qt::Horizontal);
-    connect(imagey_spinbox, SIGNAL(valueChanged(int)), this, SLOT(SetTemplateImageY(int)));
-
-    QSlider * imagerotate_spinbox = new QSlider();
-    imagerotate_spinbox->setRange(0, 360);
-    imagerotate_spinbox->setValue(template_rotation);
-    imagerotate_spinbox->setOrientation(Qt::Horizontal);
-    connect(imagerotate_spinbox, SIGNAL(valueChanged(int)), this, SLOT(SetTemplateImageRotate(int)));
-
-    QSlider * imagescale_spinbox = new QSlider();
-    imagescale_spinbox->setRange(1, 200);
-    imagescale_spinbox->setValue(template_scale * 20.0f);
-    imagescale_spinbox->setOrientation(Qt::Horizontal);
-    connect(imagescale_spinbox, SIGNAL(valueChanged(int)), this, SLOT(SetTemplateImageScale(int)));
-
-    QCheckBox * imageflipx_checkbox = new QCheckBox("Horizontal Flip");
-    imageflipx_checkbox->setChecked(template_flipx);
-    connect(imageflipx_checkbox, SIGNAL(toggled(bool)), this, SLOT(SetTemplateImageFlipX(bool)));
-
-    QDoubleSpinBox * new_weight_spinbox = new QDoubleSpinBox();
-    new_weight_spinbox->setRange(0.001, 50);
-    new_weight_spinbox->setDecimals(3);
-    new_weight_spinbox->setSingleStep(0.1);
-    new_weight_spinbox->setValue(physics_new_weight_mass);
-    connect(new_weight_spinbox, SIGNAL(valueChanged(double)), this, SLOT(SetPhysicsNewWeightMass(double)));
-
-    QDoubleSpinBox * density_spinbox = new QDoubleSpinBox();
-    density_spinbox->setRange(10, 2000);
-    density_spinbox->setDecimals(1);
-    density_spinbox->setSingleStep(10);
-    density_spinbox->setValue(physics_material_density);
-    connect(density_spinbox, SIGNAL(valueChanged(double)), this, SLOT(SetPhysicsMaterialDensity(double)));
-
-    QDoubleSpinBox * stress_spinbox = new QDoubleSpinBox();
-    stress_spinbox->setRange(1, 500);
-    stress_spinbox->setDecimals(2);
-    stress_spinbox->setSingleStep(1);
-    stress_spinbox->setValue(physics_max_stress / 1000000.0);
-    connect(stress_spinbox, SIGNAL(valueChanged(double)), this, SLOT(SetPhysicsMaximumStress(double)));
-
-    /*
-    QDoubleSpinBox * metres_unit_spinbox = new QDoubleSpinBox();
-    metres_unit_spinbox->setRange(0.0001, 1);
-    metres_unit_spinbox->setDecimals(7);
-    metres_unit_spinbox->setSingleStep(0.0001);
-    metres_unit_spinbox->setValue(metres_per_unit);
-    connect(metres_unit_spinbox, SIGNAL(valueChanged(double)), this, SLOT(SetPhysicsMetresPerUnit(double)));
-    */
-
-    QGridLayout * copy_grid_layout = new QGridLayout();
-    copy_grid_layout->addWidget(mirror_copy_x, 0, 0);
-    copy_grid_layout->addWidget(mirror_copy_z, 0, 1);
-    copy_grid_layout->addWidget(rotate_copy_y, 0, 2);
-
-    thick_label = new QLabel(QString::number(thick_spinbox->value()) + QString(" units"));
-    calibration_label = new QLabel(QString::number(calibration_slider->value()) + QString("%"));
-    quality_label = new QLabel(QString::number(quality_slider->value()));
-    rotate_label = new QLabel(QString::number(rotation_slider->value()*100) + QString(" ms"));
-    rotate_angle_label = new QLabel(QString::number(rotation_angle_slider->value()) + QString(" degrees"));
-    new_weight_label = new QLabel(QString::number(new_weight_spinbox->value()) + QString(" kilograms"));
 
     grid_sizex_label = new QLabel(QString::number(GetGenerateGridSizeX()));
     grid_sizey_label = new QLabel(QString::number(GetGenerateGridSizeX()));
@@ -474,287 +227,6 @@ QWidget * GLWidget::GetSideWidget()
     num_revolve_sections_label->setFixedWidth(30);
     branching_scalechild_label->setFixedWidth(30);
     radial_sectors_label->setFixedWidth(30);
-
-    //brushes
-    /*
-    QRadioButton * brushBoundaryBtn = new QRadioButton("Boundary");
-    brushBoundaryBtn->setChecked(true);
-    connect(brushBoundaryBtn, SIGNAL(clicked()), this, SLOT(SetBrushTypeBoundary()));
-    QRadioButton * brushIntersectBtn = new QRadioButton("Intersect");
-    brushIntersectBtn->setChecked(false);
-    connect(brushIntersectBtn, SIGNAL(clicked()), this, SLOT(SetBrushTypeIntersection()));
-    */
-
-    QFormLayout * mainWidgetLayout = new QFormLayout();
-    QFormLayout * generateWidgetLayout = new QFormLayout();    
-    //QFormLayout * gridWidgetLayout = new QFormLayout();
-    //QFormLayout * linearWidgetLayout = new QFormLayout();
-    //QFormLayout * branchWidgetLayout = new QFormLayout();
-
-    //sideWidgetLayout->addRow(viewwidget);
-    /*
-    sideWidgetLayout->addRow(new QLabel("Tests"), physics_checkbox);
-    sideWidgetLayout->addRow(new QLabel(""), fabrication_checkbox);
-    sideWidgetLayout->addRow(new QLabel(""), stability_checkbox);
-    sideWidgetLayout->addRow(new QLabel("Symmetry"), local_checkbox);
-    sideWidgetLayout->addRow(new QLabel("Copy"), copy_grid_layout);
-    */
-
-    QGroupBox * dim_groupbox = new QGroupBox(tr("Dimensions"));
-    QGridLayout *dim_layout = new QGridLayout;
-    QRadioButton *radio_inch = new QRadioButton(tr("&inch"));
-    radio_inch->setChecked(true);
-    connect(radio_inch, SIGNAL(clicked()), this, SLOT(SetUnitsToInches()));
-    QRadioButton *radio_cm = new QRadioButton(tr("&cm"));
-    connect(radio_cm, SIGNAL(clicked()), this, SLOT(SetUnitsToCentimetres()));
-    dim_layout->addWidget(new QLabel("Units"), 0, 0);
-    dim_layout->addWidget(radio_inch, 0, 1);
-    dim_layout->addWidget(radio_cm, 0, 2);
-    dim_layout->addWidget(new QLabel("Thickness"), 1, 0);
-    dim_layout->addWidget(thick_spinbox, 1, 1, 1, 2);
-    dim_layout->addWidget(new QLabel("Calibration"), 2, 0);
-    dim_layout->addWidget(calibration_slider, 2, 1);
-    dim_layout->addWidget(calibration_label, 2, 2);
-    dim_layout->addWidget(new QLabel("Quality"), 3, 0);
-    dim_layout->addWidget(quality_slider, 3, 1);
-    dim_layout->addWidget(quality_label, 3, 2);
-    dim_groupbox->setLayout(dim_layout);
-    mainWidgetLayout->addRow(dim_groupbox);
-
-    //mainWidgetLayout->addRow(new QLabel("Metres/Unit"), metres_unit_spinbox);
-    //mainWidgetLayout->addRow(new QLabel("Thickness (Units)"), thick_spinbox);
-    //mainWidgetLayout->addRow(new QLabel(""), thick_label);
-    QGroupBox * view_groupbox = new QGroupBox(tr("Views"));
-    QGridLayout *view_layout = new QGridLayout;
-    view_layout->setSpacing(0);
-    view_layout->setHorizontalSpacing(0);
-    view_layout->addWidget(viewisobtn1, 0, 0);
-    view_layout->addWidget(viewisobtn2, 0, 1);
-    view_layout->addWidget(viewisobtn3, 0, 2);
-    view_layout->addWidget(viewisobtn4, 0, 3);
-    view_layout->addWidget(viewxbtn, 1, 0);
-    view_layout->addWidget(viewybtn, 1, 1);
-    view_layout->addWidget(viewzbtn, 1, 2);
-    view_layout->addWidget(viewpartbtn, 1, 3);
-    view_groupbox->setLayout(view_layout);
-    mainWidgetLayout->addRow(view_groupbox);
-
-    //mainWidgetLayout->addRow(new QLabel("Rotation"), rotation_slider);
-    //mainWidgetLayout->addRow(new QLabel(""), rotate_label);
-    //mainWidgetLayout->addRow(new QLabel(""), rotation_angle_slider);
-    //mainWidgetLayout->addRow(new QLabel(""), rotate_angle_label);
-    QGroupBox * viewrot_groupbox = new QGroupBox(tr("View Rotation"));
-    QGridLayout *viewrot_layout = new QGridLayout;
-    viewrot_layout->addWidget(rotation_slider, 0, 1);
-    viewrot_layout->addWidget(rotate_label, 0, 0);
-    viewrot_layout->addWidget(rotation_angle_slider, 1, 1);
-    viewrot_layout->addWidget(rotate_angle_label, 1, 0);
-    viewrot_groupbox->setLayout(viewrot_layout);
-    mainWidgetLayout->addRow(viewrot_groupbox);
-
-    //mainWidgetLayout->addRow(new QLabel("Image (X)"), imagex_spinbox);
-    //mainWidgetLayout->addRow(new QLabel("Image (Y)"), imagey_spinbox);
-    //mainWidgetLayout->addRow(new QLabel("Image (Rotate)"), imagerotate_spinbox);
-    //mainWidgetLayout->addRow(new QLabel("Image (Scale)"), imagescale_spinbox);
-    //mainWidgetLayout->addRow(new QLabel("Image (Flip)"), imageflipx_checkbox);
-    QGroupBox * image_groupbox = new QGroupBox(tr("Image Template"));
-    QGridLayout *image_layout = new QGridLayout;
-    image_layout->addWidget(imageflipx_checkbox, 0, 0, 1, 2);
-    image_layout->addWidget(new QLabel("X"), 1, 0);
-    image_layout->addWidget(imagex_spinbox, 1, 1);
-    image_layout->addWidget(new QLabel("Y"), 2, 0);
-    image_layout->addWidget(imagey_spinbox, 2, 1);
-    image_layout->addWidget(new QLabel("Rotate"), 3, 0);
-    image_layout->addWidget(imagerotate_spinbox, 3, 1);
-    image_layout->addWidget(new QLabel("Scale"), 4, 0);
-    image_layout->addWidget(imagescale_spinbox, 4, 1);
-    image_groupbox->setLayout(image_layout);
-    mainWidgetLayout->addRow(image_groupbox);
-
-    QGroupBox * phys_groupbox = new QGroupBox(tr("Physics"));
-    QFormLayout *phys_layout = new QFormLayout;
-    phys_layout->addRow(new QLabel("Weight (kg)"), new_weight_spinbox);
-    phys_layout->addRow(new QLabel("Density (kg/m^3)"), density_spinbox);
-    phys_layout->addRow(new QLabel("Stress (MPa)"), stress_spinbox);
-    phys_groupbox->setLayout(phys_layout);
-    mainWidgetLayout->addRow(phys_groupbox);
-
-    //mainWidgetLayout->addRow(new QLabel("Physics"), new QLabel(""));
-    //mainWidgetLayout->addRow(new QLabel("Ext. Weight (kg)"), new_weight_spinbox);
-    //mainWidgetLayout->addRow(new QLabel("Density (kg/m^3)"), density_spinbox);
-    //mainWidgetLayout->addRow(new QLabel("Max. Stress (MPa)"), stress_spinbox);
-
-    /*
-    sideWidgetLayout->addRow(new QLabel("Symmetry"), xsym_checkbox);
-    sideWidgetLayout->addRow(new QLabel(""), ysym_checkbox);
-    sideWidgetLayout->addRow(new QLabel(""), zsym_checkbox);
-    */
-    //sideWidgetLayout->addRow(new QLabel("Brush"), brushBoundaryBtn);
-    //sideWidgetLayout->addRow(new QLabel(""), brushIntersectBtn);
-
-    QGroupBox * blend_groupbox = new QGroupBox(tr("Blend Operation"));
-    QGridLayout * blend_layout = new QGridLayout;
-    blend_layout->addWidget(new QLabel("Sections"), 0, 0);
-    blend_layout->addWidget(num_blend_sections_slider, 0, 1);
-    blend_layout->addWidget(num_blend_sections_label, 0, 2);
-    blend_groupbox->setLayout(blend_layout);
-    generateWidgetLayout->addRow(blend_groupbox);
-
-    QGroupBox * branch_groupbox = new QGroupBox(tr("Branching Operation"));
-    QGridLayout * branch_layout = new QGridLayout;
-    branch_layout->addWidget(new QLabel("Child Scale"), 0, 0);
-    branch_layout->addWidget(branching_scalechild_slider, 0, 1);
-    branch_layout->addWidget(branching_scalechild_label, 0, 2);
-    branch_groupbox->setLayout(branch_layout);
-    generateWidgetLayout->addRow(branch_groupbox);
-
-    QGroupBox * grid_groupbox = new QGroupBox(tr("Grid Operation"));
-    QGridLayout * grid_layout = new QGridLayout;
-    grid_layout->addWidget(new QLabel("Cell Width"), 0, 0);
-    grid_layout->addWidget(grid_sizex_slider, 0, 1);
-    grid_layout->addWidget(grid_sizex_label, 0, 2);
-    grid_layout->addWidget(new QLabel("Cell Height"), 1, 0);
-    grid_layout->addWidget(grid_sizey_slider, 1, 1);
-    grid_layout->addWidget(grid_sizey_label, 1, 2);
-    grid_layout->addWidget(new QLabel("Staple Size"), 2, 0);
-    grid_layout->addWidget(grid_staplesize_slider, 2, 1);
-    grid_layout->addWidget(grid_staple_label, 2, 2);
-    grid_groupbox->setLayout(grid_layout);
-    generateWidgetLayout->addRow(grid_groupbox);
-
-    QGroupBox * linear_groupbox = new QGroupBox(tr("Linear Operation"));
-    QGridLayout * linear_layout = new QGridLayout;
-    linear_layout->addWidget(new QLabel("Spacing"), 0, 0);
-    linear_layout->addWidget(linear_spacing_slider, 0, 1);
-    linear_layout->addWidget(linear_spacing_label, 0, 2);
-    linear_layout->addWidget(linear_scalex_checkbox, 1, 0);
-    linear_layout->addWidget(linear_scaley_checkbox, 1, 1, 1, 2);
-    linear_groupbox->setLayout(linear_layout);
-    generateWidgetLayout->addRow(linear_groupbox);
-
-    QGroupBox * revolve_groupbox = new QGroupBox(tr("Revolve Operation"));
-    QGridLayout * revolve_layout = new QGridLayout;
-    revolve_layout->addWidget(new QLabel("Sections"), 0, 0);
-    revolve_layout->addWidget(num_revolve_sections_slider, 0, 1);
-    revolve_layout->addWidget(num_revolve_sections_label, 0, 2);
-    revolve_groupbox->setLayout(revolve_layout);
-    generateWidgetLayout->addRow(revolve_groupbox);
-
-    QGroupBox * radial_groupbox = new QGroupBox(tr("Radial Operations"));
-    QGridLayout * radial_layout = new QGridLayout;
-    radial_layout->addWidget(new QLabel("Sectors"), 0, 0);
-    radial_layout->addWidget(radial_sectors_slider, 0, 1);
-    radial_layout->addWidget(radial_sectors_label, 0, 2);
-    radial_layout->addWidget(new QLabel("Point"), 1, 0);
-    radial_layout->addWidget(new QLabel("Tangent1"), 1, 1);
-    radial_layout->addWidget(new QLabel("Tangent2"), 1, 2);
-    radial_layout->addWidget(radial_slider[0], 2, 0);
-    radial_layout->addWidget(radial_slider[1], 2, 1);
-    radial_layout->addWidget(radial_slider[2], 2, 2);
-    radial_layout->addWidget(radial_slider[3], 3, 0);
-    radial_layout->addWidget(radial_slider[4], 3, 1);
-    radial_layout->addWidget(radial_slider[5], 3, 2);
-    radial_layout->addWidget(radial_slider[6], 4, 0);
-    radial_layout->addWidget(radial_slider[7], 4, 1);
-    radial_layout->addWidget(radial_slider[8], 4, 2);
-    radial_groupbox->setLayout(radial_layout);
-    generateWidgetLayout->addRow(radial_groupbox);
-
-    /*
-    radialWidgetLayout->addRow(new QLabel("Sectors"), radial_sectors_slider);
-    radialWidgetLayout->addRow(new QLabel(""), radial_sectors_label);
-    radialWidgetLayout->addRow(new QLabel("(Point 1)"), radial_slider[0]);
-    radialWidgetLayout->addRow(new QLabel("(Tangent)"), radial_slider[1]);
-    radialWidgetLayout->addRow(new QLabel("(Tangent)"), radial_slider[2]);
-    radialWidgetLayout->addRow(new QLabel("(Point 2)"), radial_slider[3]);
-    radialWidgetLayout->addRow(new QLabel("(Tangent)"), radial_slider[4]);
-    radialWidgetLayout->addRow(new QLabel("(Tangent)"), radial_slider[5]);
-    radialWidgetLayout->addRow(new QLabel("(Point 3)"), radial_slider[6]);
-    radialWidgetLayout->addRow(new QLabel("(Tangent)"), radial_slider[7]);
-    radialWidgetLayout->addRow(new QLabel("(Tangent)"), radial_slider[8]);
-    */
-
-
-    //sideWidgetLayout->addRow(new QLabel("Shift-left: drag control point"));
-    /*
-    sideWidgetLayout->addRow(new QLabel("Load"), load_template_obj);
-    sideWidgetLayout->addRow(new QLabel(""), load_planesketch);
-    sideWidgetLayout->addRow(new QLabel("Save"), save_planesketch);
-    sideWidgetLayout->addRow(new QLabel(""), export_slice_obj);
-    sideWidgetLayout->addRow(new QLabel(""), export_slab_obj);
-    sideWidgetLayout->addRow(new QLabel(""), export_surface_obj);
-    sideWidgetLayout->addRow(new QLabel(""), export_svg);
-    sideWidgetLayout->addRow(new QLabel(""), save_physicsoutput);
-    */
-
-    //sideWidget = new QWidget();
-    //sideWidget->setLayout(sideWidgetLayout);
-
-    QWidget * main_widget = new QWidget();
-    main_widget->setLayout(mainWidgetLayout);
-
-    QWidget * generate_widget = new QWidget();
-    generate_widget->setLayout(generateWidgetLayout);  
-
-    //QWidget * grid_widget = new QWidget();
-    //grid_widget->setLayout(gridWidgetLayout);
-    //QWidget * linear_widget = new QWidget();
-    //linear_widget->setLayout(linearWidgetLayout);
-    //QWidget * branch_widget = new QWidget();
-    //branch_widget->setLayout(branchWidgetLayout);
-
-    sideWidget = new QTabWidget();
-
-    //sideWidget->setTabShape();
-
-    sideWidget->addTab(main_widget, "Main");
-    sideWidget->addTab(generate_widget, "Generate");
-    //sideWidget->addTab(grid_widget, "Grid");
-    //sideWidget->addTab(linear_widget, "Linear");
-    //sideWidget->addTab(branch_widget, "Branch");
-
-    /*
-    sideWidget->addWidget(main_widget);
-    sideWidget->addWidget(generate_widget);
-    sideWidget->addWidget(radial_widget);
-    sideWidget->addWidget(grid_widget);
-    sideWidget->addWidget(linear_widget);
-    sideWidget->addWidget(branch_widget);
-    */
-
-    return sideWidget;
-
-}
-
-void GLWidget::initializeGL()
-{
-
-    glEnable(GL_NORMALIZE);
-    glEnable(GL_DEPTH_TEST);
-
-    //glEnable(GL_CULL_FACE);
-    //glCullFace(GL_BACK);
-
-    glEnable(GL_POINT_SMOOTH);
-    glEnable(GL_LINE_SMOOTH);
-
-    glShadeModel(GL_SMOOTH);
-
-    glClearColor(1, 1, 1, 1);
-
-    //glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_FALSE);
-    glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
-
-    glEnable(GL_COLOR_MATERIAL);
-    glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
-
-}
-
-QWidget * GLWidget::GetEditWidget()
-{
-    if (editWidget != NULL) {
-        return editWidget;
-    }
 
     QFormLayout * editWidgetLayout = new QFormLayout();
 
@@ -840,37 +312,15 @@ QWidget * GLWidget::GetEditWidget()
     radial_sectors_slider->setValue(this->GetGenerateRadialSectors());
     connect(radial_sectors_slider, SIGNAL(valueChanged(int)), this, SLOT(SetGenerateRadialSectors(int)));
 
-//    for (int i=0; i<9; ++i) {
-//        radial_slider[i] = new QSlider();
-//        radial_slider[i]->setRange(1, 40);
-//        radial_slider[i]->setOrientation(Qt::Horizontal);
-//        radial_slider[i]->setValue(generate_radial_params[i] * 20);
-//        connect(radial_slider[i], SIGNAL(valueChanged(int)), this, SLOT(SetGenerateRadialParams()));
-//    }
 
     QGroupBox * radial_groupbox = new QGroupBox(tr("Radial Operations"));
     QGridLayout * radial_layout = new QGridLayout;
     radial_layout->addWidget(radialButton,0,0,1,3);
 
     radial_layout->addWidget(radialButton2,1,0,1,3);
-
-
     radial_layout->addWidget(new QLabel("Sectors"), 2, 0);
     radial_layout->addWidget(radial_sectors_slider, 2, 1);
     radial_layout->addWidget(radial_sectors_label, 2, 2);
-//    radial_layout->addWidget(new QLabel("Point"), 2, 0);
-//    radial_layout->addWidget(new QLabel("Tangent1"), 2, 1);
-//    radial_layout->addWidget(new QLabel("Tangent2"), 2, 2);
-//    radial_layout->addWidget(radial_slider[0], 3, 0);
-//    radial_layout->addWidget(radial_slider[1], 3, 1);
-//    radial_layout->addWidget(radial_slider[2], 3, 2);
-//    radial_layout->addWidget(radial_slider[3], 4, 0);
-//    radial_layout->addWidget(radial_slider[4], 4, 1);
-//    radial_layout->addWidget(radial_slider[5], 4, 2);
-//    radial_layout->addWidget(radial_slider[6], 5, 0);
-//    radial_layout->addWidget(radial_slider[7], 5, 1);
-//    radial_layout->addWidget(radial_slider[8], 5, 2);
-
     radial_groupbox->setLayout(radial_layout);
     editWidgetLayout->addRow(radial_groupbox);
 
@@ -1080,7 +530,7 @@ QWidget * GLWidget::GetGuidesWidget()
 {
     if (guidesWidget != NULL) {
         return guidesWidget;
-    }
+    }   
 
     QFormLayout * guidesWidgetLayout = new QFormLayout();
 
@@ -1110,6 +560,9 @@ QWidget * GLWidget::GetGuidesWidget()
     quality_slider->setValue(quality_samples);
     connect(quality_slider, SIGNAL(valueChanged(int)), this, SLOT(SetQualitySamples(int)));
 
+    thick_label = new QLabel(QString::number(thick_spinbox->value()) + QString(" units"));
+    calibration_label = new QLabel(QString::number(calibration_slider->value()) + QString("%"));
+    quality_label = new QLabel(QString::number(quality_slider->value()));
 
     QGroupBox * dim_groupbox = new QGroupBox(tr("Dimensions"));
     QGridLayout *dim_layout = new QGridLayout;
@@ -1219,7 +672,7 @@ QWidget * GLWidget::GetPhysicsWidget()
 {
     if (physicsWidget != NULL) {
         return physicsWidget;
-    }
+    }   
 
     QFormLayout * physWidgetLayout = new QFormLayout();
 
@@ -1243,6 +696,8 @@ QWidget * GLWidget::GetPhysicsWidget()
     new_weight_spinbox->setSingleStep(0.1);
     new_weight_spinbox->setValue(physics_new_weight_mass);
     connect(new_weight_spinbox, SIGNAL(valueChanged(double)), this, SLOT(SetPhysicsNewWeightMass(double)));
+
+    new_weight_label = new QLabel(QString::number(new_weight_spinbox->value()) + QString(" kilograms"));
 
     QGroupBox * weight_groupbox = new QGroupBox(tr("Weights"));
     QGridLayout *weight_layout = new QGridLayout;
@@ -3962,23 +3417,6 @@ void GLWidget::SetGenerateBranchingScaleChild(const int i)
     }
 }
 
-void GLWidget::SetGenerateRadialParams()
-{
-    for (int i=0; i<9; ++i) {
-        generate_radial_params[i] = float(radial_slider[i]->value()) / 20.0f;
-        //qDebug() << generate_radial_params[i];
-    }
-
-    if (last_op == OP_GENERATE_MAKE_RADIAL) {
-        Undo(OP_GENERATE_MAKE_RADIAL);
-        DoGenerateMakeRadial();
-    }
-    else if (last_op == OP_GENERATE_MAKE_RADIAL_HOLE) {
-        Undo(OP_GENERATE_MAKE_RADIAL_HOLE);
-        DoGenerateMakeRadialHole();
-    }
-}
-
 void GLWidget::SetGenerateRadialSectors(const int i)
 {
     generate_radial_sectors = i;
@@ -3990,11 +3428,7 @@ void GLWidget::SetGenerateRadialSectors(const int i)
         sections[selected].UpdateRadial();
     }
 
-//    if (last_op == OP_GENERATE_MAKE_RADIAL) {
-//        Undo(OP_GENERATE_MAKE_RADIAL);
-//        DoGenerateMakeRadial();
-//    }
-    /*else*/ if (last_op == OP_GENERATE_MAKE_RADIAL_HOLE) {
+    if (last_op == OP_GENERATE_MAKE_RADIAL_HOLE) {
         Undo(OP_GENERATE_MAKE_RADIAL_HOLE);
         DoGenerateMakeRadialHole();
     }
@@ -6663,8 +6097,12 @@ void GLWidget::StartGenerateRevolve()
 
 void GLWidget::StartGenerateSlices()
 {
-    if(current_tool_state == TOOLSTATE_GENERATE)
+
+    //sideWidget->setCurrentIndex(1);
+
+    if(current_tool_state == TOOLSTATE_GENERATE) {
         CancelGenerate();
+    }
 
     gen_state = GENSTATE_SLICES;
     current_tool_state = TOOLSTATE_GENERATE;
@@ -6692,12 +6130,16 @@ void GLWidget::StartGenerateGrid()
 
 void GLWidget::SetSelectedAsRadial()
 {
-    sections[selected].MakeRadial(generate_radial_sectors,3);
+    if (selected >= 0 && selected < sections.size()) {
+        sections[selected].MakeRadial(generate_radial_sectors,3);
+    }
 }
 
 void GLWidget::RemoveRadial()
 {
-    sections[selected].SetRadial(false);
+    if (selected >= 0 && selected < sections.size()) {
+        sections[selected].SetRadial(false);
+    }
 }
 
 
@@ -6710,7 +6152,7 @@ void GLWidget::DoGenerateBranchingSetRoot()
 void GLWidget::DoGenerateBranching()
 {
 
-    sideWidget->setCurrentIndex(1);
+    //sideWidget->setCurrentIndex(1);
 
     if (sections.size() < 2) {
         return;
@@ -6807,333 +6249,6 @@ void GLWidget::DoGenerateBranching()
     sections = new_sections;
 
     qDebug() << "Done.  Sections:" << sections.size();
-
-    UpdateAllTests();
-    UpdateDraw();
-
-}
-
-void GLWidget::DoGenerateLinear()
-{   
-
-    sideWidget->setCurrentIndex(1);
-
-    if (last_selected.size() < 2) {
-        return;
-    }
-
-    //1.  test to make sure they differ
-    const int ind1 = last_selected[last_selected.size()-2];
-    const int ind2 = last_selected[last_selected.size()-1];
-
-    if (ind1 == ind2) {
-        qDebug() << "GLWidget::DoGenerateLinear() - Last two selections the same, aborting";
-        return;
-    }
-
-    AddToUndoList(OP_GENERATE_LINEAR);
-
-    //2.  grab the set of curves that should be copied, this involves getting all children
-    //    of the revolving one's children (relative to tree with root at base planar section)
-    QVector <QVector <bool> > graph;
-    QList <QList <int> > cycles;
-    PlanarSection::ComputeIntersectionGraph(sections, graph);
-
-    QList <int> branch;
-    Tree tree;
-    tree.CreateFromGraph(graph, ind1);
-    tree.GetBranch(ind2, branch);
-
-    if (branch.contains(ind1)) { //node shouldn't have parent in its branch, this means a cycle, just use the 1 node
-        branch.clear();
-        branch.push_back(ind2);
-    }
-
-    //3.  compute lines of intersection
-    PlanarSection & spine_section = sections[ind1];
-    PlanarSection & copy_section = sections[ind2];
-
-    //compute line of intersection
-    QList <QVector3D> intersects;
-    QList <bool> intersects_which;
-    spine_section.GetContourIntersections(copy_section, intersects, intersects_which);
-
-    if (intersects.size() < 2) {
-        qDebug() << "GLWidget::DoGenerateLinear() - Aborting, need at least 2 contour intersections.";
-        return;
-    }
-
-    //compute 2d intersection ray points
-    QVector2D isec_p1_2d = spine_section.GetPoint2D(intersects.first());
-    QVector2D isec_p2_2d = spine_section.GetPoint2D(intersects.last());
-    //compute 2d intersection ray direction
-    QVector2D isec_dir_2d = spine_section.GetPoint2D(intersects.last()) - spine_section.GetPoint2D(intersects.first());
-
-    //compute bounding region
-    QVector2D copy_normal_2d = spine_section.GetPoint2D(copy_section.N()) - spine_section.GetPoint2D(QVector3D(0, 0, 0));
-    float min_val, max_val;
-    spine_section.GetBoundingInterval(copy_normal_2d, min_val, max_val);
-
-    const float copy_val = QVector2D::dotProduct(copy_normal_2d, spine_section.GetPoint2D(copy_section.P()));
-
-    //we need to perform a test to determine which side of the contour to attach to consistently when we cast rays
-    //create a ray on the plane of spine_section
-    QList <QVector2D> contour_isecs;
-    spine_section.ComputeContourLineIntersects(isec_p1_2d, isec_p2_2d-isec_p1_2d, contour_isecs);
-    //which contour_isec is closer to intersects[1]? // TODO: make this more robust, this choice is arbitrary, and depends on spline before point being defined
-    const float contour_first_len = (spine_section.GetPoint3D(contour_isecs.first()) - intersects[1]).length();
-    const float contour_last_len = (spine_section.GetPoint3D(contour_isecs.last()) - intersects[1]).length();
-    const float contour_scale = (spine_section.GetPoint3D(contour_isecs.last()) - spine_section.GetPoint3D(contour_isecs.first())).length();
-    const bool use_first_contour_isec = (contour_first_len < contour_last_len);
-
-    //compute series of 2D intersections on spine's plane, along direction ld (projected to 2D)
-    const int nBefore = -(int((copy_val - min_val) / generate_linear_spacing) + 1);
-    const int nAfter = int((max_val - copy_val) / generate_linear_spacing) + 1;
-
-    const QVector3D oldbasis_t = copy_section.T();
-    const QVector3D oldbasis_n = copy_section.N();
-    const QVector3D oldbasis_b = copy_section.B();
-    const QVector3D oldbasis_p = copy_section.P();
-
-    //4.  add the duplicates in a linear arrangement
-    for (int i=nBefore; i<=nAfter; ++i) {
-
-        //we skip the section at the copy_section position
-        if (i == 0) {
-            continue;
-        }
-
-        const float d = copy_val + generate_linear_spacing * i;
-
-        const QVector3D new_plane_p1 = spine_section.GetPoint3D(copy_normal_2d * d);
-        const QVector3D new_plane_p2 = spine_section.GetPoint3D(copy_normal_2d * d + isec_dir_2d);
-
-        //create a ray on the plane of spine_section
-        QVector2D ray_p1 = spine_section.GetPoint2D(new_plane_p1);
-        QVector2D ray_p2 = spine_section.GetPoint2D(new_plane_p2);
-
-        //cast the ray and get the intersections with spine_section's contour
-        QList <QVector2D> contour_isecs;
-        spine_section.ComputeContourLineIntersects(ray_p1, ray_p2-ray_p1, contour_isecs);
-
-        //if hits, we duplicate the copy_section there
-        if (!contour_isecs.empty()) {
-
-            //convert intersection points to 3d
-            QList <QVector3D> contour_isecs_3d;
-            for (int j=0; j<contour_isecs.size(); ++j) {
-                contour_isecs_3d.push_back(spine_section.GetPoint3D(contour_isecs[j]));
-            }
-
-            //sort the intersection points
-            GLutils::SortPointsAlongDirection3D(intersects.last() - intersects.first(), contour_isecs_3d);
-
-            //visual debugging
-            /*
-            for (int j=0; j<contour_isecs_3d.size(); ++j) {
-                markers.push_back(contour_isecs_3d[j]);
-                if (j == 0) {
-                    markers_col.push_back(QVector3D(0, 0, 1));
-                }
-                else {
-                    markers_col.push_back(QVector3D(1, 0, 1));
-                }
-            }
-            */
-
-            //create a new planar section copy here, using the intersection value... try both, and use the one
-            //whose line of intersection distance is closest the piece we are cloning
-            const float each_contour_scale = (contour_isecs_3d.last() - contour_isecs_3d.first()).length() / contour_scale;
-
-            const QVector3D newbasis_t = copy_section.T();
-            const QVector3D newbasis_n = copy_section.N();
-            const QVector3D newbasis_b = copy_section.B();
-            QVector3D newbasis_p;
-            if (use_first_contour_isec) { //when scaling Y a translation is required so the section will still intersect at the slit
-                newbasis_p = contour_isecs_3d.first() + (copy_section.P() - intersects[1]) + (intersects[1] - intersects[2])*(1.0f - each_contour_scale);
-            }
-            else {
-                newbasis_p = contour_isecs_3d.last() + (copy_section.P() - intersects[2]) + (intersects[2] - intersects[1])*(1.0f - each_contour_scale);
-            }
-
-            for (int j=0; j<branch.size(); ++j) {
-
-                PlanarSection & copy_sec = sections[branch[j]];
-
-                const float scale_x = (generate_linear_scalex) ? each_contour_scale : 1.0f;
-                const float scale_y = (generate_linear_scaley) ? each_contour_scale : 1.0f;
-
-                const QVector3D new_t = GLutils::GetVectorNewBasis(oldbasis_t, oldbasis_n, oldbasis_b, QVector3D(0, 0, 0),
-                                                                   newbasis_t, newbasis_n, newbasis_b, QVector3D(0, 0, 0),
-                                                                   copy_sec.T(), 1.0f, 1.0f, 1.0f);
-                const QVector3D new_n = GLutils::GetVectorNewBasis(oldbasis_t, oldbasis_n, oldbasis_b, QVector3D(0, 0, 0),
-                                                                   newbasis_t, newbasis_n, newbasis_b, QVector3D(0, 0, 0),
-                                                                   copy_sec.N(), 1.0f, 1.0f, 1.0f);
-                const QVector3D new_b = GLutils::GetVectorNewBasis(oldbasis_t, oldbasis_n, oldbasis_b, QVector3D(0, 0, 0),
-                                                                   newbasis_t, newbasis_n, newbasis_b, QVector3D(0, 0, 0),
-                                                                   copy_sec.B(), 1.0f, 1.0f, 1.0f);
-                const QVector3D new_p = GLutils::GetVectorNewBasis(oldbasis_t, oldbasis_n, oldbasis_b, oldbasis_p,
-                                                                  newbasis_t, newbasis_n, newbasis_b, newbasis_p,
-                                                                  copy_sec.P(), scale_x, 1.0f, scale_y);
-
-                PlanarSection new_sec = copy_sec;
-                SetupPlanarSection(new_sec);
-                new_sec.SetT(new_t);
-                new_sec.SetN(new_n);
-                new_sec.SetB(new_b);
-                new_sec.SetP(new_p);
-                new_sec.Scale(scale_x, scale_y);
-                new_sec.UpdateCurveTrisSlab();
-
-                sections.push_back(new_sec);
-
-            }
-
-        }
-
-    }
-
-    UpdateAllTests();
-    UpdateDraw();
-
-}
-
-void GLWidget::DoGenerateGrid()
-{
-
-    sideWidget->setCurrentIndex(1);
-
-    //if (!IsSectionSelected()) {
-    //    return;
-    //}
-    //1.  need to ensure at least 3 sections were selected
-    const int ls = last_selected.size();
-    if (ls < 1) {
-        qDebug() << "GLWidget::DoGenerateBlend() - Warning, 3 sections need to be selected";
-        return;
-    }
-
-    //2.  need to ensure that sections 2 and 3 are connected to section 1
-    //  2a.  test that connectivity
-    PlanarSection & section1 = sections[last_selected[ls-1]];
-
-    AddToUndoList(OP_GENERATE_GRID);
-
-    //TODO: this stuff should eventually be moved into planarsection class, and only parameters passed        
-    const float offset = -0.01f;
-
-    //get bounding box
-    QVector2D min_bb, max_bb;
-    section1.GetBoundingBox2D(min_bb, max_bb);
-
-    QList <PlanarSection> split_sections;
-    split_sections.push_back(section1);
-
-    QList <QVector2D> split_pts;
-    QList <QVector2D> split_dirs;
-
-    for (float x=min_bb.x()+(generate_grid_sizex*offset); x-generate_grid_sizex<=max_bb.x(); x += generate_grid_sizex) {
-        split_pts.push_back(QVector2D(x, 0));
-        split_dirs.push_back(QVector2D(0, 1));
-    }
-
-    for (float y=min_bb.y()+(generate_grid_sizey*offset); y-generate_grid_sizey<=max_bb.y(); y += generate_grid_sizey) {
-        split_pts.push_back(QVector2D(0, y));
-        split_dirs.push_back(QVector2D(1, 0));
-    }
-
-    //iterate through all cuts
-    for (int i=0; i<split_pts.size(); ++i) {
-
-        //this saves sections remaining following the cut
-        QList <PlanarSection> split_sections_after_cut;
-
-        for (int j=0; j<split_sections.size(); ++j) {
-
-            QList <PlanarSection> each_split_sections;
-            split_sections[j].SplitAlongLine(split_pts[i], split_dirs[i], each_split_sections);                        
-
-            if (!each_split_sections.empty()) {
-                split_sections_after_cut += each_split_sections;
-            }
-            else {
-                split_sections_after_cut += split_sections[j];
-            }
-
-        }
-
-        split_sections = split_sections_after_cut;
-
-    }
-
-    for (int i=0; i<split_sections.size(); ++i) {
-        SetupPlanarSection(split_sections[i]);
-    }
-
-    //need to add more sections between neighbouring cuts
-    //add a bunch of staples regularly, then, only keep the ones connected to at least 2 other planes
-
-
-    QList <PlanarSection> staple_sections;
-    //sections with normal which is vertical (wrt to the grid plane)
-    for (float x=min_bb.x()+(generate_grid_sizex*(1.0f+offset)); x<=max_bb.x(); x += generate_grid_sizex) {
-        for (float y=min_bb.y()+(generate_grid_sizey*(0.5+offset)); y<=max_bb.y(); y += generate_grid_sizey) {
-
-            PlanarSection staple;
-            SetupPlanarSection(staple);
-            staple.SetP(section1.GetPoint3D(QVector2D(x, y)));
-            staple.SetT(section1.N());
-            staple.SetN(section1.B());
-            staple.SetB(section1.T());
-            staple.CreateSquare(generate_grid_staplesize);
-            staple_sections.push_back(staple);
-
-        }
-    }
-
-    //sections with normal which is horizontal (wrt to the grid plane)
-    for (float y=min_bb.y()+(generate_grid_sizey*(1.0f+offset)); y<=max_bb.y(); y += generate_grid_sizey) {
-        for (float x=min_bb.x()+(generate_grid_sizex*(0.5+offset)); x<=max_bb.x(); x += generate_grid_sizex) {
-
-            PlanarSection staple;
-            SetupPlanarSection(staple);
-            staple.SetP(section1.GetPoint3D(QVector2D(x, y)));
-            staple.SetT(section1.B());
-            staple.SetN(section1.T());
-            staple.SetB(section1.N());
-            staple.CreateSquare(generate_grid_staplesize);
-            staple_sections.push_back(staple);
-
-        }
-    }
-
-    //for all staple sections now ensure they intersect at least 2 of the split sections
-    for (int i=0; i<staple_sections.size(); ++i) {
-
-        //count # of intersections
-        int num_staple_split_ints = 0;
-        for (int j=0; j<split_sections.size(); ++j) {
-
-            if (staple_sections[i].IsIntersectingSection(split_sections[j])) {
-                ++num_staple_split_ints;
-                //qDebug() << i << "intersects" << j;
-            }
-        }
-
-        //if less than 2, remove this staple
-        //qDebug() << i << "intersects" << num_staple_split_ints << "sections";
-        if (num_staple_split_ints < 2) {
-            staple_sections.removeAt(i);
-            --i;
-        }
-    }
-
-    //remove the section selected when this started, replace with the cut ones
-    sections.removeAt(last_selected[ls-1]);
-    selected = -1;
-
-    sections += split_sections;
-    sections += staple_sections;
 
     UpdateAllTests();
     UpdateDraw();
@@ -7329,123 +6444,6 @@ void GLWidget::ResetCamera()
     cam.SetCamWidth(10.0f);
 }
 
-void GLWidget::DoGenerateBlend()
-{   
-
-    sideWidget->setCurrentIndex(1);
-
-    //1.  need to ensure at least 3 sections were selected
-    const int ls = last_selected.size();
-    if (ls < 3) {
-        qDebug() << "GLWidget::DoGenerateBlend() - Warning, 3 sections need to be selected";
-        return;
-    }   
-
-    //2.  need to ensure that sections 2 and 3 are connected to section 1
-    //  2a.  test that connectivity
-    PlanarSection & section1 = sections[last_selected[ls-3]];
-    PlanarSection & section2 = sections[last_selected[ls-2]];
-    PlanarSection & section3 = sections[last_selected[ls-1]];
-
-    if (!section1.IsIntersectingSection(section2) || !section1.IsIntersectingSection(section3)) {
-        qDebug() << "GLWidget::DoGenerateBlend() - Warning, section1 does not intersect both section2 and section3";
-        return;
-    }    
-
-    AddToUndoList(OP_GENERATE_BLEND);
-
-    //3.  we need to find the interval of section 1's boundary to regularly add sections to
-    BezierCurve curve;
-    section1.GetCurveBetweenSections(section2, section3, curve);
-    /*
-    const QList <QVector2D> & samples = curve.Samples();
-    markers2.clear();
-    markers_col2.clear();
-    for (int i=0; i<samples.size(); ++i) {
-        markers2.push_back(section1.GetPoint3D(samples[i]));
-        markers_col2.push_back(QVector3D(float(i)/float(samples.size()), 1, 1));
-    }
-    */
-
-    QList <PlanarSection> new_sections;
-    section1.GetSectionsAlongCurve(section2, curve, generate_blend_sections-1, new_sections);
-
-    //4.  set up first and last sections so their normals point tangential to the curve (roughly) and they are centered on the curve
-    //  4a.  translate P of the first and last so they are on the curve (and the interpolated ones are translated correctly)
-    section2.MoveP(new_sections.first().P());
-    section3.MoveP(new_sections.last().P());
-
-    //  4b.  set the normal of the first and last so that they are facing along the curve
-    if (QVector3D::dotProduct(section2.N(), new_sections.first().N()) < 0.0f) {
-        section2.FlipN();
-        section2.UpdateCurveTrisSlab();
-    }
-    if (QVector3D::dotProduct(section3.N(), new_sections.last().N()) < 0.0f) {
-        section3.FlipN();
-        section3.UpdateCurveTrisSlab();
-    }
-    if (QVector3D::dotProduct(section2.T(), new_sections.first().T()) < 0.0f) {
-        for (int i=0; i<new_sections.size(); ++i) {
-            new_sections[i].FlipTB();
-        }
-    }
-
-    //  4c.  just update them
-    section2.UpdateCurveTrisSlab();
-    section3.UpdateCurveTrisSlab();
-
-    //5.  create a correspondence between section boundaries of 2 and 3
-    //  5a.  correspondence depends on same # of control points.  subdivide section with more, splitting at longest segments
-    BezierCurve & curve2 = section2.GetCurve(0);
-    BezierCurve & curve3 = section3.GetCurve(0);
-
-    while (curve2.GetNumControlPoints() < curve3.GetNumControlPoints()) {
-        curve2.SubdivideLongestSegment();
-        //qDebug() << "subdivided curve2 - pts" << curve2.GetNumControlPoints();
-    }
-    while (curve3.GetNumControlPoints() < curve2.GetNumControlPoints()) {
-        curve3.SubdivideLongestSegment();
-        //qDebug() << "subdivided curve3 - pts" << curve3.GetNumControlPoints();
-    }
-
-    //  5b.  now find the control point correspondences (an index offset mapping ctrl points from 2 to 3)
-    int corresp_offset;
-    bool corresp_forward;
-    curve2.GetCurvePointCorrespondence(curve3, corresp_offset, corresp_forward);
-    //qDebug() << "using correspondence" << corresp_offset << corresp_forward;
-
-    //6.  March along and do the blending interpolation
-    float theta1 = GLutils::SignedAngleBetweenRad(section2.N(), new_sections.first().N(), section2.T());
-    float theta2 = GLutils::SignedAngleBetweenRad(section3.N(), new_sections.last().N(), section2.T());
-
-    for (int i=1; i<generate_blend_sections-1; ++i) {
-
-        //t takes on values (0, 1) and not [0, 1]
-        const float t = float(i) / float(generate_blend_sections);
-
-        BezierCurve blend_curve;
-        curve2.InterpolateCurvePointCorrespondence(curve3, corresp_offset, corresp_forward, t, blend_curve);
-
-        const float theta_t = theta1 * (1.0f - t) + theta2 * t;
-        //qDebug() << i << theta1 << theta2 << theta_t << t;
-
-        QVector3D rotate_n = GLutils::RotateVector(new_sections[i].N(), section2.T(), -theta_t);
-        QVector3D rotate_b = GLutils::RotateVector(new_sections[i].B(), section2.T(), -theta_t);
-
-        new_sections[i].SetCurve(0, blend_curve);
-        new_sections[i].SetN(rotate_n);
-        new_sections[i].SetB(rotate_b);
-        new_sections[i].SetSlabThickness(slab_thickness);
-        new_sections[i].UpdateCurveTrisSlab();
-
-        sections.push_back(new_sections[i]);
-
-    }   
-
-    UpdateAllTests();
-    UpdateDraw();
-}
-
 void GLWidget::DoPhysicsAddWeight()
 {
 
@@ -7517,135 +6515,10 @@ void GLWidget::SetPhysicsMaximumStress(const double d)
     //updateGL();
 }
 
-void GLWidget::DoGenerateRevolve()
-{
-
-    sideWidget->setCurrentIndex(1);
-
-    //if (!IsSectionSelected()) {
-    //    return;
-    //}
-    const int ls = last_selected.size();
-    if (ls < 2) {
-        qDebug() << "GLWidget::DoGenerateRevolve() - Warning, 2 sections need to be selected";
-        return;
-    }
-
-    //1.  need to ensure that section 1 is connected to section 2
-    //  1a.  test that connectivity    
-    const int ind1 = last_selected[ls-2];
-    const int ind2 = last_selected[ls-1];
-    PlanarSection & section1 = sections[ind1];
-    PlanarSection & section2 = sections[ind2];
-
-    if (!section1.IsIntersectingSection(section2)) {
-        qDebug() << "GLWidget::DoGenerateRevolve() - Warning, section1 does not intersect section2";
-        return;
-    }
-
-    AddToUndoList(OP_GENERATE_REVOLVE);
-
-    //2.  grab the set of curves that should be copied, this involves getting all children
-    //    of the revolving one's children (relative to tree with root at base planar section)
-    QVector <QVector <bool> > graph;
-    QList <QList <int> > cycles;
-    PlanarSection::ComputeIntersectionGraph(sections, graph);
-
-    QList <int> branch;
-    Tree tree;
-    tree.CreateFromGraph(graph, ind1);
-    tree.GetBranch(ind2, branch);
-
-    if (branch.contains(ind1)) { //node shouldn't have parent in its branch, this means a cycle, just use the 1 node
-        branch.clear();
-        branch.push_back(ind2);
-    }
-
-    //3.  we need to find the interval of section 1's boundary to regularly add sections to
-    BezierCurve curve;
-    section1.GetCurveAroundSection(section2, curve);
-    //section1.SetCurve(0, curve); //debugging
-
-    QList <PlanarSection> new_sections;
-    section1.GetSectionsAlongCurve(section2, curve, generate_revolve_sections, new_sections);
-
-    //4.  set up first and last sections so their normals point tangential to the curve (roughly) and they are centered on the curve
-    //  4a.  translate P of the first and last so they are on the curve (and the interpolated ones are translated correctly)
-    section2.MoveP(new_sections.first().P());
-
-    //  4b.  set the normal of the first and last so that they are facing along the curve
-    if (QVector3D::dotProduct(section2.N(), new_sections.first().N()) < 0.0f) {
-        section2.FlipN();
-        section2.UpdateCurveTrisSlab();
-        //qDebug() << "FLIPPED N2";
-    }
-
-    if (QVector3D::dotProduct(section2.T(), new_sections.first().T()) < 0.0f) {
-        for (int i=0; i<new_sections.size(); ++i) {
-            new_sections[i].FlipTB();
-        }
-    }
-
-    //  4c.  just update them
-    section2.UpdateCurveTrisSlab();    
-
-    //5.  March along and add sections
-    float theta = GLutils::SignedAngleBetweenRad(section2.N(), new_sections.first().N(), section2.T());
-
-    const QVector3D oldbasis_t = section2.T();
-    const QVector3D oldbasis_n = section2.N();
-    const QVector3D oldbasis_b = section2.B();
-    const QVector3D oldbasis_p = section2.P();
-
-    for (int i=1; i<generate_revolve_sections; ++i) { //for each section sampled on the boundary...
-
-        const QVector3D newbasis_t = new_sections[i].T();
-        const QVector3D newbasis_n = GLutils::RotateVector(new_sections[i].N(), section2.T(), -theta);
-        const QVector3D newbasis_b = GLutils::RotateVector(new_sections[i].B(), section2.T(), -theta);
-        const QVector3D newbasis_p = new_sections[i].P();
-
-        //qDebug() << "section2t" << section2.T() << "theta" << theta << "newsections[i].N" << new_sections[i].N() << "newsections[i].B" << new_sections[i].B();
-        //qDebug() << "new section" << i << "t" << newbasis_t << "n" << newbasis_n << "b" << newbasis_b << "p" << newbasis_p;
-
-        for (int j=0; j<branch.size(); ++j) { //and for every section which is part of the branch...
-
-            PlanarSection & copy_sec = sections[branch[j]];
-
-            const QVector3D new_t = GLutils::GetVectorNewBasis(oldbasis_t, oldbasis_n, oldbasis_b, QVector3D(0, 0, 0),
-                                                               newbasis_t, newbasis_n, newbasis_b, QVector3D(0, 0, 0),
-                                                               copy_sec.T(), 1.0f, 1.0f, 1.0f);
-            const QVector3D new_n = GLutils::GetVectorNewBasis(oldbasis_t, oldbasis_n, oldbasis_b, QVector3D(0, 0, 0),
-                                                               newbasis_t, newbasis_n, newbasis_b, QVector3D(0, 0, 0),
-                                                               copy_sec.N(), 1.0f, 1.0f, 1.0f);
-            const QVector3D new_b = GLutils::GetVectorNewBasis(oldbasis_t, oldbasis_n, oldbasis_b, QVector3D(0, 0, 0),
-                                                               newbasis_t, newbasis_n, newbasis_b, QVector3D(0, 0, 0),
-                                                               copy_sec.B(), 1.0f, 1.0f, 1.0f);
-            const QVector3D new_p = GLutils::GetVectorNewBasis(oldbasis_t, oldbasis_n, oldbasis_b, oldbasis_p,
-                                                               newbasis_t, newbasis_n, newbasis_b, newbasis_p,
-                                                               copy_sec.P(), 1.0f, 1.0f, 1.0f);
-
-            PlanarSection new_sec = copy_sec;
-            SetupPlanarSection(new_sec);
-            new_sec.SetT(new_t);
-            new_sec.SetN(new_n);
-            new_sec.SetB(new_b);
-            new_sec.SetP(new_p);
-            new_sec.UpdateCurveTrisSlab();
-            sections.push_back(new_sec);
-
-        }
-
-    }
-
-    UpdateAllTests();
-    UpdateDraw();
-
-}
-
 void GLWidget::DoGenerateMakeCircle()
 {
 
-    sideWidget->setCurrentIndex(1);
+    //sideWidget->setCurrentIndex(1);
 
     if (!IsSectionSelected()) {
         return;
@@ -7671,7 +6544,7 @@ void GLWidget::DoGenerateMakeCircle()
 void GLWidget::DoGenerateMakeRectangle()
 {
 
-    sideWidget->setCurrentIndex(1);
+    //sideWidget->setCurrentIndex(1);
 
     if (!IsSectionSelected()) {
         return;
@@ -7692,38 +6565,10 @@ void GLWidget::DoGenerateMakeRectangle()
 
 }
 
-void GLWidget::DoGenerateMakeRadial()
-{
-
-    sideWidget->setCurrentIndex(1);
-
-    if (!IsSectionSelected()) {
-        return;
-    }
-
-    AddToUndoList(OP_GENERATE_MAKE_RADIAL);
-
-    //1.  get existing points dimensions
-    QVector2D min_v;
-    QVector2D max_v;
-    sections[selected].GetBoundingBox2D(min_v, max_v);
-
-    //2.  parameterize circle based on dimensions
-    const QVector2D centre = (min_v + max_v) * 0.5f;
-    const float rad = (max_v.x() - min_v.x() + max_v.y() - min_v.y()) * 0.25f;
-    sections[selected].CreateRadial(centre, rad, generate_radial_sectors, generate_radial_params);
-
-    UpdateAllTests();
-    UpdateDraw();
-
-}
-
-
-
 void GLWidget::DoGenerateMakeRadialHole()
 {
 
-    sideWidget->setCurrentIndex(1);
+    //sideWidget->setCurrentIndex(1);
 
     if (!IsSectionSelected()) {
         return;
