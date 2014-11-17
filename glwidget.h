@@ -431,6 +431,8 @@ private:
 
     //sections - this is the main container
     PlanarSection active_section;
+    PlanarSection active_section_symmetry;
+
     QList <PlanarSection> sections;
     float section_error_tolerance;
     float section_error_tolerance_template;

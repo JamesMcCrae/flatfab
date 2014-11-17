@@ -1029,7 +1029,21 @@ void GLWidget::paintGL()
     //this stuff changes, not for display list
     if (state == STATE_CURVE || state == STATE_PEN_POINT || state == STATE_PEN_DRAG) {
         glColor3f(0.25f, 0.60f, 0.25f);
-        active_section.DrawTris();
+
+        if (do_local_symmetry) {
+            active_section_symmetry = active_section;
+
+            active_section_symmetry.SketchSymmetryTest();
+            active_section_symmetry.Update(0, section_error_tolerance);
+            active_section_symmetry.CreateLocalSymmetry();
+
+            active_section_symmetry.DrawTris();
+            //active_section_symmetry.DrawCurveControlPoints(10.0f);
+        }
+        else {
+            active_section.DrawTris();
+        }
+
         //active_section.DrawInputPolyline();
     }
 
@@ -1082,8 +1096,9 @@ void GLWidget::paintGL()
 
     DrawSlot(slot_start, slot_end);
 
-    if(recursive_slot_start != QVector3D(0, 0 ,0))
+    if (recursive_slot_start != QVector3D(0, 0 ,0)) {
         DrawSlot(recursive_slot_start, recursive_slot_end);
+    }
 
     //draw template cut only when:
     //1.  no sections exist,
@@ -1189,7 +1204,13 @@ void GLWidget::paintGL()
         glLineWidth(2.0f);
         //glColor3f(0, 0, 0);
         glColor3f(0, 0, 0.3f);
-        active_section.DrawCurve();
+
+        if (do_local_symmetry) {
+            active_section_symmetry.DrawCurve();
+        }
+        else {
+            active_section.DrawCurve();
+        }
         //active_section.DrawSketch();
         //active_section.DrawCurveControlPoints();
 

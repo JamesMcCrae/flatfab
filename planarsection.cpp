@@ -577,7 +577,12 @@ void PlanarSection::DrawCurveControlPointsHandleStyle(const float cam_width, con
     QVector3D colour_rad(0.2, 0.2, 0.6);
 
     for (int c=0; c<bez_curve.size(); ++c) {
+
         const QList <QVector2D> & pts = bez_curve[c].Points();
+
+        if (pts.empty()) {
+            continue;
+        }
 
         float s;
         int numSegs;
@@ -594,8 +599,9 @@ void PlanarSection::DrawCurveControlPointsHandleStyle(const float cam_width, con
         glDisable(GL_DEPTH_TEST);
         glBegin(GL_LINES);
         for (int i=1; i<num_points; ++i) {
-            if(radial && i == num_radial_points_per_sector)
+            if (radial && i == num_radial_points_per_sector) {
                 GLutils::glColor(colour_rad);
+            }
 
             nextPoint = p + (t * (pts[i+1].x())) + (b * (pts[i+1].y()));
 
@@ -625,13 +631,11 @@ void PlanarSection::DrawCurveControlPointsHandleStyle(const float cam_width, con
 
             if (i%3 == 0) {
 
-                if(radial && i >= num_radial_points_per_sector)
-                {
+                if (radial && i >= num_radial_points_per_sector) {
                     GLutils::glColor(colour_rad);
                     GLutils::DrawDisc(point, point + (cam_pos - point).normalized()*.2, 0.0f, 2*s);
                 }
-                else
-                {
+                else {
                     GLutils::glColor(colour2);
 
                     // for debug purposes
@@ -645,20 +649,20 @@ void PlanarSection::DrawCurveControlPointsHandleStyle(const float cam_width, con
 
 
             }
-            else
-            {
+            else {
 
-                if(radial && i >= num_radial_points_per_sector)
+                if (radial && i >= num_radial_points_per_sector) {
                     GLutils::glColor(colour_rad);
-                else
+                }
+                else {
                     GLutils::glColor(colour1);
+                }
 
                 // for debug purposes
                 //glColor3f(0, float(i)/num_points, 1 - float(i)/num_points);
 
                 GLutils::DrawDisc(point, point + (cam_pos - point).normalized()*.2, 0, s);
             }
-
 
         }
 
@@ -2424,6 +2428,14 @@ void PlanarSection::SketchSymmetryTest()
 
 void PlanarSection::CreateLocalSymmetry()
 {
+
+    if (bez_curve.empty()) {
+        return;
+    }
+
+    if (bez_curve.first().GetNumControlPoints() < 2) {
+        return;
+    }
 
     QList <QVector2D> new_points;
 
