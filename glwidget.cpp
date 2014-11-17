@@ -1425,7 +1425,6 @@ b) when there are planes, attempt to select one
 
     const bool ctrl_held = ((event->modifiers() & Qt::ControlModifier) > 0);
     const bool shift_held = ((event->modifiers() & Qt::ShiftModifier) > 0);
-    const bool alt_held = ((event->modifiers() & Qt::AltModifier) > 0);
 
     UpdateCamera();
 
@@ -1433,7 +1432,7 @@ b) when there are planes, attempt to select one
 
     if (event->button() == Qt::LeftButton) {
 
-        if (!(pen_mode && state == STATE_PEN_POINT) && (ctrl_held || shift_held || alt_held)) {
+        if (!(pen_mode && state == STATE_PEN_POINT) && (ctrl_held || shift_held)) {
             state = STATE_ORBIT;
         }
         else {
