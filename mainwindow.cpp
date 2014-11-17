@@ -504,7 +504,10 @@ void MainWindow::createActions()
 
     deleteAct = new QAction(tr("&Delete"), this);
     deleteAct->setStatusTip(tr("Delete selected planar section."));
-    deleteAct->setShortcut(Qt::Key_Backspace);
+    QList <QKeySequence> del_shortcuts;
+    del_shortcuts.push_back(Qt::Key_Backspace);
+    del_shortcuts.push_back(Qt::Key_Delete);
+    deleteAct->setShortcuts(del_shortcuts);
     connect(deleteAct, SIGNAL(triggered()), this, SLOT(Delete()));
     addAction(deleteAct);
 

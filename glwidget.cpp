@@ -1433,12 +1433,10 @@ b) when there are planes, attempt to select one
 
     if (event->button() == Qt::LeftButton) {
 
-        if(!(pen_mode && state == STATE_PEN_POINT) && (ctrl_held || shift_held || alt_held) ) {
+        if (!(pen_mode && state == STATE_PEN_POINT) && (ctrl_held || shift_held || alt_held)) {
             state = STATE_ORBIT;
         }
-        else
-        {
-
+        else {
 
             switch (state) {
 
@@ -1512,54 +1510,49 @@ b) when there are planes, attempt to select one
                     active_section.SketchSetEditing(true);
 
                     // Make a pen point change the state
-                    if(pen_mode)
-                    {
+                    if (pen_mode) {
                         state = STATE_PEN_POINT;
                         active_section.AddCtrlPointPenPress(0, mouse_pos);
                         active_section.SelectCtrlPoint(active_section.GetCurve(0).Points().size() - 3); // the last two points in the curve attach to the first point
                     }
-                    else
+                    else {
                         state = STATE_CURVE;
+                    }
 
                 }
                 else {
 
                     const int section_clicked = PickSection(mouse_pos, false);
 
-                    if (section_clicked >= 0) {
+                    if (section_clicked >= 0 && section_clicked < sections.size()) {
 
                         QVector3D p;
                         sections[section_clicked].MouseRayIntersect(mouse_pos, p);
 
                         // If selectiing sections for the generate tools
-                        if(current_tool_state == TOOLSTATE_GENERATE && gen_state != GENSTATE_BRANCH)
-                        {
-                            if(generate_selections.size() < selections_per_gen_type[gen_state] || gen_state == GENSTATE_GRID)
-                            {
+                        if (current_tool_state == TOOLSTATE_GENERATE && gen_state != GENSTATE_BRANCH) {
 
-                                bool already_selected = false;
-                                for(int i = 0; i < generate_selections.size(); i++)
-                                {
-                                    if(generate_selections[i] == section_clicked)
-                                    {
-                                        already_selected = true;
-                                        break;
-                                    }
-                                }
-                                if(!already_selected)
-                                {
-                                    if(gen_state == GENSTATE_GRID && generate_selections.size() == 1)
+                            if (generate_selections.size() < selections_per_gen_type[gen_state] || gen_state == GENSTATE_GRID) {
+
+                                if (!generate_selections.contains(section_clicked)) {
+
+                                    if (gen_state == GENSTATE_GRID && generate_selections.size() == 1) {
                                         generate_selections[0] = section_clicked; // this allows the user to switch sections during grid generation
-                                    else
+                                    }
+                                    else {
                                         generate_selections.append(section_clicked);
+                                    }
+
                                 }
 
                             }
-                            if(generate_selections.size() == selections_per_gen_type[gen_state]  )
+
+                            if (generate_selections.size() == selections_per_gen_type[gen_state]) {
                                 ShowGenerate();
+                            }
+
                             UpdateDraw();
                         }
-
                         else if (state == STATE_RECURSIVE_SETUP_SLOT) {
                             //modify properties of base section
                             recursive_slot_start = p;
@@ -1602,10 +1595,7 @@ b) when there are planes, attempt to select one
 
             }
 
-        }
-
-        //UpdateDraw();
-        //updateGL();
+        }     
 
     }
     else if (event->button() == Qt::RightButton) {           
