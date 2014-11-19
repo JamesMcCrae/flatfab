@@ -2003,7 +2003,7 @@ void GLWidget::mouseMoveEvent(QMouseEvent * event)
                 active_section_symmetry.SketchSymmetryTest();
                 active_section_symmetry.Update(0, section_error_tolerance);
                 active_section_symmetry.CreateLocalSymmetry();
-                //active_section_symmetry.SetCtrlPointsAboveXZPlane();
+
                 active_section_symmetry.UpdateCurveTrisSlab();
 
             }
@@ -2148,35 +2148,27 @@ void GLWidget::mouseReleaseEvent(QMouseEvent *event)
                 AddToUndoList(OP_ADD_PLANE);
 
                 active_section.SketchSetEditing(false);
-
                 if (do_local_symmetry) {
-                    //do not do symmetry for the very first plane
-                    active_section.SketchSymmetryTest();
-                }
-
-                //at the curve step, the gesture is considered "completed"
-                if (!template_cut.empty()) {
-                    active_section.Update(0, section_error_tolerance_template);
-                }
-                else {
-                    active_section.Update(0, section_error_tolerance);
-                }
-
-                if (do_local_symmetry) {
-                    //do not do symmetry for the very first plane
-                    active_section.CreateLocalSymmetry();
+                    active_section_symmetry.SketchSetEditing(false);
                 }
 
                 //enforce above-ground control points
                 active_section.SetCtrlPointsAboveXZPlane();
                 active_section.UpdateCurveTrisSlab();
 
-                if (!active_section.SliceTriangles().empty()) {
-                    sections.push_back(active_section);
+                if (do_local_symmetry) {
+                    active_section_symmetry.SetCtrlPointsAboveXZPlane();
+                    active_section_symmetry.UpdateCurveTrisSlab();
+                }
 
-                    //for the added curve, we now update our physical tests (TODO: checkbox/boolean to disable this)
+                if (do_local_symmetry && !active_section_symmetry.SliceTriangles().empty()) {
+                    sections.push_back(active_section_symmetry);
                     UpdateAllTests();
-
+                }
+                else if (!do_local_symmetry && !active_section.SliceTriangles().empty()) {
+                    //for the added curve, we now update our physical tests (TODO: checkbox/boolean to disable this)
+                    sections.push_back(active_section);                   
+                    UpdateAllTests();
                 }
 
             }

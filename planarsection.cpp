@@ -2386,42 +2386,42 @@ void PlanarSection::SketchSymmetryTest()
 
     //qDebug() << "dist_r1" << dist_r1 << "dist_r2" << dist_r2;
 
+    float sign = 1.0f; //this stores whether points to preserve are on positive side (sign=1) or negative side (sign=-1)
+
     if ((dist_r1 > 0.0f && dist_r2 > 0.0f) || (fabsf(dist_r2) / fabsf(dist_r1) > magic_ratio)) { //mirror to region1 (negative half)
-
-        //first remove points on negative side
-        for (int i=0; i<sketch_pts[0].size(); ++i) {
-            if (sketch_pts[0][i].x() < 0.0f) {
-                sketch_pts[0].removeAt(i);
-                --i;
-            }
-        }
-
-        //reverse and append it
-        for (int i=sketch_pts[0].size()-1; i>=0; --i) {
-            sketch_pts[0].push_back(QVector2D(-sketch_pts[0][i].x(), sketch_pts[0][i].y()));
-        }
-
-
+        sign = 1.0f;
     }
     else if ((dist_r1 < 0.0f && dist_r2 < 0.0f) || (fabsf(dist_r1) / fabsf(dist_r2) > magic_ratio)) { //mirror to region2 (positive half)
-
-        //first remove points on positive side
-        for (int i=0; i<sketch_pts[0].size(); ++i) {
-            if (sketch_pts[0][i].x() > 0.0f) {
-                sketch_pts[0].removeAt(i);
-                --i;
-            }
-        }
-
-        //reverse and append it
-        for (int i=sketch_pts[0].size()-1; i>=0; --i) {
-            sketch_pts[0].push_back(QVector2D(-sketch_pts[0][i].x(), sketch_pts[0][i].y()));
-        }
-
+        sign = -1.0f;
+    }
+    else {
+        return;
     }
 
+    //first remove points on negative side
+    for (int i=0; i<sketch_pts[0].size(); ++i) {
+        if (sketch_pts[0][i].x() * sign < 0.0f) {
+            sketch_pts[0].removeAt(i);
+            --i;
+        }
+    }
 
+    //add some intermediate points
+    QVector2D pt1 = sketch_pts[0].last();
+    QVector2D pt2(0, pt1.y());
+    const int pts_to_add = 10;
+    for (int i=1; i<pts_to_add; ++i) {
+        const float f = float(i) / float(pts_to_add);
+        QVector2D new_pt = pt1 * (1.0f - f) + pt2 * f;
+        sketch_pts[0].push_back(new_pt);
+    }
 
+    const int nPts = sketch_pts[0].size();
+
+    //reverse and append it
+    for (int i=nPts-1; i>=0; --i) {
+        sketch_pts[0].push_back(QVector2D(-sketch_pts[0][i].x(), sketch_pts[0][i].y()));
+    }
 
 }
 
