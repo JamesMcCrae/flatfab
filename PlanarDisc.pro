@@ -45,15 +45,13 @@ HEADERS  += mainwindow.h \
     tree.h \
     transformwidget.h
 
+#linux specific build settings
 unix:!macx:LIBS += -lGLU
+unix:!macx:QMAKE_LFLAGS +=  '-Wl,-rpath,\'\$$ORIGIN/libs\'' #this sets the RPATH to "libs" local to the executable location
 
-unix:!macx:QMAKE_RPATHDIR += ./libs
+#windows specific build settings
+win32:RC_FILE = flatfab.rc  #program icon
 
-# program icon (for Windows, anyway) Chris - can you figure out how to do it for Mac - perhaps the same/similar means?
-win32:RC_FILE = flatfab.rc
-
-#RESOURCES += \
-#    flatfab.rc
 
 RESOURCES += \
     resources.qrc
