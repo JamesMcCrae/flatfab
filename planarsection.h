@@ -12,7 +12,8 @@
 
 #include "beziercurve.h"
 #include "bezierfit.h"
-#include "triangulate.h"
+//#include "triangulate.h"
+#include "triangulate2.h"
 #include "glutils.h"
 
 
@@ -251,7 +252,7 @@ private:
     //there will be some "path" related members
     //probably some planar bezier thing, but maybe have control point "linkage"
     BezierFit bez_fit;
-    QList <QList <QVector2D> > sketch_pts;
+    QList <QList <QVector2D> > sketch_pts;    
     QList <BezierCurve> bez_curve;
 
     QVector2D centroid;
@@ -259,6 +260,7 @@ private:
 
     //there will be some triangulated geometry members
     QList <QVector2D> tris; //planar surface
+    QList <QVector2D> poly; //simple polygon that was triangulated
     QList <QVector3D> slab_vert; //slab
     QList <QVector3D> slab_norm;
 

@@ -478,17 +478,24 @@ void PlanarSection::DrawInputPolyline()
 void PlanarSection::DrawCurve()
 {
 
+    //shows bridge edges for "repairing holes"
+//    glBegin(GL_LINE_LOOP);
+//    for (int i=0; i<poly.size(); ++i) {
+//        QVector3D v = p + (t * poly[i].x()) + (b * poly[i].y());
+//        glVertex3f(v.x(), v.y(), v.z());
+//    }
+//    glEnd();
+
     for (int c=0; c<bez_curve.size(); ++c) {
 
         const QList <QVector2D> & samples = bez_curve[c].Samples();
 
         glBegin(GL_LINE_LOOP);
         for (int i=0; i<samples.size(); ++i) {
-
             QVector3D v = p + (t * samples[i].x()) + (b * samples[i].y());
             glVertex3f(v.x(), v.y(), v.z());
-
         }
+
         glEnd();
 
     }
@@ -911,13 +918,13 @@ void PlanarSection::UpdateCurveTrisSlab()
     if (bez_curve.size() == 1) {
 
         //we triangulate only 1 curve using ear method
-        const QList <QVector2D> & samples = bez_curve[0].Samples();
-        Triangulate::Process(samples, tris);
+        Triangulate2::Process(bez_curve[0].Samples(), tris, poly);
 
     }
     else {
 
         //we triangulate multiple curves (indicating holes) using triangle lib
+        /*
         QList <QList <QVector2D> > samples;
         for (int c=0; c<bez_curve.size(); ++c) {
             if (bez_curve[c].Samples().size() > 5) {
@@ -925,6 +932,14 @@ void PlanarSection::UpdateCurveTrisSlab()
             }
         }
         Triangulate::Process(samples, tris);
+        */
+        QList <QList <QVector2D> > contours;
+        for (int c=0; c<bez_curve.size(); ++c) {
+            //if (bez_curve[c].Samples().size() > 5) {
+            contours.push_back(bez_curve[c].Samples());
+            //}
+        }
+        Triangulate2::Process(contours, tris, poly);
 
     }
 

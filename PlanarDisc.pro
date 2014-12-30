@@ -15,8 +15,6 @@ SOURCES += main.cpp\
     glwidget.cpp \
     eigen.cpp \
     glutils.cpp \
-    triangle.c \
-    triangulate.cpp \
     planarsection.cpp \
     beziercurve.cpp \
     pivotcamera.cpp \
@@ -26,14 +24,13 @@ SOURCES += main.cpp\
     physics_matrix3d.cpp \
     physics_vector3d.cpp \
     tree.cpp \
-    transformwidget.cpp
+    transformwidget.cpp \
+    triangulate2.cpp
 
 HEADERS  += mainwindow.h \
     glwidget.h \
     eigen.h \
     glutils.h \
-    triangle.h \
-    triangulate.h \
     planarsection.h \
     beziercurve.h \
     pivotcamera.h \
@@ -43,7 +40,8 @@ HEADERS  += mainwindow.h \
     physics_matrix3d.h \
     physics_vector3d.h \
     tree.h \
-    transformwidget.h
+    transformwidget.h \
+    triangulate2.h
 
 #linux specific build settings
 unix:!macx:LIBS += -lGLU
