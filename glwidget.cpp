@@ -62,6 +62,7 @@ GLWidget::GLWidget() :
     for (int i=0; i<9; ++i) {
         generate_radial_params[i] = 1.0f;
     }
+    generate_surfacefacets_teeth = false;
 
     metres_per_unit = 0.0254; //0.01 means that each unit is 1cm, 0.0254 that means each unit is 1 inch
 
@@ -512,6 +513,21 @@ QWidget * GLWidget::GetGenerateWidget()
     slices_groupbox->setLayout(slices_layout);
     generateWidgetLayout->addRow(slices_groupbox);
 
+    // Surface facets group
+    QPushButton * surfaceFacetsButton = new QPushButton("Surface Facets");
+    connect(surfaceFacetsButton, SIGNAL(clicked()), this, SLOT(DoGenerateSurfaceFacets()));
+
+    QCheckBox * surfacefacets_teeth_checkbox = new QCheckBox("Teeth");
+    surfacefacets_teeth_checkbox ->setChecked(GetGenerateSurfaceFacetsTeeth());
+    connect(surfacefacets_teeth_checkbox, SIGNAL(toggled(bool)), this, SLOT(SetGenerateSurfaceFacetsTeeth(bool)));
+
+    QGroupBox * surfacefacet_groupbox = new QGroupBox(tr("Surface Facets Operation"));
+    QGridLayout * surfacefacet_layout = new QGridLayout;
+    surfacefacet_layout->addWidget(surfaceFacetsButton,0,0,1,4);
+    surfacefacet_layout->addWidget(surfacefacets_teeth_checkbox, 2, 0, 1, 1);
+    surfacefacet_groupbox->setLayout(surfacefacet_layout);
+    generateWidgetLayout->addRow(surfacefacet_groupbox);
+
     //Finally, create the tabwidget
 
     genWidget = new QTabWidget();
@@ -855,7 +871,7 @@ QWidget * GLWidget::GetViewWidget()
 
     //display checkboxes
 
-    show_tnb_frames_checkbox = new QCheckBox("TNB Frames");
+    show_tnb_frames_checkbox = new QCheckBox("TNB Frame");
     show_tnb_frames_checkbox->setChecked(do_show_tnb_frames);
     connect(show_tnb_frames_checkbox, SIGNAL(toggled(bool)), this, SLOT(SetShowTNBFrames(bool)));
 
@@ -893,8 +909,6 @@ QWidget * GLWidget::GetViewWidget()
 
     show_groupbox2->setLayout(show_layout2);
     viewWidgetLayout->addRow(show_groupbox2);
-
-
 
     viewWidget = new QTabWidget();
     viewWidget->setMinimumWidth(225);
@@ -2990,6 +3004,11 @@ int GLWidget::GetGenerateRadialSectors()
     return generate_radial_sectors;
 }
 
+bool GLWidget::GetGenerateSurfaceFacetsTeeth()
+{
+    return generate_surfacefacets_teeth;
+}
+
 double GLWidget::GetPhysicsNewWeightMass()
 {
     return physics_new_weight_mass;
@@ -3275,6 +3294,11 @@ void GLWidget::SetGenerateRadialSectors(const int i)
         Undo(OP_GENERATE_MAKE_RADIAL_HOLE);
         DoGenerateMakeRadialHole();
     }
+}
+
+void GLWidget::SetGenerateSurfaceFacetsTeeth(const bool b)
+{
+    generate_surfacefacets_teeth = b;
 }
 
 void GLWidget::SetGenerateBlendSections(const int i)
@@ -6433,21 +6457,104 @@ void GLWidget::DoGenerateSurfaceFacets()
             const QVector3D & v1 = template_verts[face[i2]];
 
             QVector2D v0_2d = new_section.GetPoint2D(v0);
-            QVector2D v1_2d = new_section.GetPoint2D(v1);
+            QVector2D v1_2d = new_section.GetPoint2D(v1);           
 
             //scale them in by the slab_thickness (allow a small gap so adjacent faces don't intersect, this is dependent on the slab_thickness)
-            const float len_v0 = v0_2d.length();
-            const float len_v1 = v1_2d.length();
+            if (generate_surfacefacets_teeth) {
 
-            v0_2d = v0_2d * (len_v0 - slab_thickness * 1.5f) / len_v0;
-            v1_2d = v1_2d * (len_v1 - slab_thickness * 1.5f) / len_v1;
+                const float len_v0 = v0_2d.length();
+                const float len_v1 = v1_2d.length();
 
-            if (j == 0) {
+                v0_2d = v0_2d * (len_v0 - slab_thickness * 0.5f) / len_v0;
+                v1_2d = v1_2d * (len_v1 - slab_thickness * 0.5f) / len_v1;
+
+                float edge_len = (v1_2d - v0_2d).length();
+                const QVector2D x = (v1_2d - v0_2d).normalized();
+                const QVector2D y(-x.y(), x.x());
+
+                int teethpairs = int(edge_len / slab_thickness / 8.0f);
+                //const int teethpairs = 3; //TODO: the "ideal" toothpair should be a function of edge length and material thickness
+
+                QVector2D v0_2d2 = v0_2d;
+                QVector2D v1_2d2 = v1_2d;
+
+                v0_2d += x * edge_len / float(teethpairs) / 2.0f;
+                v1_2d -= x * edge_len / float(teethpairs) / 2.0f;
+
+                if (j == 0) {
+                    curve.AddPoint(v0_2d2);
+                }
+                curve.AddPoint(v0_2d2 * 0.75f + v0_2d * 0.25f);
+                curve.AddPoint(v0_2d2 * 0.25f + v0_2d * 0.75f);
                 curve.AddPoint(v0_2d);
+
+                edge_len = (v1_2d - v0_2d).length();
+                --teethpairs;
+
+                for (int k=0; k<teethpairs; ++k) {
+
+                    const float x0 = float(k)/float(teethpairs) * edge_len;
+                    const float x1 = float(k+1)/float(teethpairs) * edge_len;
+                    float y0 = slab_thickness;
+                    float y1 = -slab_thickness;
+
+                    const QVector2D p0(x0, y0);
+                    const QVector2D p1(x0 + (x1-x0)*0.5f, y0);
+                    const QVector2D p2(x0 + (x1-x0)*0.5f, y1);
+                    const QVector2D p3(x1, y1);
+                    const QVector2D p4(x1, 0);
+
+                    const QVector2D _p0 = v0_2d + p0.x() * x + p0.y() * y;
+                    const QVector2D _p1 = v0_2d + p1.x() * x + p1.y() * y;
+                    const QVector2D _p2 = v0_2d + p2.x() * x + p2.y() * y;
+                    const QVector2D _p3 = v0_2d + p3.x() * x + p3.y() * y;
+                    const QVector2D _p4 = v0_2d + p4.x() * x + p4.y() * y;
+
+                    const QVector2D _l = curve.Points().last();
+                    curve.AddPoint(_l * 0.75f + _p0 * 0.25f);
+                    curve.AddPoint(_l * 0.25f + _p0 * 0.75f);
+                    curve.AddPoint(_p0);
+
+                    curve.AddPoint(_p0 * 0.75f + _p1 * 0.25f);
+                    curve.AddPoint(_p0 * 0.25f + _p1 * 0.75f);
+                    curve.AddPoint(_p1);
+
+                    curve.AddPoint(_p1 * 0.75f + _p2 * 0.25f);
+                    curve.AddPoint(_p1 * 0.25f + _p2 * 0.75f);
+                    curve.AddPoint(_p2);
+
+                    curve.AddPoint(_p2 * 0.75f + _p3 * 0.25f);
+                    curve.AddPoint(_p2 * 0.25f + _p3 * 0.75f);
+                    curve.AddPoint(_p3);
+
+                    if (k == teethpairs-1) {
+                        curve.AddPoint(_p3 * 0.75f + _p4 * 0.25f);
+                        curve.AddPoint(_p3 * 0.25f + _p4 * 0.75f);
+                        curve.AddPoint(_p4);
+                    }
+
+                }
+
+                //curve.AddPoint(v1_2d2);
+                curve.AddPoint(v1_2d * 0.75f + v1_2d2 * 0.25f);
+                curve.AddPoint(v1_2d * 0.25f + v1_2d2 * 0.75f);
+                curve.AddPoint(v1_2d2);
+
             }
-            curve.AddPoint(v0_2d * 0.75f + v1_2d * 0.25f); //add 3 points for the Bezier segment
-            curve.AddPoint(v0_2d * 0.25f + v1_2d * 0.75f);
-            curve.AddPoint(v1_2d);
+            else {
+                const float len_v0 = v0_2d.length();
+                const float len_v1 = v1_2d.length();
+
+                v0_2d = v0_2d * (len_v0 - slab_thickness * 1.5f) / len_v0;
+                v1_2d = v1_2d * (len_v1 - slab_thickness * 1.5f) / len_v1;
+
+                if (j == 0) {
+                    curve.AddPoint(v0_2d);
+                }
+                curve.AddPoint(v0_2d * 0.75f + v1_2d * 0.25f); //add 3 points for the Bezier segment
+                curve.AddPoint(v0_2d * 0.25f + v1_2d * 0.75f);
+                curve.AddPoint(v1_2d);
+            }
 
         }
 
@@ -6458,53 +6565,57 @@ void GLWidget::DoGenerateSurfaceFacets()
 
     }
 
-    QMap <QPair <int, int>, bool> edge_processed;
+    if (!generate_surfacefacets_teeth) {
 
-    //2.  iterate over each edge, adding a circular-shaped section at the midpoint
-    for (int i=0; i<template_poly_faces.size(); ++i) {
+        QMap <QPair <int, int>, bool> edge_processed;
 
-        //qDebug() << "2.  Processing polyface" << i;
-        const QList <int> & face = template_poly_faces[i];
+        //2.  iterate over each edge, adding a circular-shaped section at the midpoint
+        for (int i=0; i<template_poly_faces.size(); ++i) {
 
-        for (int j=0; j<face.size(); ++j) {
+            //qDebug() << "2.  Processing polyface" << i;
+            const QList <int> & face = template_poly_faces[i];
 
-            const int i0 = face[j];
-            const int i1 = face[(j+1) % face.size()];
+            for (int j=0; j<face.size(); ++j) {
 
-            //2a.  ensure we only do this edge once
-            QPair <int, int> edge_key(qMin(i0, i1), qMax(i0, i1));
-            //qDebug() << "Considering face" << i << "edge" << j << "with key" << edge_key;
-            if (edge_processed[edge_key]) {
-                continue;
-                //qDebug() << "Already processed.";
+                const int i0 = face[j];
+                const int i1 = face[(j+1) % face.size()];
+
+                //2a.  ensure we only do this edge once
+                QPair <int, int> edge_key(qMin(i0, i1), qMax(i0, i1));
+                //qDebug() << "Considering face" << i << "edge" << j << "with key" << edge_key;
+                if (edge_processed[edge_key]) {
+                    continue;
+                    //qDebug() << "Already processed.";
+                }
+                else {
+                    edge_processed[edge_key] = true;
+                    //qDebug() << "Processing for first time.";
+                }
+
+                //2b.  compute centroid point
+                const QVector3D & v0 = template_verts[i0];
+                const QVector3D & v1 = template_verts[i1];
+
+                QVector3D new_n = (v1-v0).normalized();
+                QVector3D new_t = GLutils::GetOrthoVec(new_n);
+                QVector3D new_b = QVector3D::crossProduct(new_n, new_t);
+                QVector3D new_p = (v0 + v1) * 0.5f;
+
+                PlanarSection new_section;
+                SetupPlanarSection(new_section);
+
+                new_section.SetT(new_t);
+                new_section.SetN(new_n);
+                new_section.SetB(new_b);
+                new_section.SetP(new_p);
+
+                //2c.  create a disc-shaped piece for the boundary curve
+                //new_section.CreateCircle(QVector2D(0,0), 1.0f);
+                new_section.CreateCircle(QVector2D(0,0), slab_thickness * 4.0f);
+                //new_section.UpdateCurveTrisSlab(); //CreateCircle() updates curvetrisslab
+                sections.push_back(new_section);
+
             }
-            else {
-                edge_processed[edge_key] = true;
-                //qDebug() << "Processing for first time.";
-            }
-
-            //2b.  compute centroid point
-            const QVector3D & v0 = template_verts[i0];
-            const QVector3D & v1 = template_verts[i1];
-
-            QVector3D new_n = (v1-v0).normalized();
-            QVector3D new_t = GLutils::GetOrthoVec(new_n);
-            QVector3D new_b = QVector3D::crossProduct(new_n, new_t);
-            QVector3D new_p = (v0 + v1) * 0.5f;
-
-            PlanarSection new_section;
-            SetupPlanarSection(new_section);
-
-            new_section.SetT(new_t);
-            new_section.SetN(new_n);
-            new_section.SetB(new_b);
-            new_section.SetP(new_p);
-
-            //2c.  create a disc-shaped piece for the boundary curve
-            //new_section.CreateCircle(QVector2D(0,0), 1.0f);
-            new_section.CreateCircle(QVector2D(0,0), slab_thickness * 4.0f);
-            //new_section.UpdateCurveTrisSlab(); //CreateCircle() updates curvetrisslab
-            sections.push_back(new_section);
 
         }
 

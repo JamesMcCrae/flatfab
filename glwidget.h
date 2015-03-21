@@ -136,6 +136,7 @@ public:
     int GetGenerateRevolveSections();
     float GetGenerateBranchingScaleChild();    
     int GetGenerateRadialSectors();
+    bool GetGenerateSurfaceFacetsTeeth();
 
     double GetPhysicsNewWeightMass();
     double GetPhysicsMaterialDensity();
@@ -240,6 +241,7 @@ public slots:
     void SetGenerateRevolveSections(const int i);
     void SetGenerateBranchingScaleChild(const int i);    
     void SetGenerateRadialSectors(const int i);
+    void SetGenerateSurfaceFacetsTeeth(const bool b);
 
     void ToggleDrawDeformed();
     void ToggleDrawSkeleton();
@@ -405,6 +407,7 @@ private:
     float generate_branching_scalechild;
     float generate_radial_sectors;
     float generate_radial_params[9];
+    bool generate_surfacefacets_teeth;
 
     //toggles for various feasibility tests
     bool do_local_symmetry;

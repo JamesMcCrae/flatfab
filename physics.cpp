@@ -210,7 +210,7 @@ void CPhysics::ReadFile(const char* fname) {
     double x0,y0,z0;
     double x1,y1,z1;
     fscanf(fp,"%d  %lf%lf%lf  %lf%lf%lf",&irb,  &x0,&y0,&z0,  &x1,&y1,&z1);
-    assert( irb < aRigidBody.size() );
+    assert( irb < int(aRigidBody.size()) );
     int irb_exf = (int)aRigidBody[irb].aExForce.size();
     aRigidBody[irb].aExForce.resize(irb_exf+1);
     aRigidBody[irb].aExForce[irb_exf].first  = CVector3D(x0,y0,z0);
@@ -224,7 +224,7 @@ void CPhysics::Solve_InsidePlane()
 {
 
   if( aPlate.size() != aRigidBody.size() ) return;
-  for(int irb=0;irb<aRigidBody.size();irb++){
+  for(int irb=0;irb<int(aRigidBody.size());irb++){
     {
       CPlate& plt = aPlate[irb];
       if( is_slit ){
@@ -265,7 +265,7 @@ void CPhysics::EdEd_Potential
 (double& energy,
  CVector3D& dEdu,
  CVector3D& dEdw,
- const CVector3D& cg,
+ const CVector3D& , //cg
  const CVector3D& u,
  const double mass,
  const CVector3D& g       // floor normal
@@ -1002,7 +1002,7 @@ void CPhysics::ComputeForces()
  */
 {
   
-  for(int irb=0;irb<aRigidBody.size();irb++){
+  for(int irb=0;irb<int(aRigidBody.size());irb++){
     CRigidBody& rb = aRigidBody[irb];
     const int ncp = (int)aRigidBody[irb].aCP.size();
     rb.aCForce.resize(ncp);
@@ -1013,7 +1013,7 @@ void CPhysics::ComputeForces()
       rb.aCForce[icp] = ((cq*n)*cont_stiff)*n;
     }
   }  
-  for(int ij=0;ij<aJoint.size();ij++){
+  for(int ij=0;ij<int(aJoint.size());ij++){
     CJoint& joint = aJoint[ij];
     CVector3D pj = joint.p;
     int irb0 = joint.irb0;
@@ -1117,7 +1117,7 @@ void CPhysics::GetHeights
  double nx, double ny)
 {
   const int np = (int)aXY.size()/2;
-  double hmax;
+  double hmax = 0.0;
   for(int ip=0;ip<np;ip++){
     double x = aXY[ip*2+0];
     double y = aXY[ip*2+1];
@@ -1216,7 +1216,7 @@ void CPhysics::GetPlateLocalForce
 {
   alForce.clear();
   const CRigidBody& rb = aRigidBody[irb];
-  for(int icp=0;icp<rb.aCP.size();icp++){
+  for(int icp=0;icp<int(rb.aCP.size());icp++){
     CPlate::CLocalForce lf;
     CVector3D pos_cp = rb.aCP[icp];
     lf.lx = (pos_cp-vec_p)*vec_t;

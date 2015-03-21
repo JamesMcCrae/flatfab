@@ -1216,7 +1216,7 @@ void PlanarSection::ComputePacking(const QList <PlanarSection> & sections, const
 
 }
 
-void PlanarSection::SaveToDXF(const QList <PlanarSection> & sections, QTextStream & ofs, const double metres_per_unit, const int dpi, const double width_height_ratio, const bool use_numeric_labels, const QList <QString> & numeric_labels)
+void PlanarSection::SaveToDXF(const QList <PlanarSection> & sections, QTextStream & ofs, const double metres_per_unit, const int , const double width_height_ratio, const bool use_numeric_labels, const QList <QString> & numeric_labels)
 {
 
     //so say we have this 2x2 box... we want each unit to be 1 inch

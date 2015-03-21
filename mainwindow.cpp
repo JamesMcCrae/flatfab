@@ -359,7 +359,19 @@ void MainWindow::createSideBar()
 
 
         docks[i] = new QDockWidget(this);
-        docks[i]->setWidget(widgets[i]);
+
+        if (i == 1) {
+            QScrollArea * scrollArea = new QScrollArea;
+            scrollArea->setMinimumWidth(245);
+            scrollArea->setHorizontalScrollBarPolicy( Qt::ScrollBarAlwaysOff );
+            widgets[i]->layout()->setSizeConstraint(QLayout::SetFixedSize);
+            scrollArea->setWidget(widgets[i]);
+            docks[i]->setWidget(scrollArea);
+        }
+        else {
+            docks[i]->setWidget(widgets[i]);
+        }
+
         docks[i]->setFeatures(QDockWidget::NoDockWidgetFeatures);
 
         addDockWidget(Qt::LeftDockWidgetArea,docks[i]);

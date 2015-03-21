@@ -102,17 +102,17 @@ void TransformWidget::DrawSelectionGL(const float cam_width, const int screen_he
     GLutils::DrawSphere(p + z * 1.25f * s, 0.125f  * s);
 }
 
-void TransformWidget::mousePressEvent(const int dx, const int dy)
+void TransformWidget::mousePressEvent(const int , const int )
 {
 
 }
 
-void TransformWidget::mouseMoveEvent(const int dx, const int dy)
+void TransformWidget::mouseMoveEvent(const int , const int )
 {
 
 }
 
-void TransformWidget::mouseReleaseEvent(const int dx, const int dy)
+void TransformWidget::mouseReleaseEvent(const int , const int )
 {
 
 }
