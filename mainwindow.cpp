@@ -4,8 +4,11 @@ MainWindow::MainWindow()
 {   
 
     //title/window stuff
-    window_title = "FlatFab 0.7 (beta)";
+    window_title = "FlatFab 0.7.1 (beta)";
     setWindowTitle(window_title);
+
+    //release 0.7.1
+    //fixed an issue with mouse cursor position on OSX with retina display
 
     //release 0.7
     //stability improvement: new ear clipping algorithm performs triangulations for sections with/without holes

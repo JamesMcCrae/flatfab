@@ -1438,6 +1438,7 @@ b) when there are planes, attempt to select one
     UpdateCamera();
 
     mouse_pos = QVector2D(event->x(), height() - event->y()); 
+    mouse_pos *= devicePixelRatio();
 
     if (event->button() == Qt::LeftButton) {
 
@@ -1693,9 +1694,12 @@ void GLWidget::mouseMoveEvent(QMouseEvent * event)
     const bool ctrl_held = ((event->modifiers() & Qt::ControlModifier) > 0);
     const bool shift_held = ((event->modifiers() & Qt::ShiftModifier) > 0);
 
+    QVector2D p(event->x(), height() - event->y());
+    p *= devicePixelRatio();
+
     //qDebug() << "GLWidget::mouseMoveEvent() - state " << state;
-    QVector2D mouse_diff = mouse_pos - QVector2D(event->x(), height() - event->y());
-    mouse_pos = QVector2D(event->x(), height() - event->y());
+    QVector2D mouse_diff = mouse_pos -p;
+    mouse_pos = p;
 
     UpdateCamera();
 
@@ -2096,6 +2100,7 @@ void GLWidget::mouseReleaseEvent(QMouseEvent *event)
 {
 
     mouse_pos = QVector2D(event->x(), height() - event->y());
+    mouse_pos *= devicePixelRatio();
 
     UpdateCamera();
 
