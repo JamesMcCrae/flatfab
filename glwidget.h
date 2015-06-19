@@ -275,6 +275,7 @@ public slots:
     bool SavePlaneSketch();
     void SaveSliceOBJ();
     void SaveSlabOBJ();
+    void SaveFlattenedSlabOBJ();
     void SaveSurfaceOBJ();
     void SaveSVG();
     void SaveDXF();

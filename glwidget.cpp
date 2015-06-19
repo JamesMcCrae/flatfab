@@ -4010,7 +4010,7 @@ void GLWidget::SaveSlabOBJ()
 
     QTextStream ofs(&file);
 
-    ofs << "# Created with PlanarDisc\n";
+    ofs << "# Created with FlatFab\n";
     PlanarSection::SaveConnectionsToOBJ(sections, ofs);
 
     int vert_count = 0;
@@ -4049,6 +4049,96 @@ void GLWidget::SaveSlabOBJ()
 
 }
 
+void GLWidget::SaveFlattenedSlabOBJ()
+{
+
+    QString filename = QFileDialog::getSaveFileName(this, tr("Save Flattened Slab OBJ"), QString(""), tr("OBJ (*.obj);;All Files (*)"), 0, QFileDialog::DontUseNativeDialog);
+
+    if (filename.isNull()) {
+        return;
+    }
+
+    if (QString::compare(filename.right(4), ".obj") != 0) {
+        filename += QString(".obj");
+    }
+
+    QFile file(filename);
+
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        qDebug() << "GLWidget::SaveFlattenedSlabOBJ(): File " << filename << " can't be exported";
+        return;
+    }
+
+    //1. compute the 2D packing so each piece has a location there
+    QVector <QVector2D> pack_pts;
+    QVector2D bbox;
+    PlanarSection::ComputePacking(sections, 2.0f, pack_pts, bbox);
+
+    //2. write out each slab, however map each slab to a coordinate frame that rests on the 2D ground plane
+
+    QTextStream ofs(&file);
+
+    ofs << "# Created with FlatFab\n";
+    PlanarSection::SaveConnectionsToOBJ(sections, ofs);
+
+    int vert_count = 0;
+    int norm_count = 0;
+
+    for (int i=0; i<sections.size(); ++i) {
+
+        const QVector3D t = sections[i].T();
+        const QVector3D n = sections[i].N();
+        const QVector3D b = sections[i].B();
+        const QVector3D p = sections[i].P();
+
+        QVector2D min_v, max_v;
+        sections[i].GetBoundingBox2D(min_v, max_v);
+
+        sections[i].SetT(QVector3D(1,0,0));
+        sections[i].SetN(QVector3D(0,0,1));
+        sections[i].SetB(QVector3D(0,1,0));
+        sections[i].SetP(pack_pts[i] - min_v);
+
+        sections[i].UpdateCurveTrisSlab();
+
+        const QList <QVector3D> & vs = sections[i].SlabVertices();
+        const QList <QVector3D> & ns = sections[i].SlabNormals();
+
+        //group and shared normal
+        ofs << "g plane" << i << "\n";
+
+        //triangle vertices
+        for (int j=0; j<vs.size(); ++j) {
+            ofs << "v " << vs[j].x() << " " << vs[j].y() << " " << vs[j].z() << "\n";
+        }
+        //triangle normals
+        for (int j=0; j<ns.size(); ++j) {
+            ofs << "vn " << ns[j].x() << " " << ns[j].y() << " " << ns[j].z() << "\n";
+        }
+        //triangle faces
+        for (int j=0; j<vs.size(); j+=3) {
+            ofs << "f " << vert_count+1 << "//" << norm_count+1 << " " << vert_count+2 << "//" << norm_count+1 << " " << vert_count+3 << "//" << norm_count+1 << "\n";
+            vert_count += 3;
+            ++norm_count;
+        }
+
+        sections[i].SetT(t);
+        sections[i].SetN(n);
+        sections[i].SetB(b);
+        sections[i].SetP(p);
+
+        sections[i].UpdateCurveTrisSlab();
+
+    }
+
+    file.close();
+
+    qDebug() << "GLWidget::SaveFlattenedSlabOBJ(): File " << filename << "saved.";
+
+    return;
+
+}
+
 void GLWidget::SaveSurfaceOBJ()
 {
 
@@ -4075,7 +4165,7 @@ void GLWidget::SaveSurfaceOBJ()
 
     QTextStream ofs(&file);
 
-    ofs << "# Created with PlanarDisc\n";
+    ofs << "# Created with FlatFab\n";
     ofs << "# Mesh based on " << sections.size() << " planes and " << contour_graph.GetNumPatches() << "patches\n";
 
     contour_graph.SaveToOBJFile(ofs);
@@ -6447,6 +6537,8 @@ void GLWidget::DoGenerateSurfaceFacets()
             new_p += template_verts[face[j]];
         }
         new_p /= face.size();
+        //also offset it by half the material thickness (so adjacent sections don't intersect one another)
+        //new_p += new_n * slab_thickness * 0.5f;
         new_section.SetP(new_p);
 
         //1c.  Add control points to the section from the poly verts
@@ -6455,45 +6547,42 @@ void GLWidget::DoGenerateSurfaceFacets()
 
         for (int j=0; j<face.size(); ++j) {
 
-            const int i1 = j;
-            const int i2 = (j+1) % face.size();
+            const int i0 = j;
+            const int i1 = (j+1) % face.size();
 
-            const QVector3D & v0 = template_verts[face[i1]];
-            const QVector3D & v1 = template_verts[face[i2]];
-
-            QVector2D v0_2d = new_section.GetPoint2D(v0);
-            QVector2D v1_2d = new_section.GetPoint2D(v1);           
+            QVector2D v0 = new_section.GetPoint2D(template_verts[face[i0]]);
+            QVector2D v1 = new_section.GetPoint2D(template_verts[face[i1]]);
 
             //scale them in by the slab_thickness (allow a small gap so adjacent faces don't intersect, this is dependent on the slab_thickness)
             if (generate_surfacefacets_teeth) {
 
-                const float len_v0 = v0_2d.length();
-                const float len_v1 = v1_2d.length();
+                //TODO: prevent intersections between adjacent sections
+//                const float len_v0 = v0.length();
+//                const float len_v1 = v1.length();
+//                v0 *= (len_v0 - slab_thickness * 0.5f) / len_v0;
+//                v1 *= (len_v1 - slab_thickness * 0.5f) / len_v1;
 
-                v0_2d = v0_2d * (len_v0 - slab_thickness * 0.5f) / len_v0;
-                v1_2d = v1_2d * (len_v1 - slab_thickness * 0.5f) / len_v1;
-
-                float edge_len = (v1_2d - v0_2d).length();
-                const QVector2D x = (v1_2d - v0_2d).normalized();
+                float edge_len = (v1 - v0).length();
+                const QVector2D x = (v1 - v0).normalized();
                 const QVector2D y(-x.y(), x.x());
 
                 int teethpairs = int(edge_len / slab_thickness / 8.0f);
                 //const int teethpairs = 3; //TODO: the "ideal" toothpair should be a function of edge length and material thickness
 
-                QVector2D v0_2d2 = v0_2d;
-                QVector2D v1_2d2 = v1_2d;
+                QVector2D v0_2 = v0;
+                QVector2D v1_2 = v1;
 
-                v0_2d += x * edge_len / float(teethpairs) / 2.0f;
-                v1_2d -= x * edge_len / float(teethpairs) / 2.0f;
+                v0 += x * edge_len / float(teethpairs) / 2.0f;
+                v1 -= x * edge_len / float(teethpairs) / 2.0f;
 
                 if (j == 0) {
-                    curve.AddPoint(v0_2d2);
+                    curve.AddPoint(v0_2);
                 }
-                curve.AddPoint(v0_2d2 * 0.75f + v0_2d * 0.25f);
-                curve.AddPoint(v0_2d2 * 0.25f + v0_2d * 0.75f);
-                curve.AddPoint(v0_2d);
+                curve.AddPoint(v0_2 * 0.75f + v0 * 0.25f);
+                curve.AddPoint(v0_2 * 0.25f + v0 * 0.75f);
+                curve.AddPoint(v0);
 
-                edge_len = (v1_2d - v0_2d).length();
+                edge_len = (v1 - v0).length();
                 --teethpairs;
 
                 for (int k=0; k<teethpairs; ++k) {
@@ -6509,11 +6598,11 @@ void GLWidget::DoGenerateSurfaceFacets()
                     const QVector2D p3(x1, y1);
                     const QVector2D p4(x1, 0);
 
-                    const QVector2D _p0 = v0_2d + p0.x() * x + p0.y() * y;
-                    const QVector2D _p1 = v0_2d + p1.x() * x + p1.y() * y;
-                    const QVector2D _p2 = v0_2d + p2.x() * x + p2.y() * y;
-                    const QVector2D _p3 = v0_2d + p3.x() * x + p3.y() * y;
-                    const QVector2D _p4 = v0_2d + p4.x() * x + p4.y() * y;
+                    const QVector2D _p0 = v0 + p0.x() * x + p0.y() * y;
+                    const QVector2D _p1 = v0 + p1.x() * x + p1.y() * y;
+                    const QVector2D _p2 = v0 + p2.x() * x + p2.y() * y;
+                    const QVector2D _p3 = v0 + p3.x() * x + p3.y() * y;
+                    const QVector2D _p4 = v0 + p4.x() * x + p4.y() * y;
 
                     const QVector2D _l = curve.Points().last();
                     curve.AddPoint(_l * 0.75f + _p0 * 0.25f);
@@ -6540,25 +6629,24 @@ void GLWidget::DoGenerateSurfaceFacets()
 
                 }
 
-                //curve.AddPoint(v1_2d2);
-                curve.AddPoint(v1_2d * 0.75f + v1_2d2 * 0.25f);
-                curve.AddPoint(v1_2d * 0.25f + v1_2d2 * 0.75f);
-                curve.AddPoint(v1_2d2);
+                curve.AddPoint(v1 * 0.75f + v1_2 * 0.25f);
+                curve.AddPoint(v1 * 0.25f + v1_2 * 0.75f);
+                curve.AddPoint(v1_2);
 
             }
             else {
-                const float len_v0 = v0_2d.length();
-                const float len_v1 = v1_2d.length();
+                const float len_v0 = v0.length();
+                const float len_v1 = v1.length();
 
-                v0_2d = v0_2d * (len_v0 - slab_thickness * 1.5f) / len_v0;
-                v1_2d = v1_2d * (len_v1 - slab_thickness * 1.5f) / len_v1;
+                v0 = v0 * (len_v0 - slab_thickness * 1.5f) / len_v0;
+                v1 = v1 * (len_v1 - slab_thickness * 1.5f) / len_v1;
 
                 if (j == 0) {
-                    curve.AddPoint(v0_2d);
+                    curve.AddPoint(v0);
                 }
-                curve.AddPoint(v0_2d * 0.75f + v1_2d * 0.25f); //add 3 points for the Bezier segment
-                curve.AddPoint(v0_2d * 0.25f + v1_2d * 0.75f);
-                curve.AddPoint(v1_2d);
+                curve.AddPoint(v0 * 0.75f + v1 * 0.25f); //add 3 points for the Bezier segment
+                curve.AddPoint(v0 * 0.25f + v1 * 0.75f);
+                curve.AddPoint(v1);
             }
 
         }
@@ -6570,6 +6658,7 @@ void GLWidget::DoGenerateSurfaceFacets()
 
     }
 
+    //this block of code adds the circular coins at edges to join adjacent faces
     if (!generate_surfacefacets_teeth) {
 
         QMap <QPair <int, int>, bool> edge_processed;

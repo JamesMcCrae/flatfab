@@ -36,6 +36,7 @@ private slots:
     void SavePlaneSketch();
     void SaveSliceOBJ();
     void SaveSlabOBJ();
+    void SaveFlattenedSlabOBJ();
     void SaveSurfaceOBJ();
     void SaveSVG();
     void SaveDXF();
@@ -139,6 +140,7 @@ private:
     QAction *savePlaneSketchAct;
     QAction *saveSliceOBJAct;
     QAction *saveSlabOBJAct;
+    QAction *saveFlattenedSlabOBJAct;
     QAction *saveSurfaceOBJAct;
     QAction *saveSVGAct;
     QAction *saveDXFAct;

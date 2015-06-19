@@ -4,8 +4,12 @@ MainWindow::MainWindow()
 {   
 
     //title/window stuff
-    window_title = "FlatFab 0.7.1 (beta)";
+    window_title = "FlatFab 0.8.0 (beta)";
     setWindowTitle(window_title);
+
+    //release 0.8.0
+    //added initial support for finger joints for the surface facet generation (teeth between adjacent faces)
+    //added ability to export slab geometry as a 2D layout (link to video) https://www.youtube.com/watch?v=b-i05v8l9nM
 
     //release 0.7.1
     //fixed an issue with mouse cursor position on OSX with retina display
@@ -461,6 +465,10 @@ void MainWindow::createActions()
     saveSlabOBJAct->setStatusTip(tr("Save geometry of thick planar sections (OBJ)."));
     connect(saveSlabOBJAct, SIGNAL(triggered()), this, SLOT(SaveSlabOBJ()));
 
+    saveFlattenedSlabOBJAct = new QAction(tr("Save Flattened Slab Geometry..."), this);
+    saveFlattenedSlabOBJAct->setStatusTip(tr("Save geometry of thick planar sections onto a 2D plane (OBJ)."));
+    connect(saveFlattenedSlabOBJAct, SIGNAL(triggered()), this, SLOT(SaveFlattenedSlabOBJ()));
+
     saveSurfaceOBJAct = new QAction(tr("Save Surface Patches..."), this);
     saveSurfaceOBJAct->setStatusTip(tr("Save geometry of created surface patches (OBJ)."));
     connect(saveSurfaceOBJAct, SIGNAL(triggered()), this, SLOT(SaveSurfaceOBJ()));
@@ -778,6 +786,7 @@ void MainWindow::createMenus()
     fileMenu->addAction(savePlaneSketchAct);
     fileMenu->addAction(saveSliceOBJAct);
     fileMenu->addAction(saveSlabOBJAct);
+    fileMenu->addAction(saveFlattenedSlabOBJAct);
     //fileMenu->addAction(saveSurfaceOBJAct);
     fileMenu->addAction(saveSVGAct);
     fileMenu->addAction(saveDXFAct);
@@ -921,6 +930,11 @@ void MainWindow::SaveSliceOBJ()
 void MainWindow::SaveSlabOBJ()
 {
     glWidget.SaveSlabOBJ();
+}
+
+void MainWindow::SaveFlattenedSlabOBJ()
+{
+    glWidget.SaveFlattenedSlabOBJ();
 }
 
 void MainWindow::SaveSurfaceOBJ()
