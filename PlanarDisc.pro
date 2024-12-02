@@ -46,6 +46,7 @@ HEADERS  += mainwindow.h \
 #linux specific build settings
 unix:!macx:LIBS += -lGLU
 unix:!macx:QMAKE_LFLAGS +=  '-Wl,-rpath,\'\$$ORIGIN/libs\'' #this sets the RPATH to "libs" local to the executable location
+unix:!macx:INCLUDEPATH += /usr/include/eigen3
 
 #windows specific build settings
 win32:RC_FILE = flatfab.rc  #program icon
