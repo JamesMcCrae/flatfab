@@ -43,6 +43,8 @@ HEADERS  += include/mainwindow.h \
     include/transformwidget.h \
     include/triangulate2.h
 
+INCLUDEPATH += include/
+
 #linux specific build settings
 unix:!macx:LIBS += -lGLU
 unix:!macx:QMAKE_LFLAGS +=  '-Wl,-rpath,\'\$$ORIGIN/libs\'' #this sets the RPATH to "libs" local to the executable location
