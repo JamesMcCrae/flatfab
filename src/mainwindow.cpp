@@ -1,3 +1,5 @@
+#include <QWebEngineSettings>
+
 #include "mainwindow.h"
 
 MainWindow::MainWindow()
@@ -52,11 +54,11 @@ MainWindow::MainWindow()
     //dockWidget->setWidget(sideWidget);
 
     //web view stuff
-    webView = new QWebView(this);
+    webView = new QWebEngineView(this);
     webView->setGeometry(0,0,800,700);
 
     // --- does nothing for some reason
-    webView->settings()->setFontFamily(QWebSettings::SansSerifFont, "Arial");
+    webView->settings()->setFontFamily(QWebEngineSettings::SansSerifFont, "Arial");
     // ---
 
     webView->load(QUrl("http://flatfab.com/splash.html"));

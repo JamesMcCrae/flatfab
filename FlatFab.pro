@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui opengl widgets webkit network webkitwidgets
+QT += core gui opengl widgets network webenginewidgets
 
 TARGET = FlatFab
 TEMPLATE = app
@@ -42,6 +42,8 @@ HEADERS  += include/mainwindow.h \
     include/tree.h \
     include/transformwidget.h \
     include/triangulate2.h
+
+INCLUDEPATH += include/
 
 #linux specific build settings
 unix:!macx:LIBS += -lGLU
