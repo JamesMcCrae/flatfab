@@ -2,7 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QtGui>
-#include <QWebView>
+#include <QWebEngineView>
 #include <QNetworkAccessManager>
 #include <QNetworkRequest>
 #include <QNetworkReply>
@@ -217,7 +217,7 @@ private:
     QWidget * bottomWidget;
     QDockWidget * bottomDockWidget;
 
-    QWebView * webView;
+    QWebEngineView * webView;
 
 
     // New UI features
