@@ -1,0 +1,70 @@
+name: Linux Release
+
+on:
+  push:
+    branches:
+      - 'master'
+      - 'continuous-integration'
+      - 'cross-platform'
+    tags:
+      - 'v*'
+  pull_request:
+    branches:
+    - 'master'
+    - 'continuous-integration'
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  SOURCE_DIR:   ${{ github.workspace }}
+  QT_VERSION:   5.15.2
+  ARTIFACT:     FlatFab.AppImage
+
+jobs:
+  build:
+    runs-on:  ubuntu-24.04
+    #runs-on: self-hosted
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v4
+        with:
+          version:      ${{ env.QT_VERSION }}
+          modules:      qtwebengine
+          setup-python: false
+
+      - name: Install other dependencies
+        run: /usr/bin/sudo apt-get install libglu1-mesa-dev libeigen3-dev
+              
+      - name: Create build directory
+        run:  mkdir ${{ env.SOURCE_DIR }}/build
+
+      - name: Build
+        working-directory: ${{ env.SOURCE_DIR }}/build
+        run:  |
+              qmake -r ${{ env.SOURCE_DIR }}/FlatFab.pro
+              make
+              
+      # TODO:
+      #- name: AppImage
+      #  working-directory: ${{ env.SOURCE_DIR }}/build
+      #  run: |
+      #    wget -O deploy.AppImage https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage
+      #    chmod +x deploy.AppImage
+      #    export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${{ github.workspace }}/Qt/5.15.2/gcc_64/lib/
+      #    cp ${{ env.SOURCE_DIR }}/linux/* .
+      #    ./deploy.AppImage FlatFab.desktop -appimage -no-translations -extra-plugins=renderers
+      #    mv FlatFab*.AppImage ${{ env.ARTIFACT }}          
+      #  
+      #- name: Linux artefact
+      #  uses: actions/upload-artifact@v4
+      #  with:
+      #    name: ${{ env.ARTIFACT }}
+      #    path: ${{ env.SOURCE_DIR }}/build/${{ env.ARTIFACT }}
