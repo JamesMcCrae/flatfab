@@ -16,7 +16,7 @@ Build
 
 ### Linux
 
-You need Qt5 (tested on Ubuntu 24.10 with QtCreator 13; any previous releae should work as well)
+You need Qt5 (tested on Ubuntu 24.10 with QtCreator 13; any previous release should work as well)
 
 - install `libeigen3-dev` and `libglu1-mesa-dev`
 - open `FlatFab.pro` from QtCreator
