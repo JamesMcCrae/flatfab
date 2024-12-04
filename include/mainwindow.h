@@ -1,29 +1,28 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include <QtGui>
-#include <QWebEngineView>
 #include <QNetworkAccessManager>
-#include <QNetworkRequest>
 #include <QNetworkReply>
+#include <QNetworkRequest>
 #include <QUrl>
+#include <QWebEngineView>
+#include <QtGui>
 
 #include "glwidget.h"
 
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
-    
+
 public:
     MainWindow();
     ~MainWindow();
-    
+
 protected:
+    void keyPressEvent(QKeyEvent *event);
+    void keyReleaseEvent(QKeyEvent *event);
 
-    void keyPressEvent(QKeyEvent * event);
-    void keyReleaseEvent(QKeyEvent * event);
-
-private slots:   
+private slots:
 
     void ShowAppWidgets();
     void UpdateWindowTitle();
@@ -118,8 +117,7 @@ private slots:
     void setViewMenuChecks();
     void setPhysicsMenuChecks();
 
-private:   
-
+private:
     void createActions();
     void createMenus();
 
@@ -128,11 +126,11 @@ private:
 
     void SetMultisampling(const int i);
 
-    virtual void resizeEvent(QResizeEvent * event);
-    virtual void moveEvent(QMoveEvent * event);
+    virtual void resizeEvent(QResizeEvent *event);
+    virtual void moveEvent(QMoveEvent *event);
 
     QMenu *fileMenu;
-    QAction *newPlaneSketchAct;    
+    QAction *newPlaneSketchAct;
     QAction *loadCurveAct;
     QAction *loadImageAct;
     QAction *loadOBJAct;
@@ -211,14 +209,13 @@ private:
     QAction *removeExternalWeightsAct;
 
     GLWidget glWidget;
-    //QWidget * sideWidget;
-    QDockWidget * dockWidget;
+    // QWidget * sideWidget;
+    QDockWidget *dockWidget;
 
-    QWidget * bottomWidget;
-    QDockWidget * bottomDockWidget;
+    QWidget *bottomWidget;
+    QDockWidget *bottomDockWidget;
 
-    QWebEngineView * webView;
-
+    QWebEngineView *webView;
 
     // New UI features
 
@@ -229,11 +226,10 @@ private:
 
     void createQuickToolBar();
     QToolBar *quickToolBar;
-    QDockWidget * toolWidget;
+    QDockWidget *toolWidget;
 
     QString window_title;
     QTimer window_title_timer;
-
 };
 
-#endif // MAINWINDOW_H
+#endif  // MAINWINDOW_H
