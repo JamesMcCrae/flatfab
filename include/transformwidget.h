@@ -23,9 +23,7 @@ enum TransformWidgetState
 
 class TransformWidget
 {
-
 public:
-
     TransformWidget();
 
     void DrawGL(const float cam_width, const int screen_height);
@@ -54,15 +52,13 @@ public:
     void mouseReleaseEvent(const int dx, const int dy);
 
 private:
-
     bool visible;
     TransformWidgetState state;
 
-    QVector3D p; //origin
-    QVector3D x; //x direction
-    QVector3D y; //y direction
-    QVector3D z; //z direction
-
+    QVector3D p;  // origin
+    QVector3D x;  // x direction
+    QVector3D y;  // y direction
+    QVector3D z;  // z direction
 };
 
-#endif // TRANSFORMWIDGET_H
+#endif  // TRANSFORMWIDGET_H

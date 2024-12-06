@@ -4,27 +4,29 @@
 #include <QtGui>
 #include <QtOpenGL>
 
-#include "pivotcamera.h"
-#include "planarsection.h"
 #include "contourgraph.h"
 #include "glutils.h"
 #include "physics.h"
-#include "tree.h"
+#include "pivotcamera.h"
+#include "planarsection.h"
 #include "transformwidget.h"
+#include "tree.h"
 
-enum GestureState { //states (all with LMB held down, from 1 onward)
-    STATE_NONE,            //0.  Awaiting mouse drag
-    STATE_SLOT,            //1.  CHOOSING LINE ON EXISTING PLANE
-    STATE_CAM_TRANSLATE,   //2.  MOVING LINE ENDPOINT AROUND ON-SCREEN
-    STATE_DEADZONE,        //3  DEADZONE
-    STATE_CURVE,            //4.  DEFINING A CURVE
-    STATE_ORBIT,             //5.  orbiting camera
-    STATE_MANIP_CTRLPOINT,   //6. manipulating control point
+enum GestureState
+{                           // states (all with LMB held down, from 1 onward)
+    STATE_NONE,             // 0.  Awaiting mouse drag
+    STATE_SLOT,             // 1.  CHOOSING LINE ON EXISTING PLANE
+    STATE_CAM_TRANSLATE,    // 2.  MOVING LINE ENDPOINT AROUND ON-SCREEN
+    STATE_DEADZONE,         // 3  DEADZONE
+    STATE_CURVE,            // 4.  DEFINING A CURVE
+    STATE_ORBIT,            // 5.  orbiting camera
+    STATE_MANIP_CTRLPOINT,  // 6. manipulating control point
     STATE_RECURSIVE_SETUP_SLOT,
     STATE_RECURSIVE_SLOT,
     STATE_MANIP_WEIGHT,
     STATE_RESKETCH_CURVE,
-    STATE_TRANSFORM_WIDGET, //this state replaces TRANSLATE, ROTATE, SCALE, TRANSLATE_NORMAL
+    STATE_TRANSFORM_WIDGET,  // this state replaces TRANSLATE, ROTATE, SCALE,
+                             // TRANSLATE_NORMAL
     STATE_ADD_HOLE,
     STATE_DIMENSIONING_FIRST,
     STATE_DIMENSIONING_SECOND,
@@ -32,7 +34,8 @@ enum GestureState { //states (all with LMB held down, from 1 onward)
     STATE_PEN_DRAG
 };
 
-enum LastOperation {
+enum LastOperation
+{
     OP_NONE,
     OP_SELECTION,
     OP_UNDO,
@@ -68,7 +71,6 @@ enum LastOperation {
     OP_GENERATE_SLICES
 };
 
-
 // Tool states
 enum ToolState
 {
@@ -87,26 +89,26 @@ enum GenerateState
     GENSTATE_GRID,
     GENSTATE_BRANCH,
     GENSTATE_SURFACE_FACETS,
-    GENSTATE_NUM //note: enum declaration guaranteed to be in order: 0, 1, 2... therefore this enum is the # of previously defined enums
+    GENSTATE_NUM  // note: enum declaration guaranteed to be in order: 0,
+                  // 1, 2... therefore this enum is the # of previously defined
+                  // enums
 };
-
 
 class GLWidget : public QGLWidget
 {
     Q_OBJECT
 
 public:
-
     GLWidget();
-    ~GLWidget();        
+    ~GLWidget();
 
-    QWidget * GetEditWidget();
-    QWidget * GetGenerateWidget();
-    QWidget * GetGuidesWidget();
-    QWidget * GetPhysicsWidget();
-    QWidget * GetViewWidget();
+    QWidget *GetEditWidget();
+    QWidget *GetGenerateWidget();
+    QWidget *GetGuidesWidget();
+    QWidget *GetPhysicsWidget();
+    QWidget *GetViewWidget();
 
-    CPhysics & GetPhysics();
+    CPhysics &GetPhysics();
 
     void keyPressEvent(QKeyEvent *event);
     void keyReleaseEvent(QKeyEvent *event);
@@ -134,7 +136,7 @@ public:
     bool GetGenerateSlicesZ();
     int GetGenerateBlendSections();
     int GetGenerateRevolveSections();
-    float GetGenerateBranchingScaleChild();    
+    float GetGenerateBranchingScaleChild();
     int GetGenerateRadialSectors();
     bool GetGenerateSurfaceFacetsTeeth();
 
@@ -147,7 +149,6 @@ public:
     QString GetOpenFilename() const;
 
 protected:
-
     void initializeGL();
     void paintEvent(QPaintEvent *);
     void paintGL();
@@ -159,7 +160,7 @@ protected:
     void ResetCamera();
     void UpdateCamera();
 
-    void DrawGroundPlane();    
+    void DrawGroundPlane();
     void DrawSymmetryPlanes();
     void DrawSection(const int i);
     void DrawInstructions(QPainter &painter);
@@ -173,12 +174,11 @@ protected:
     void DoStabilityTest();
     void DoPhysicsTest();
 
-    int PickSection(const QVector2D & mouse_pos, const bool only_test_selected);
-    int PickTransformWidgetElement(const QVector2D & mouse_pos);
-
+    int PickSection(const QVector2D &mouse_pos, const bool only_test_selected);
+    int PickTransformWidgetElement(const QVector2D &mouse_pos);
 
 signals:
-    
+
 public slots:
 
     void SetUnitsToInches();
@@ -195,7 +195,7 @@ public slots:
 
     void SetXSymmetry(bool b);
     void SetYSymmetry(bool b);
-    void SetZSymmetry(bool b); 
+    void SetZSymmetry(bool b);
 
     void SetTemplateImageX(const int i);
     void SetTemplateImageY(const int i);
@@ -239,7 +239,7 @@ public slots:
     void SetGenerateSlicesZ(const bool b);
     void SetGenerateBlendSections(const int i);
     void SetGenerateRevolveSections(const int i);
-    void SetGenerateBranchingScaleChild(const int i);    
+    void SetGenerateBranchingScaleChild(const int i);
     void SetGenerateRadialSectors(const int i);
     void SetGenerateSurfaceFacetsTeeth(const bool b);
 
@@ -267,7 +267,7 @@ public slots:
     void DeleteSurfacePatches();
     void StartDimensioningTool();
 
-    void NewPlaneSketch();    
+    void NewPlaneSketch();
     void LoadTemplateCurve();
     void LoadTemplateImage();
     void LoadTemplateOBJ();
@@ -280,15 +280,15 @@ public slots:
     void SaveSVG();
     void SaveDXF();
     void SaveCalibration();
-    void SavePhysicsOutput();   
+    void SavePhysicsOutput();
 
-    //procedural modelling extras
+    // procedural modelling extras
     void DoGenerateBranchingSetRoot();
     void DoGenerateBranching();
     void DoGenerateMakeCircle();
-    void DoGenerateMakeRectangle();    
-    void DoGenerateMakeRadialHole();    
-    void DoGenerateSurfaceFacets();        
+    void DoGenerateMakeRectangle();
+    void DoGenerateMakeRadialHole();
+    void DoGenerateSurfaceFacets();
 
     bool ShowGenerate();
     void AcceptGenerate();
@@ -302,12 +302,12 @@ public slots:
     void StartGenerateRevolve();
     void StartGenerateSlices();
     void StartGenerateGrid();
-//    void StartGenerateBranch();
+    //    void StartGenerateBranch();
 
     void SetSelectedAsRadial();
     void RemoveRadial();
 
-    //physics stuff
+    // physics stuff
     void DoPhysicsAddWeight();
     void DoPhysicsRemoveWeights();
     void SetPhysicsNewWeightMass(const double d);
@@ -320,12 +320,8 @@ public slots:
     void SetDrawSection(bool b);
     void SetDrawSectionMoment(bool b);
 
-
-
-    
 private:
-
-    void SetupPlanarSection(PlanarSection & p);
+    void SetupPlanarSection(PlanarSection &p);
 
     void SetMetresPerUnit(const double d);
 
@@ -339,18 +335,20 @@ private:
 
     void SetSelected(int i);
     void ClearSelected();
-    void UpdateMarkers();           
+    void UpdateMarkers();
 
-    void ComputeTemplateCut(const QVector3D & n, const QVector3D & p, QList <QVector3D> & cut_segments);
+    void ComputeTemplateCut(const QVector3D &n, const QVector3D &p,
+                            QList<QVector3D> &cut_segments);
     void UpdateTemplateCut();
-    void UpdateMagneticCutSurface(const QList <QVector3D> & plane_ns, const QList <QVector3D> & plane_ps);
-    void DrawTemplateCut(const QList <QVector3D> & cut_segments);
+    void UpdateMagneticCutSurface(const QList<QVector3D> &plane_ns,
+                                  const QList<QVector3D> &plane_ps);
+    void DrawTemplateCut(const QList<QVector3D> &cut_segments);
 
     void DeleteTemplateImage();
 
-    void QVector3DToArray(const QVector3D & p, double array[3]);
+    void QVector3DToArray(const QVector3D &p, double array[3]);
 
-    //QTabWidget * sideWidget;
+    // QTabWidget * sideWidget;
 
     QWidget *editWidget;
     QWidget *genWidget;
@@ -361,7 +359,7 @@ private:
     QWidget *widget;
 
     QTimer animate_timer;
-    QDateTime animate_until;    
+    QDateTime animate_until;
     int animate_frames;
     int animate_mouseupdates;
 
@@ -370,20 +368,20 @@ private:
     int grid_size;
     QVector3D default_lookat;
 
-    //camera
+    // camera
     float cam_animate_duration;
     float cam_animate_angle;
     float cam_lookat_distance;
     PivotCamera cam;
 
-    //transform widget
+    // transform widget
     TransformWidget transform_widget;
     bool transforming;
 
-    //important quantity: metres per unit
+    // important quantity: metres per unit
     double metres_per_unit;
 
-    //symmetry
+    // symmetry
     bool x_symmetry;
     bool y_symmetry;
     bool z_symmetry;
@@ -410,7 +408,7 @@ private:
     float generate_radial_params[9];
     bool generate_surfacefacets_teeth;
 
-    //toggles for various feasibility tests
+    // toggles for various feasibility tests
     bool do_local_symmetry;
     bool do_cycles_test;
     bool do_stability_test;
@@ -427,41 +425,43 @@ private:
 
     double physics_new_weight_mass;
     double physics_material_density;
-    double physics_max_stress;    
+    double physics_max_stress;
 
-    //gesture state
+    // gesture state
     GestureState state;
     LastOperation last_op;
 
-    //sections - this is the main container
+    // sections - this is the main container
     PlanarSection active_section;
     PlanarSection active_section_symmetry;
 
-    QList <PlanarSection> sections;
+    QList<PlanarSection> sections;
     float section_error_tolerance;
     float section_error_tolerance_template;
 
-    //undo related stuff
-    int max_undo_sections; //max size of undo list
-    int undo_index; //current index within the undo list
-    QList <QList <PlanarSection> > undo_sections; //the undo list
+    // undo related stuff
+    int max_undo_sections;  // max size of undo list
+    int undo_index;         // current index within the undo list
+    QList<QList<PlanarSection> > undo_sections;  // the undo list
 
-    //geometric stability-related stuff
-    QList <QVector3D> sections_convex_hull;
+    // geometric stability-related stuff
+    QList<QVector3D> sections_convex_hull;
     QVector3D centre_of_mass;
     bool centre_of_mass_in_hull;
 
-    //template surface stuff
-    QVector <QVector3D> template_verts;
-    QVector <QVector3D> template_magnetic_verts;
-    QVector <QVector3D> template_norms;
-    QVector <int> template_faces;
-    QVector <QList <int> > template_poly_faces; //these are the OBJ faces which haven't been subdivided into triangles
-    QVector <int> template_facenorms;    
-    QList <QVector3D> template_cut;
+    // template surface stuff
+    QVector<QVector3D> template_verts;
+    QVector<QVector3D> template_magnetic_verts;
+    QVector<QVector3D> template_norms;
+    QVector<int> template_faces;
+    QVector<QList<int> >
+        template_poly_faces;  // these are the OBJ faces which haven't been
+                              // subdivided into triangles
+    QVector<int> template_facenorms;
+    QList<QVector3D> template_cut;
     float template_cut_snap_distance_3d;
 
-    //template image stuff
+    // template image stuff
     QImage template_image;
     GLuint template_image_tex;
     QVector2D template_pos;
@@ -469,29 +469,29 @@ private:
     float template_scale;
     bool template_flipx;
 
-    //markers for visual debugging
-    QList <QVector3D> markers;
-    QList <QVector3D> markers_col;
-    QList <QVector3D> markers2;
-    QList <QVector3D> markers_col2;
+    // markers for visual debugging
+    QList<QVector3D> markers;
+    QList<QVector3D> markers_col;
+    QList<QVector3D> markers2;
+    QList<QVector3D> markers_col2;
     QVector3D slot_start;
     QVector3D slot_end;
 
-    //for recursive/procedurally defining stuff
+    // for recursive/procedurally defining stuff
     QVector3D recursive_slot_start;
     QVector3D recursive_slot_end;
 
-    //for dimensioning tool
+    // for dimensioning tool
     QVector3D dimensiontool_start;
     QVector3D dimensiontool_end;
 
-    //for skinning stuff
+    // for skinning stuff
     ContourGraph contour_graph;
 
-    //for physical simulation stuff
+    // for physical simulation stuff
     CPhysics physics;
 
-    //some side display widgets
+    // some side display widgets
     QLabel *thick_label;
     QLabel *calibration_label;
     QLabel *quality_label;
@@ -505,15 +505,15 @@ private:
     QLabel *grid_sizey_label;
     QLabel *grid_staple_label;
     QLabel *branching_scalechild_label;
-    QSlider * radial_slider[9];
+    QSlider *radial_slider[9];
     QLabel *radial_sectors_label;
     QLabel *new_weight_label;
 
-    //selection related
+    // selection related
     int selected;
-    QList <int> last_selected;
+    QList<int> last_selected;
 
-    //translate/rotate/scale related
+    // translate/rotate/scale related
     QVector2D anchor_point;
     PlanarSection original_section;
 
@@ -521,20 +521,20 @@ private:
     GLuint sections_disp_list;
 
     //---- Needed to connect to menus in mainWindow
-    QCheckBox * deformed_checkbox;
-    QCheckBox * skeleton_checkbox;
-    QCheckBox * forces_checkbox;
-    QCheckBox * section_checkbox;
-    QCheckBox * moment_checkbox;
+    QCheckBox *deformed_checkbox;
+    QCheckBox *skeleton_checkbox;
+    QCheckBox *forces_checkbox;
+    QCheckBox *section_checkbox;
+    QCheckBox *moment_checkbox;
 
-    QPushButton * testPhysicsButton;
-    QPushButton * toggleTemplatesButton;
+    QPushButton *testPhysicsButton;
+    QPushButton *toggleTemplatesButton;
 
-    QCheckBox * show_tnb_frames_checkbox;
-    QCheckBox * show_cycles_test_checkbox;
-    QCheckBox * show_stability_checkbox;
-    QCheckBox * show_shadow_checkbox;
-    QCheckBox * show_connectivity_checkbox;
+    QCheckBox *show_tnb_frames_checkbox;
+    QCheckBox *show_cycles_test_checkbox;
+    QCheckBox *show_stability_checkbox;
+    QCheckBox *show_shadow_checkbox;
+    QCheckBox *show_connectivity_checkbox;
 
     QString open_filename;
 
@@ -542,19 +542,21 @@ private:
     GenerateState gen_state;
 
     // Generate Selections
-    QList<int> generate_selections; // holds indices of selected sections for the generate tool
-    int num_generate_selected;      // the number selected
-    int selections_per_gen_type[GENSTATE_NUM]; // the number of needed selections for each type of generate
+    QList<int> generate_selections;  // holds indices of selected sections for
+                                     // the generate tool
+    int num_generate_selected;       // the number selected
+    int selections_per_gen_type[GENSTATE_NUM];  // the number of needed
+                                                // selections for each type of
+                                                // generate
 
-    QList <PlanarSection> generated_sections; // the temporary generate sections
+    QList<PlanarSection> generated_sections;  // the temporary generate sections
 
     // Radial Tool
     PlanarSection pre_radial_section;
     PlanarSection radial_section;
     int radial_section_index;
 
-    QErrorMessage errorMessage;    
-
+    QErrorMessage errorMessage;
 };
 
-#endif // GLWIDGET_H
+#endif  // GLWIDGET_H

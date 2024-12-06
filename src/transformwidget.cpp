@@ -1,18 +1,13 @@
 #include "transformwidget.h"
 
-TransformWidget::TransformWidget() :
-    visible(true),
-    state(NONE),
-    p(0,0,0),
-    x(1,0,0),
-    y(0,1,0),
-    z(0,0,1)
+TransformWidget::TransformWidget()
+    : visible(true), state(NONE), p(0, 0, 0), x(1, 0, 0), y(0, 1, 0), z(0, 0, 1)
 {
 }
 
 void TransformWidget::DrawGL(const float cam_width, const int screen_height)
 {
-    //qDebug() << "TransformWidget::DrawGL()";
+    // qDebug() << "TransformWidget::DrawGL()";
     if (!visible) {
         return;
     }
@@ -20,159 +15,114 @@ void TransformWidget::DrawGL(const float cam_width, const int screen_height)
     glPushAttrib(GL_LIGHTING_BIT);
     glDisable(GL_LIGHTING);
 
-    const float s = 0.2f * cam_width * 500.0f/screen_height;
+    const float s = 0.2f * cam_width * 500.0f / screen_height;
 
-    //draw various arrows and things
-    //translate x
-    glColor3f(1,0,0);
-    GLutils::DrawArrowFixedLength(p, p+x, 1.0f * s);
+    // draw various arrows and things
+    // translate x
+    glColor3f(1, 0, 0);
+    GLutils::DrawArrowFixedLength(p, p + x, 1.0f * s);
 
-    //translate y
-    glColor3f(0,1,0);
-    GLutils::DrawArrowFixedLength(p, p+y, 1.0f * s);
+    // translate y
+    glColor3f(0, 1, 0);
+    GLutils::DrawArrowFixedLength(p, p + y, 1.0f * s);
 
-    //translate z
-    glColor3f(0,0,1);
-    GLutils::DrawArrowFixedLength(p, p+z, 1.0f * s);
+    // translate z
+    glColor3f(0, 0, 1);
+    GLutils::DrawArrowFixedLength(p, p + z, 1.0f * s);
 
-    //rotate x
-//    glColor3f(1,0,0);
-//    GLutils::DrawRing(p - x*0.05f, p + x*0.05f, 0.45f, 0.55f);
-    glColor3f(0,0,1);
-    GLutils::DrawArcLineStrip(p, z * 1.5f * s, x, .5*M_PI, 30, 7.0f,true);
+    // rotate x
+    //    glColor3f(1,0,0);
+    //    GLutils::DrawRing(p - x*0.05f, p + x*0.05f, 0.45f, 0.55f);
+    glColor3f(0, 0, 1);
+    GLutils::DrawArcLineStrip(p, z * 1.5f * s, x, .5 * M_PI, 30, 7.0f, true);
 
-    //rotate y
-//    glColor3f(0,1,0);
-//    GLutils::DrawRing(p - y*0.05f, p + y*0.05f, 0.45f, 0.55f);
-    glColor3f(1,0,0);
-    GLutils::DrawArcLineStrip(p, x * 1.5f * s, y, .5*M_PI, 30, 7.0f,true);
+    // rotate y
+    //    glColor3f(0,1,0);
+    //    GLutils::DrawRing(p - y*0.05f, p + y*0.05f, 0.45f, 0.55f);
+    glColor3f(1, 0, 0);
+    GLutils::DrawArcLineStrip(p, x * 1.5f * s, y, .5 * M_PI, 30, 7.0f, true);
 
-    //rotate z
-//    glColor3f(0,0,1);
-//    GLutils::DrawRing(p - z*0.05f, p + z*0.05f, 0.45f, 0.55f);
-    glColor3f(0,1,0);
-    GLutils::DrawArcLineStrip(p, y * 1.5f * s, z, .5*M_PI, 30, 7.0f,true);
+    // rotate z
+    //    glColor3f(0,0,1);
+    //    GLutils::DrawRing(p - z*0.05f, p + z*0.05f, 0.45f, 0.55f);
+    glColor3f(0, 1, 0);
+    GLutils::DrawArcLineStrip(p, y * 1.5f * s, z, .5 * M_PI, 30, 7.0f, true);
 
-    //scale x
-    glColor3f(1,0,0);
-    GLutils::DrawSphere(p + x* 1.25f * s, 0.125f * s);
+    // scale x
+    glColor3f(1, 0, 0);
+    GLutils::DrawSphere(p + x * 1.25f * s, 0.125f * s);
 
-    //scale z
-    glColor3f(0,0,1);
-    GLutils::DrawSphere(p + z* 1.25f * s, 0.125f  * s);
+    // scale z
+    glColor3f(0, 0, 1);
+    GLutils::DrawSphere(p + z * 1.25f * s, 0.125f * s);
 
     glPopAttrib();
-
 }
 
-void TransformWidget::DrawSelectionGL(const float cam_width, const int screen_height)
+void TransformWidget::DrawSelectionGL(const float cam_width,
+                                      const int screen_height)
 {
     if (!visible) {
         return;
     }
 
-    const float s = 0.2f * cam_width * 500.0f/screen_height;
+    const float s = 0.2f * cam_width * 500.0f / screen_height;
 
-//    //qDebug() << "TransformWidget::DrawSelectionGL()";
+    //    //qDebug() << "TransformWidget::DrawSelectionGL()";
     GLutils::SetPickColor(TRANS_X);
-    GLutils::DrawArrowFixedLength(p, p+x, 1.0f * s);
+    GLutils::DrawArrowFixedLength(p, p + x, 1.0f * s);
 
     GLutils::SetPickColor(TRANS_Y);
-    GLutils::DrawArrowFixedLength(p, p+y, 1.0f * s);
+    GLutils::DrawArrowFixedLength(p, p + y, 1.0f * s);
 
     GLutils::SetPickColor(TRANS_Z);
-    GLutils::DrawArrowFixedLength(p, p+z, 1.0f * s);
+    GLutils::DrawArrowFixedLength(p, p + z, 1.0f * s);
 
     GLutils::SetPickColor(ROT_X);
-//    GLutils::DrawRing(p - x*0.05f, p + x*0.05f, 0.45f, 0.55f);
-    GLutils::DrawArcLineStrip(p, z * 1.5f * s, x, .5*M_PI, 30, 7.0f);
+    //    GLutils::DrawRing(p - x*0.05f, p + x*0.05f, 0.45f, 0.55f);
+    GLutils::DrawArcLineStrip(p, z * 1.5f * s, x, .5 * M_PI, 30, 7.0f);
 
     GLutils::SetPickColor(ROT_Y);
-//    GLutils::DrawRing(p - y*0.05f, p + y*0.05f, 0.45f, 0.55f);
-    GLutils::DrawArcLineStrip(p, x * 1.5f * s, y, .5*M_PI, 30, 7.0f);
+    //    GLutils::DrawRing(p - y*0.05f, p + y*0.05f, 0.45f, 0.55f);
+    GLutils::DrawArcLineStrip(p, x * 1.5f * s, y, .5 * M_PI, 30, 7.0f);
 
     GLutils::SetPickColor(ROT_Z);
-//    GLutils::DrawRing(p - z*0.05f, p + z*0.05f, 0.45f, 0.55f);
-    GLutils::DrawArcLineStrip(p, y * 1.5f * s, z, .5*M_PI, 30, 7.0f);
+    //    GLutils::DrawRing(p - z*0.05f, p + z*0.05f, 0.45f, 0.55f);
+    GLutils::DrawArcLineStrip(p, y * 1.5f * s, z, .5 * M_PI, 30, 7.0f);
 
     GLutils::SetPickColor(SCALE_X);
-    GLutils::DrawSphere(p + x * 1.25f * s, 0.125f  * s);
+    GLutils::DrawSphere(p + x * 1.25f * s, 0.125f * s);
 
     GLutils::SetPickColor(SCALE_Z);
-    GLutils::DrawSphere(p + z * 1.25f * s, 0.125f  * s);
+    GLutils::DrawSphere(p + z * 1.25f * s, 0.125f * s);
 }
 
-void TransformWidget::mousePressEvent(const int , const int )
-{
+void TransformWidget::mousePressEvent(const int, const int) {}
 
-}
+void TransformWidget::mouseMoveEvent(const int, const int) {}
 
-void TransformWidget::mouseMoveEvent(const int , const int )
-{
+void TransformWidget::mouseReleaseEvent(const int, const int) {}
 
-}
+void TransformWidget::SetVisible(const bool b) { visible = b; }
 
-void TransformWidget::mouseReleaseEvent(const int , const int )
-{
+bool TransformWidget::GetVisible() const { return visible; }
 
-}
+void TransformWidget::SetP(const QVector3D & v) { p = v; }
 
-void TransformWidget::SetVisible(const bool b)
-{
-    visible = b;
-}
+QVector3D TransformWidget::GetP() const { return p; }
 
-bool TransformWidget::GetVisible() const
-{
-    return visible;
-}
+void TransformWidget::SetX(const QVector3D & v) { x = v; }
 
-void TransformWidget::SetP(const QVector3D & v)
-{
-    p = v;
-}
+QVector3D TransformWidget::GetX() const { return x; }
 
-QVector3D TransformWidget::GetP() const
-{
-    return p;
-}
+void TransformWidget::SetY(const QVector3D & v) { y = v; }
 
-void TransformWidget::SetX(const QVector3D & v)
-{
-    x = v;
-}
+QVector3D TransformWidget::GetY() const { return y; }
 
-QVector3D TransformWidget::GetX() const
-{
-    return x;
-}
+void TransformWidget::SetZ(const QVector3D & v) { z = v; }
 
-void TransformWidget::SetY(const QVector3D & v)
-{
-    y = v;
-}
+QVector3D TransformWidget::GetZ() const { return z; }
 
-QVector3D TransformWidget::GetY() const
-{
-    return y;
-}
+void TransformWidget::SetState(const TransformWidgetState s) { state = s; }
 
-void TransformWidget::SetZ(const QVector3D & v)
-{
-    z = v;
-}
-
-QVector3D TransformWidget::GetZ() const
-{
-    return z;
-}
-
-void TransformWidget::SetState(const TransformWidgetState s)
-{
-    state = s;
-}
-
-TransformWidgetState TransformWidget::GetState() const
-{
-    return state;
-}
+TransformWidgetState TransformWidget::GetState() const { return state; }

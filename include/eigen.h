@@ -6,7 +6,6 @@
 class Eigen
 {
 public:
-
     void DecrSortEigenStuff(void);
     void Tridiagonal(void);
     bool QLAlgorithm(void);
@@ -17,9 +16,6 @@ public:
     double m_afDiag[3];
     double m_afSubd[3];
     bool m_bIsRotation;
-
 };
 
-
-
-#endif // EIGEN_H
+#endif  // EIGEN_H
