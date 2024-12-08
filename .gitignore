@@ -4,3 +4,4 @@ Eigen/*
 *.txt
 !icons/icon-license.txt
 !example_models/*.txt
+.flatpak-builder/

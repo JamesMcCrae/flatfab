@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+
+Name=FlatFab
+Comment=flatfab is software that helps you design and fabricate 3D objects. We imagine in 3D but ideate and draw in 2D. flatfab seamlessly does both. 
+Categories=Graphics;Engineering;
+
+Icon=edu.toronto.dgp.FlatFab
+Exec=FlatFab
+Terminal=false

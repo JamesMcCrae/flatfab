@@ -1,0 +1,41 @@
+id: edu.toronto.dgp.FlatFab
+runtime: org.kde.Platform
+runtime-version: '5.15-24.08'
+sdk: org.kde.Sdk
+command: flatfab-launch.sh
+finish-args:
+  - --share=ipc
+  - --socket=fallback-x11
+  - --socket=wayland
+  - --device=dri # GPU acceleration
+  - --filesystem=xdg-documents # to save/load local files
+modules:
+  - name: eigen
+    buildsystem: cmake
+    builddir: true
+    sources:
+      - type: archive
+        url: https://gitlab.com/libeigen/eigen/-/archive/3.3.9/eigen-3.3.9.zip
+        sha512: 3b06da583037649ad42190bd018ddf40b85179ad0877ebd7c1ca7b8498a1453eed25919de27d3bb737754086e1513408e7de4a2110d51912f2e5503e1ab7d838
+  - name: glu
+    buildsystem: meson
+    sources:
+      - type: archive
+        url: https://archive.mesa3d.org/glu/glu-9.0.3.tar.xz
+        sha256: bd43fe12f374b1192eb15fe20e45ff456b9bc26ab57f0eee919f96ca0f8a330f
+    cleanup: [ /include, /lib/*.a, /lib/*.la, /lib/pkgconfig ]
+  - name: flatfab
+    buildsystem: cmake-ninja
+    config-opts:
+      - -DCMAKE_BUILD_TYPE=RelWithDebInfo
+    sources:
+      - type: dir
+        path: ../
+  - name: flatfab-launch
+    buildsystem: simple
+    build-commands:
+      - "install -D flatfab-launch.sh /app/bin/flatfab-launch.sh"
+      - "chmod +x /app/bin/flatfab-launch.sh"
+    sources:
+      - type: file
+        path: flatfab-launch.sh
