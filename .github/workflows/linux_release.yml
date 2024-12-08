@@ -49,4 +49,4 @@ jobs:
         run:  |
               qmake -r ${{ env.SOURCE_DIR }}/FlatFab.pro
               make
-
+              
