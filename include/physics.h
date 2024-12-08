@@ -177,7 +177,6 @@ public:
 
     // Setting A example Problem
     void SetExample();
-    void ReadFile(const char* fname);
     void CutSlit();
 
     // solving methods
