@@ -53,16 +53,6 @@ jobs:
               make
               
       # TODO:
-      #- name: AppImage
-      #  working-directory: ${{ env.SOURCE_DIR }}/build
-      #  run: |
-      #    wget -O deploy.AppImage https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage
-      #    chmod +x deploy.AppImage
-      #    export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${{ github.workspace }}/Qt/5.15.2/gcc_64/lib/
-      #    cp ${{ env.SOURCE_DIR }}/linux/* .
-      #    ./deploy.AppImage FlatFab.desktop -appimage -no-translations -extra-plugins=renderers
-      #    mv FlatFab*.AppImage ${{ env.ARTIFACT }}          
-      #  
       #- name: Linux artefact
       #  uses: actions/upload-artifact@v4
       #  with:

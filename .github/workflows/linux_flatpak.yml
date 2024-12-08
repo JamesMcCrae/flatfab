@@ -1,0 +1,35 @@
+name: Linux Flatpak
+
+on:
+  push:
+    branches:
+      - 'master'
+    tags:
+      - 'v*'
+  pull_request:
+
+jobs:
+  flatpak:
+    name: "Flatpak"
+    runs-on:  ubuntu-24.04
+
+    container:
+      image: bilelmoussaoui/flatpak-github-actions:gnome-44
+      options: --privileged
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Flatpak building
+        uses: flatpak/flatpak-github-actions/flatpak-builder@v6
+        with:
+          bundle: flatfab.flatpak
+          manifest-path: com.flatfab.FlatFab.yml
+          cache-key: flatpak-builder-${{ github.sha }}
+      
+      #- name: Linux artefact
+      #  uses: actions/upload-artifact@v4
+      #  with:
+      #    name: ${{ env.ARTIFACT }}
+      #    path: ${{ env.SOURCE_DIR }}/build/${{ env.ARTIFACT }}
