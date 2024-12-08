@@ -5,8 +5,11 @@
 MainWindow::MainWindow()
 {
     // title/window stuff
-    window_title = "FlatFab 0.8.0 (beta)";
+    window_title = "FlatFab 0.8.1";
     setWindowTitle(window_title);
+
+    // release 0.8.1
+    // modernize for Qt5, formatting, fix all compiler warnings
 
     // release 0.8.0
     // added initial support for finger joints for the surface facet generation
@@ -116,7 +119,7 @@ void MainWindow::ShowWelcomePage()
     bottomWidget->setLayout(layout);
 
     bottomDockWidget = new QDockWidget();
-    bottomDockWidget->setFeatures(0);
+    bottomDockWidget->setFeatures(QDockWidget::NoDockWidgetFeatures);
     bottomDockWidget->setWindowTitle("Start using FlatFab:");
     bottomDockWidget->setWidget(bottomWidget);
 

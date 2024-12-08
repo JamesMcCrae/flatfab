@@ -3536,7 +3536,7 @@ void GLWidget::LoadTemplateOBJ()
 
     while (!ifs.atEnd()) {
         const QStringList line =
-            ifs.readLine().split(" ", QString::SkipEmptyParts);
+            ifs.readLine().split(" ", Qt::SkipEmptyParts);
 
         // skip any blank lines or lines without at least 4 entries (a command +
         // 3 parameters)
@@ -6186,7 +6186,7 @@ void GLWidget::DoPhysicsTest()
     // TODO/NOTE: physics expects everything in m (metres)
 
     // first add each rigid body
-    double total_mass = 0.0;
+    // double total_mass = 0.0;
     for (int i = 0; i < sections.size(); ++i) {
         QVector3D mass_cent = sections[i].GetCentroid3D();  // centre of mass
         // double mass = fabsf(sections[i].SignedArea()) *
@@ -6196,7 +6196,7 @@ void GLWidget::DoPhysicsTest()
             fabs(sections[i].SignedArea() * metres_per_unit * metres_per_unit) *
             sections[i].SlabThickness() * metres_per_unit;
 
-        total_mass += mass;
+        // total_mass += mass;
 
         double mass_cent_array[3];
         mass_cent_array[0] = mass_cent.x() * metres_per_unit;

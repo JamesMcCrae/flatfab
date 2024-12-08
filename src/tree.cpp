@@ -126,7 +126,7 @@ void Tree::GetBranch(const int i, QList<int> & branch)
         visited.insert(j);
     }
 
-    branch = visited.toList();
+    branch = visited.values();
 }
 
 void Tree::GetCycles(QList<QList<int> > & cyc) { cyc = cycles; }
@@ -154,15 +154,18 @@ void Tree::TraceBackCycle(const int i1, const int i2, QList<int> & cycle)
     GetPathToRoot(i1, path_i1);
     GetPathToRoot(i2, path_i2);
 
+    QSet<int> s1(path_i1.begin(), path_i1.end());
+    QSet<int> s2(path_i2.begin(), path_i2.end());
+
     // 2.  for a tree, any i1 and i2 in the tree must share one common
     // (grand)parent
-    QSet<int> common_parents = path_i1.toSet().intersect(path_i2.toSet());
+    QSet<int> common_parents = s1.intersect(s2);
     if (common_parents.empty()) {
         qDebug() << "Tree::TraceBackCycle - Problem!  Could not find common "
                     "parent for"
                  << i1 << i2;
-        qDebug() << path_i1;
-        qDebug() << path_i2;
+        qDebug() << s1;
+        qDebug() << s2;
         return;
     }
 

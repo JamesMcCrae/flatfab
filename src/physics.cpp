@@ -250,7 +250,7 @@ void CPhysics::Solve_InsidePlane()
                                   aRigidBody[irb], gravity, aDir2D, nHeight,
                                   max_stress);
             // Sampling Around Slit
-            AddWeakWection_Slit(aPlate[irb], aPlate[irb].aXY_slit,
+            AddWeakSection_Slit(aPlate[irb], aPlate[irb].aXY_slit,
                                 aRigidBody[irb], gravity, aDir2D, nHeight,
                                 max_stress);
         } else {
@@ -1039,19 +1039,17 @@ void CPhysics::ComputeForces()
  const double rot_stiff)
  */
 {
-    for (int irb = 0; irb < int(aRigidBody.size()); irb++) {
-        CRigidBody& rb = aRigidBody[irb];
-        const int ncp = (int)aRigidBody[irb].aCP.size();
+    for (CRigidBody& rb : aRigidBody) {
+        const int ncp = rb.aCP.size();
         rb.aCForce.resize(ncp);
         for (int icp = 0; icp < ncp; icp++) {
-            const CVector3D& cp = aRigidBody[irb].aCP[icp];
+            const CVector3D& cp = rb.aCP[icp];
             CVector3D Rv = rb.R * (cp - rb.cg);
             CVector3D cq = Rv + rb.cg + rb.u;
             rb.aCForce[icp] = ((cq * n) * cont_stiff) * n;
         }
     }
-    for (int ij = 0; ij < int(aJoint.size()); ij++) {
-        CJoint& joint = aJoint[ij];
+    for (CJoint& joint : aJoint) {
         CVector3D pj = joint.p;
         int irb0 = joint.irb0;
         int irb1 = joint.irb1;
@@ -1258,7 +1256,7 @@ void CPhysics::GetPlateLocalForce(
 {
     alForce.clear();
     const CRigidBody& rb = aRigidBody[irb];
-    for (int icp = 0; icp < int(rb.aCP.size()); icp++) {
+    for (int icp = 0; icp < static_cast<int>(rb.aCP.size()); icp++) {
         CPlate::CLocalForce lf;
         CVector3D pos_cp = rb.aCP[icp];
         lf.lx = (pos_cp - vec_p) * vec_t;
@@ -1272,9 +1270,9 @@ void CPhysics::GetPlateLocalForce(
         lf.is_trq = false;
         alForce.push_back(lf);
     }
-    for (int iexf = 0; iexf < rb.aExForce.size(); iexf++) {
-        const CVector3D p = rb.aExForce[iexf].first;
-        const CVector3D f = rb.aExForce[iexf].second;
+    for (const auto& exForce : rb.aExForce) {
+        const CVector3D p = exForce.first;
+        const CVector3D f = exForce.second;
         CPlate::CLocalForce lf;
         lf.lx = (p - vec_p) * vec_t;
         lf.ly = (p - vec_p) * vec_b;
@@ -1287,8 +1285,7 @@ void CPhysics::GetPlateLocalForce(
         lf.is_trq = false;
         alForce.push_back(lf);
     }
-    for (int ij = 0; ij < aJoint.size(); ij++) {
-        const CJoint& j = aJoint[ij];
+    for (const CJoint& j : aJoint) {
         if (j.irb0 != irb && j.irb1 != irb) {
             continue;
         }
@@ -1317,17 +1314,16 @@ void CPhysics::GetPlateLocalForce(
     // std::cout << "############### " << std::endl;
     double area = fabs(AreaLoop2D(aXY));
     double rep_len = sqrt(area);  // use to judge nearness
-    for (int ilf = 0; ilf < alForce.size(); ilf++) {
-        CPlate::CLocalForce& clf = alForce[ilf];
+    for (CPlate::CLocalForce& clf : alForce) {
         clf.is_boundary = false;
         const double p[2] = {clf.lx, clf.ly};
         int ie_min = -1;
         double r_min = 0;
         double dist_min = 100000;
-        for (int ie = 0; ie < aXY.size() / 2; ie++) {
+        for (int ie = 0; ie < static_cast<int>(aXY.size() / 2); ie++) {
             int ip0 = ie;
             int ip1 = ie + 1;
-            if (ip1 == aXY.size() / 2) {
+            if (ip1 == static_cast<int>(aXY.size() / 2)) {
                 ip1 = 0;
             };
             double p0[2] = {aXY[ip0 * 2 + 0], aXY[ip0 * 2 + 1]};
@@ -1436,7 +1432,7 @@ bool CPhysics::IsForceInsideHalfLoop2D(const std::vector<double>& aXY,
         }
         if (ie == ie1) break;
         ie = ie + 1;
-        if (ie == aXY.size() / 2) {
+        if (ie == static_cast<int>(aXY.size() / 2)) {
             ie = 0;
         }
     }
@@ -1475,7 +1471,7 @@ CVector3D CPhysics::MomentumHalfLoop2D(double lx, double ly,
     double org[2] = {lx, ly};
 
     int ie = ie0;
-    double area = 0;
+    // double area = 0;
     for (;;) {
         unsigned int ip0 = ie;
         unsigned int ip1 = ip0 + 1;
@@ -1494,11 +1490,11 @@ CVector3D CPhysics::MomentumHalfLoop2D(double lx, double ly,
         ////
         double a;
         vm += MomentumTri(a, lg, p0, p1, org);
-        area += a;
+        // area += a;
         ////
         if (ie == ie1) break;
         ie = ie + 1;
-        if (ie == aXY.size() / 2) {
+        if (ie == static_cast<int>(aXY.size() / 2)) {
             ie = 0;
         }
     }
@@ -1507,7 +1503,7 @@ CVector3D CPhysics::MomentumHalfLoop2D(double lx, double ly,
         double p1[2] = {ps.ep0.x, ps.ep0.y};
         double a;
         vm += MomentumTri(a, lg, p0, p1, org);
-        area += a;
+        // area += a;
     }
     //  std::cout << area << std::endl;
     return vm;
@@ -1517,10 +1513,10 @@ CVector3D CPhysics::MomentumLoop2D(double lx, double ly,
                                    const std::vector<double>& aXY,
                                    const CVector3D& lg)
 {
-    double area = 0;
+    // double area = 0;
     CVector3D vm(0, 0, 0);
     double org[2] = {lx, ly};
-    for (int ie = 0; ie < aXY.size() / 2; ie++) {
+    for (int ie = 0; ie < static_cast<int>(aXY.size() / 2); ie++) {
         unsigned int ip0 = ie;
         unsigned int ip1 = ip0 + 1;
         if (ip1 == aXY.size() / 2) {
@@ -1530,7 +1526,7 @@ CVector3D CPhysics::MomentumLoop2D(double lx, double ly,
         double p1[2] = {aXY[ip1 * 2 + 0], aXY[ip1 * 2 + 1]};
         double a;
         vm += MomentumTri(a, lg, p0, p1, org);
-        area += a;
+        // area += a;
     }
     //  std::cout << area << std::endl;
     return vm;
@@ -1540,7 +1536,7 @@ double CPhysics::AreaLoop2D(const std::vector<double>& aXY)
 {
     double org[2] = {0, 0};
     double area = 0;
-    for (int ie = 0; ie < aXY.size() / 2; ie++) {
+    for (int ie = 0; ie < static_cast<int>(aXY.size() / 2); ie++) {
         unsigned int ip0 = ie;
         unsigned int ip1 = ip0 + 1;
         if (ip1 == aXY.size() / 2) {
@@ -1560,7 +1556,7 @@ bool CPhysics::FirstHitRay(int& ie0, double& r0, double org[2], double dir[2],
     const double end[2] = {org[0] + dir[0], org[1] + dir[1]};
     const double sqdir = sqrt(dir[0] * dir[0] + dir[1] * dir[1]);
     std::map<double, std::pair<int, double> > mapDistEdge;
-    for (int ie = 0; ie < aXY.size() / 2; ie++) {
+    for (int ie = 0; ie < static_cast<int>(aXY.size() / 2); ie++) {
         unsigned int ip0 = ie;
         unsigned int ip1 = ip0 + 1;
         if (ip1 == aXY.size() / 2) {
@@ -1597,7 +1593,7 @@ void CPhysics::GetPlateSection_Slit(std::vector<CPlateSection>& aPS, int ie0,
 {
     int ip0 = ie0;
     int ip1 = ip0 + 1;
-    if (ip1 == aXY.size() / 2) {
+    if (ip1 == static_cast<int>(aXY.size() / 2)) {
         ip1 = 0;
     }
     double p0[2] = {aXY[ip0 * 2 + 0], aXY[ip0 * 2 + 1]};
@@ -1648,7 +1644,7 @@ void CPhysics::GetPlateSection_Slit(std::vector<CPlateSection>& aPS, int ie0,
             if (!res) continue;
             int jp0 = ps.ep1.ie;
             int jp1 = jp0 + 1;
-            if (jp1 == aXY.size() / 2) {
+            if (jp1 == static_cast<int>(aXY.size() / 2)) {
                 jp1 = 0;
             }
             ps.ep1.x = (1.0 - ps.ep1.r) * aXY[jp0 * 2 + 0] +
@@ -1666,13 +1662,13 @@ void CPhysics::GetPlateSection_Slit(std::vector<CPlateSection>& aPS, int ie0,
     }
 }
 
-void CPhysics::AddWeakWection_Slit(CPlate& plt,  // (in,out)
+void CPhysics::AddWeakSection_Slit(CPlate& plt,  // (in,out)
                                                  ////
                                    const std::vector<double>& aXY,
-                                   const CRigidBody& rb,
+                                   const CRigidBody& /* rb */,
                                    const CVector3D gravity,
-                                   const std::vector<double>& aDir2D,
-                                   const int nH, const double max_stress)
+                                   const std::vector<double>& /* aDir2D */,
+                                   const int /* nH */, const double max_stress)
 {
     CVector3D lg;
     {  // get gravity in local geometry
@@ -1682,12 +1678,12 @@ void CPhysics::AddWeakWection_Slit(CPlate& plt,  // (in,out)
         lg = CVector3D(t, b, n);
         lg *= plt.rho * plt.thickness;
     }
-    double area = AreaLoop2D(aXY);
-    for (int ilf = 0; ilf < plt.alForce.size(); ilf++) {
+    const double area = AreaLoop2D(aXY);
+    for (int ilf = 0; ilf < static_cast<int>(plt.alForce.size()); ilf++) {
         const CPlate::CLocalForce& lfi = plt.alForce[ilf];
         if (!lfi.is_boundary || !lfi.is_trq) continue;
         const int ie0 = lfi.iedge0;
-        const double r0 = lfi.ratio_edge0;
+        // const double r0 = lfi.ratio_edge0;
         // assert( r0 > 0.1 && r0 < 0.9); // joint point should be middle.
         // qDebug() << "CPhysics::AddWeakWection_Slit() - Warning!! Joint point
         // should be middle";
@@ -1695,8 +1691,7 @@ void CPhysics::AddWeakWection_Slit(CPlate& plt,  // (in,out)
         //    std::vector<CPlateSection> aPS;
         std::vector<CPlateSection> aPS;
         GetPlateSection_Slit(aPS, ie0, aXY, area > 0);
-        for (int ips = 0; ips < aPS.size(); ips++) {
-            CPlateSection& ps = aPS[ips];
+        for (CPlateSection& ps : aPS) {
             double lx = (ps.ep0.x + ps.ep1.x) * 0.5;
             double ly = (ps.ep0.y + ps.ep1.y) * 0.5;
             CVector3D bm0(0, 0, 0), bm1(0, 0, 0);
@@ -1712,7 +1707,7 @@ void CPhysics::AddWeakWection_Slit(CPlate& plt,  // (in,out)
                 bm1 += m1 * dflg;
             }
             CVector3D ti;
-            for (int jlf = 0; jlf < plt.alForce.size(); jlf++) {
+            for (int jlf = 0; jlf < static_cast<int>(plt.alForce.size()); jlf++) {
                 const CPlate::CLocalForce& lfj = plt.alForce[jlf];
                 CVector3D v(lfj.lx - lx, lfj.ly - ly, 0);
                 CVector3D t0 = -(v ^ lfj.lfrc);
@@ -1744,10 +1739,10 @@ void CPhysics::AddWeakWection_Slit(CPlate& plt,  // (in,out)
                 double len =
                     sqrt((ps.ep1.x - ps.ep0.x) * (ps.ep1.x - ps.ep0.x) +
                          (ps.ep1.y - ps.ep0.y) * (ps.ep1.y - ps.ep0.y));
-                double len_med = len;
+                // double len_med = len;
                 double dir_med[2];
                 {
-                    const int ne = (int)aXY.size() / 2;
+                    const int ne = static_cast<int>(aXY.size() / 2);
                     int ie0 = ps.ep0.ie;
                     int ie1 = ps.ep1.ie;
                     int ip0s = ie0;
@@ -1776,7 +1771,7 @@ void CPhysics::AddWeakWection_Slit(CPlate& plt,  // (in,out)
                     }
                     if (cos_theta < cos(3.1415 * 0.25))
                         continue;  // more than sampling direction interval
-                    len_med = len * cos_theta;
+                    // len_med = len * cos_theta;
                     dir_med[0] = -n[1];
                     dir_med[1] = +n[0];
                 }
@@ -1805,7 +1800,7 @@ void CPhysics::AddWeakWection_Slit(CPlate& plt,  // (in,out)
 void CPhysics::AddWeakSection_Inside(CPlate& plt,  // (in,out)
                                                    ////
                                      const std::vector<double>& aXY,
-                                     const CRigidBody& rb,
+                                     const CRigidBody& /* rb */,
                                      const CVector3D gravity,
                                      const std::vector<double>& aDir2D,
                                      const int nH, const double max_stress)
@@ -1866,15 +1861,13 @@ void CPhysics::AddWeakSection_Inside(CPlate& plt,  // (in,out)
         GetHeights(eh, hmin, nH, aXY, nx, ny);
         std::vector<CPlateSection> aPS;
         GetPlateSection(aPS, eh, hmin, nH, aXY, nx, ny);
-        for (int ips = 0; ips < aPS.size(); ips++) {
-            CPlateSection& ps = aPS[ips];
+        for (CPlateSection& ps : aPS) {
             double lx = (ps.ep0.x + ps.ep1.x) * 0.5;
             double ly = (ps.ep0.y + ps.ep1.y) * 0.5;
             ///
             CVector3D bm0(0, 0, 0);
             CVector3D bm1(0, 0, 0);
-            for (int ifrc = 0; ifrc < plt.alForce.size(); ifrc++) {
-                const CPlate::CLocalForce& lf = plt.alForce[ifrc];
+            for (const CPlate::CLocalForce& lf : plt.alForce) {
                 CVector3D v(lf.lx - lx, lf.ly - ly, 0);
                 CVector3D t0 = -(v ^ lf.lfrc);
                 if (lf.is_trq) {
@@ -1967,12 +1960,11 @@ void CPhysics::CutSlit()
 {
     if (aRigidBody.size() != aPlate.size()) return;
 
-    for (int irb = 0; irb < aRigidBody.size(); irb++) {
+    for (int irb = 0; irb < static_cast<int>(aRigidBody.size()); irb++) {
         const std::vector<double>& aXY = aPlate[irb].aXY;
         std::vector<CSlitData> aSlitData;
         double arealoop = this->AreaLoop2D(aXY);
-        for (int ij = 0; ij < aJoint.size(); ij++) {
-            const CJoint& j = aJoint[ij];
+        for (const CJoint& j : aJoint) {
             if (j.irb0 != irb && j.irb1 != irb) continue;
             const double* ep = (j.irb0 == irb) ? j.jp0 : j.jp1;
             double thickness = (j.irb0 == irb) ? aPlate[j.irb1].thickness
@@ -1998,14 +1990,14 @@ void CPhysics::CutSlit()
                 sld.ci0[1] = ep[1] - sld.ev[1] * thickness * 0.5;
                 sld.ci1[0] = ep[0] + sld.ev[0] * thickness * 0.5;
                 sld.ci1[1] = ep[1] + sld.ev[1] * thickness * 0.5;
-                bool res0 =
-                    this->FirstHitRay(sld.ie0, sld.r0, sld.ci0, sld.eu, aXY);
-                bool res1 =
-                    this->FirstHitRay(sld.ie1, sld.r1, sld.ci1, sld.eu, aXY);
+
+                FirstHitRay(sld.ie0, sld.r0, sld.ci0, sld.eu, aXY);
+                FirstHitRay(sld.ie1, sld.r1, sld.ci1, sld.eu, aXY);
+
                 aSlitData.push_back(sld);
             }
         }
-        const int nv = (int)aXY.size() / 2;
+        const int nv = static_cast<int>(aXY.size() / 2);
         std::vector<int> aFlgV0(
             nv,
             0);  // mark if this vertex is between the slit and will be removed
@@ -2044,7 +2036,7 @@ void CPhysics::CutSlit()
                 setPointOnLoop.insert(p1);
             }
         }
-        for (unsigned int iv = 0; iv < nv; iv++) {
+        for (int iv = 0; iv < nv; iv++) {
             if (aFlgV0[iv] != 0) {
                 continue;
             }
@@ -2058,7 +2050,7 @@ void CPhysics::CutSlit()
         std::set<CPointOnLoop>::iterator itr = setPointOnLoop.begin();
         for (; itr != setPointOnLoop.end(); itr++) {
             const CPointOnLoop& pol = *itr;
-            unsigned int iv = pol.ie;
+            int iv = pol.ie;
             if (pol.islit == -1) {
                 aXY1.push_back(aXY[iv * 2 + 0]);
                 aXY1.push_back(aXY[iv * 2 + 1]);
@@ -2205,8 +2197,8 @@ void CPhysics::DrawGL()
     GLUquadricObj* quadricSphere = gluNewQuadric();
 
     ::glDisable(GL_LIGHTING);
-    for (int irb = 0; irb < aRigidBody.size(); irb++) {
-        const CRigidBody rb = aRigidBody[irb];
+    for (int irb = 0; irb < static_cast<int>(aRigidBody.size()); irb++) {
+        const CRigidBody& rb = aRigidBody[irb];
         CVector3D cg = rb.cg;
         if (is_draw_deformed) {
             cg += rb.u;
@@ -2229,9 +2221,9 @@ void CPhysics::DrawGL()
                 }
                 ::glEnd();
             }
-            for (int iexf = 0; iexf < aRigidBody[irb].aExForce.size(); iexf++) {
-                const CVector3D& p = aRigidBody[irb].aExForce[iexf].first;
-                const CVector3D& f = aRigidBody[irb].aExForce[iexf].second;
+            for (const auto& exf : aRigidBody[irb].aExForce) {
+                const CVector3D& p = exf.first;
+                const CVector3D& f = exf.second;
                 ::glColor3d(1, 0, 0);
                 ::glLineWidth(3);
                 ::glBegin(GL_LINES);
@@ -2241,8 +2233,7 @@ void CPhysics::DrawGL()
             }
             if (is_draw_section) {
                 const CPlate& plt = aPlate[irb];
-                for (int ips = 0; ips < plt.aPS.size(); ips++) {
-                    const CPlateSection& ps = plt.aPS[ips];
+                for (const CPlateSection& ps : plt.aPS) {
                     double x0 = ps.ep0.x;
                     double y0 = ps.ep0.y;
                     double x1 = ps.ep1.x;
@@ -2266,8 +2257,7 @@ void CPhysics::DrawGL()
                 ::glLineWidth(1);
                 ::glBegin(GL_LINES);
                 const CPlate& plt = aPlate[irb];
-                for (int ips = 0; ips < plt.aPS.size(); ips++) {
-                    const CPlateSection& ps = plt.aPS[ips];
+                for (const CPlateSection& ps : plt.aPS) {
                     double x0 = ps.ep0.x;
                     double y0 = ps.ep0.y;
                     double x1 = ps.ep1.x;
@@ -2330,8 +2320,7 @@ void CPhysics::DrawGL()
         }
     }
     /////////////////////////////////////////////
-    for (int ij = 0; ij < aJoint.size(); ij++) {
-        const CJoint& joint = aJoint[ij];
+    for (const CJoint& joint : aJoint) {
         int irb0 = joint.irb0;
         int irb1 = joint.irb1;
         const CRigidBody& rb0 = aRigidBody[irb0];
@@ -2435,9 +2424,7 @@ void CPhysics::DrawEnhancedGL(const double scale_fac)
     float max_joint_torque = -FLT_MAX;
 
     // compute maximal forces
-    for (int irb = 0; irb < aRigidBody.size(); irb++) {
-        const CRigidBody rb = aRigidBody[irb];
-
+    for (const CRigidBody& rb : aRigidBody) {
         for (unsigned int icp = 0; icp < rb.aCP.size(); icp++) {
             CVector3D p = rb.aCP[icp];
             if (!rb.aCForce.empty()) {
@@ -2450,9 +2437,7 @@ void CPhysics::DrawEnhancedGL(const double scale_fac)
         }
     }
 
-    for (int ij = 0; ij < aJoint.size(); ij++) {
-        const CJoint& joint = aJoint[ij];
-
+    for (const CJoint& joint : aJoint) {
         QVector3D each_f(joint.linear.x, joint.linear.y, joint.linear.z);
         QVector3D each_t(joint.torque.x, joint.torque.y, joint.torque.z);
 
@@ -2461,23 +2446,22 @@ void CPhysics::DrawEnhancedGL(const double scale_fac)
     }
 
     // now draw
-    for (int irb = 0; irb < aRigidBody.size(); irb++) {
+    for (int irb = 0; irb < static_cast<int>(aRigidBody.size()); irb++) {
         const CRigidBody rb = aRigidBody[irb];
         CVector3D cg = rb.cg;
         if (is_draw_deformed) {
             cg += rb.u;
         }
         if (aPlate.size() == aRigidBody.size()) {
-            const std::vector<double>& aXY = aPlate[irb].aXY_slit;
+            // const std::vector<double>& aXY = aPlate[irb].aXY_slit;
             const CVector3D& t = aPlate[irb].t;
             const CVector3D& b = aPlate[irb].b;
             const CVector3D& p = aPlate[irb].p;
-            const int np = (int)aXY.size() / 2;
+            // const int np = (int)aXY.size() / 2;
 
             if (is_draw_section) {
                 const CPlate& plt = aPlate[irb];
-                for (int ips = 0; ips < plt.aPS.size(); ips++) {
-                    const CPlateSection& ps = plt.aPS[ips];
+                for (const CPlateSection& ps : plt.aPS) {
                     double x0 = ps.ep0.x;
                     double y0 = ps.ep0.y;
                     double x1 = ps.ep1.x;
@@ -2508,8 +2492,7 @@ void CPhysics::DrawEnhancedGL(const double scale_fac)
 
             if (is_draw_section_moment) {
                 const CPlate& plt = aPlate[irb];
-                for (int ips = 0; ips < plt.aPS.size(); ips++) {
-                    const CPlateSection& ps = plt.aPS[ips];
+                for (const CPlateSection& ps : plt.aPS) {
                     double x0 = ps.ep0.x;
                     double y0 = ps.ep0.y;
                     double x1 = ps.ep1.x;
@@ -2577,8 +2560,7 @@ void CPhysics::DrawEnhancedGL(const double scale_fac)
         }
     }
 
-    for (int ij = 0; ij < aJoint.size(); ij++) {
-        const CJoint& joint = aJoint[ij];
+    for (const CJoint& joint : aJoint) {
         int irb0 = joint.irb0;
         int irb1 = joint.irb1;
         const CRigidBody& rb0 = aRigidBody[irb0];
@@ -2675,12 +2657,12 @@ void CPhysics::DrawFloorGL()
         double grid_z_min = -10;
         double grid_z_max = +10;
         int ndiv_grid = 30;
-        for (unsigned int ix = 0; ix < ndiv_grid + 1; ix++) {
+        for (int ix = 0; ix < ndiv_grid + 1; ix++) {
             double x0 = (grid_x_max - grid_x_min) / ndiv_grid * ix + grid_x_min;
             ::glVertex3d(x0, 0, grid_z_min);
             ::glVertex3d(x0, 0, grid_z_max);
         }
-        for (unsigned int iz = 0; iz < ndiv_grid + 1; iz++) {
+        for (int iz = 0; iz < ndiv_grid + 1; iz++) {
             double z0 = (grid_z_max - grid_z_min) / ndiv_grid * iz + grid_z_min;
             ::glVertex3d(grid_x_min, 0, z0);
             ::glVertex3d(grid_x_max, 0, z0);

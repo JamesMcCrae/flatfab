@@ -66,7 +66,7 @@ private:
     QVector3D lookat;
 
     bool interp_active;
-    QTime interp_time;
+    QElapsedTimer interp_time;
     float interp_duration;
 
     // what is needed for interpolation

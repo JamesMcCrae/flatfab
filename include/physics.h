@@ -63,8 +63,8 @@ public:
     int irb0;     // id of rigid body
     int irb1;     // id of rigid body
     ////
-    double jp0[4];  // joint position
-    double jp1[4];  // joint position
+    double jp0[4] = {};  // joint position
+    double jp1[4] = {};  // joint position
     ////
     CVector3D linear;
     CVector3D torque;
@@ -91,7 +91,7 @@ public:
     double length;
     ////
     double r, g, b;
-    double weakness;  // stress scaled with breaking stress
+    double weakness = {};  // stress scaled with breaking stress
     CVector3D ltrq;
 };
 
@@ -118,9 +118,9 @@ public:
         bool is_trq;
         CVector3D ltrq;
         ////
-        bool is_boundary;
-        int iedge0;
-        double ratio_edge0;
+        bool is_boundary = {};
+        int iedge0 = {};
+        double ratio_edge0 = {};
     };
     std::vector<CLocalForce> alForce;  // local force
     std::vector<CPlateSection> aPS;    // plate section
@@ -321,7 +321,7 @@ private:  // static functions
                                       const std::vector<double>& aDir2D,
                                       const int nH, const double max_stress);
 
-    static void AddWeakWection_Slit(CPlate& plt,  // (in,out)
+    static void AddWeakSection_Slit(CPlate& plt,  // (in,out)
                                                   ////
                                     const std::vector<double>& aXY,
                                     const CRigidBody& rb,

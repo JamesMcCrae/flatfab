@@ -805,7 +805,7 @@ void BezierCurve::GetLineIntersections(const QVector2D & line_p, const QVector2D
         for (int j=i+1; j<intersects.size(); ++j) {
 
             if (QVector2D::dotProduct(intersects[i].point, line_d) > QVector2D::dotProduct(intersects[j].point, line_d)) {
-                intersects.swap(i, j);
+                intersects.swapItemsAt(i, j);
             }
 
         }
@@ -1219,11 +1219,11 @@ float BezierCurve::Length() const
 void BezierCurve::Reverse()
 {
     for(int i = 0; i < (pts.size()/2); i++) {
-        pts.swap(i, pts.size()-(1+i));
+        pts.swapItemsAt(i, pts.size()-(1+i));
     }
 
     for(int i = 0; i < (samples.size()/2); i++) {
-        samples.swap(i, samples.size()-(1+i));
+        samples.swapItemsAt(i, samples.size()-(1+i));
     }
 }
 
