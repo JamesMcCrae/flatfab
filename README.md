@@ -21,3 +21,17 @@ You need Qt5 (tested on Ubuntu 24.10 with QtCreator 13; any previous release sho
 - install `libeigen3-dev` and `libglu1-mesa-dev`
 - open `FlatFab.pro` from QtCreator
 - press Build and enjoy!
+
+#### Flatpak
+
+Uses the latest Qt 5.15 runtime; builds manually Eigen and GLU.
+
+To build:
+
+- install `flatpak` and `flatpak-builder`
+- `flatpak install org.kde.Sdk/x86_64/5.15-24.08`
+- `flatpak install org.kde.Platform/x86_64/5.15-24.08`
+- `flatpak install io.qt.qtwebengine.BaseApp/x86_64/5.15-24.08`
+- `flatpak-builder --force-clean flatpak-build com.flatfab.FlatFab.yml`
+
+
