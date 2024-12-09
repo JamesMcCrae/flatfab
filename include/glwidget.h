@@ -17,10 +17,10 @@ enum GestureState
     STATE_NONE,             // 0.  Awaiting mouse drag
     STATE_SLOT,             // 1.  CHOOSING LINE ON EXISTING PLANE
     STATE_CAM_TRANSLATE,    // 2.  MOVING LINE ENDPOINT AROUND ON-SCREEN
-    STATE_DEADZONE,         // 3  DEADZONE
+    STATE_DEADZONE,         // 3.  DEADZONE
     STATE_CURVE,            // 4.  DEFINING A CURVE
     STATE_ORBIT,            // 5.  orbiting camera
-    STATE_MANIP_CTRLPOINT,  // 6. manipulating control point
+    STATE_MANIP_CTRLPOINT,  // 6.  manipulating control point
     STATE_RECURSIVE_SETUP_SLOT,
     STATE_RECURSIVE_SLOT,
     STATE_MANIP_WEIGHT,
@@ -115,6 +115,7 @@ public:
 
     bool GetDoMagneticCuts();
     bool GetDoLocalSymmetry();
+    bool GetClipToGroundPlane();
     bool GetPenModeOn();
     bool GetDoCyclesTest();
     bool GetDoStabilityTest();
@@ -206,6 +207,7 @@ public slots:
 
     void SetDoMagneticCuts(const bool b);
     void SetDoLocalSymmetry(const bool b);
+    void SetClipToGroundPlane(const bool b);
     void SetPenModeOn(const bool b);
     void SetDoCyclesTest(const bool b);
     void SetDoStabilityTest(const bool b);
@@ -409,8 +411,10 @@ private:
     float generate_radial_params[9];
     bool generate_surfacefacets_teeth;
 
-    // toggles for various feasibility tests
     bool do_local_symmetry;
+    bool clip_to_ground_plane;
+
+    // toggles for various feasibility tests
     bool do_cycles_test;
     bool do_stability_test;
     bool do_physics_test;

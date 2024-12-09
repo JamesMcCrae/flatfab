@@ -5,8 +5,11 @@
 MainWindow::MainWindow()
 {
     // title/window stuff
-    window_title = "FlatFab 0.8.2";
+    window_title = "FlatFab 0.8.3";
     setWindowTitle(window_title);
+
+    // release 0.8.3
+    // add toggle in edit menu to disable clipping with ground plane
 
     // release 0.8.2
     // use middle mouse button/mousewheel for more standard 3D navigation
@@ -195,8 +198,8 @@ void MainWindow::ShowAppWidgets()
         "<p><font size='4'><b>Camera Controls</b></font>"
         "<table> <tr><td><b>orbit</b><br><b>zoom</b><br><b>dolly</b></td>"
         "<td>left-click (anywhere off the model)<br>"
-        "left-click + ctrl (command on Mac OSX)<br>"
-        "left-click + shift</td> </table>");
+        "middle-click + ctrl (or mouse wheel)<br>"
+        "middle-click</td> </table>");
 
     mb.setStandardButtons(QMessageBox::Ok);
     mb.exec();
@@ -532,6 +535,15 @@ void MainWindow::createActions()
     useLocalSymmetryAct->setChecked(glWidget.GetDoLocalSymmetry());
     connect(useLocalSymmetryAct, SIGNAL(triggered()), this,
             SLOT(ToggleLocalSymmetry()));
+
+    clipToGroundPlaneAct = new QAction(tr("Clip to &Ground Plane"), this);
+    clipToGroundPlaneAct->setStatusTip(
+        tr("Enable/disable clipping new planar sections to the ground "
+           "plane."));
+    clipToGroundPlaneAct->setCheckable(true);
+    clipToGroundPlaneAct->setChecked(glWidget.GetClipToGroundPlane());
+    connect(clipToGroundPlaneAct, SIGNAL(triggered()), this,
+            SLOT(ToggleClipToGroundPlane()));
 
     copyMirrorXAct = new QAction(tr("Copy (Mirror &X)"), this);
     copyMirrorXAct->setStatusTip(
@@ -926,6 +938,7 @@ void MainWindow::createMenus()
     editMenu->addAction(resketchCurveAct);
     editMenu->addAction(useMagneticCutsAct);
     editMenu->addAction(useLocalSymmetryAct);
+    editMenu->addAction(clipToGroundPlaneAct);
 
     viewMenu = menuBar()->addMenu(tr("&View"));
     viewMenu->addAction(viewIso1Act);
@@ -1038,6 +1051,11 @@ void MainWindow::ToggleUseMagneticCuts()
 void MainWindow::ToggleLocalSymmetry()
 {
     glWidget.SetDoLocalSymmetry(!glWidget.GetDoLocalSymmetry());
+}
+
+void MainWindow::ToggleClipToGroundPlane()
+{
+    glWidget.SetClipToGroundPlane(!glWidget.GetClipToGroundPlane());
 }
 
 void MainWindow::TogglePenMode()

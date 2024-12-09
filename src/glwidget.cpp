@@ -22,6 +22,7 @@ GLWidget::GLWidget()
     z_symmetry = false;
 
     do_local_symmetry = true;
+    clip_to_ground_plane = true;
     do_cycles_test = false;
     do_connected_test = false;
     do_stability_test = false;
@@ -2140,7 +2141,9 @@ void GLWidget::mouseReleaseEvent(QMouseEvent *event)
                     sections[selected].CreateLocalSymmetry();
                 }
 
-                sections[selected].SetCtrlPointsAboveXZPlane();
+                if (clip_to_ground_plane) {
+                    sections[selected].SetCtrlPointsAboveXZPlane();
+                }
                 sections[selected].UpdateCurveTrisSlab();
 
                 break;
@@ -2157,11 +2160,15 @@ void GLWidget::mouseReleaseEvent(QMouseEvent *event)
                     }
 
                     // enforce above-ground control points
-                    active_section.SetCtrlPointsAboveXZPlane();
+                    if (clip_to_ground_plane) {
+                        active_section.SetCtrlPointsAboveXZPlane();
+                    }
                     active_section.UpdateCurveTrisSlab();
 
                     if (do_local_symmetry) {
-                        active_section_symmetry.SetCtrlPointsAboveXZPlane();
+                        if (clip_to_ground_plane) {
+                            active_section_symmetry.SetCtrlPointsAboveXZPlane();
+                        }
                         active_section_symmetry.UpdateCurveTrisSlab();
                     }
 
@@ -2225,7 +2232,9 @@ void GLWidget::mouseReleaseEvent(QMouseEvent *event)
         if (state == STATE_PEN_DRAG) {
             state = STATE_PEN_POINT;
         } else if (IsSectionSelected()) {
-            sections[selected].SetCtrlPointsAboveXZPlane();
+            if (clip_to_ground_plane) {
+                sections[selected].SetCtrlPointsAboveXZPlane();
+            }
             sections[selected].UpdateCurveTrisSlab();
 
             sections[selected].SelectMouseRayIntersect(mouse_pos,
@@ -2800,6 +2809,8 @@ bool GLWidget::GetPenModeOn() { return pen_mode; }
 
 bool GLWidget::GetDoLocalSymmetry() { return do_local_symmetry; }
 
+bool GLWidget::GetClipToGroundPlane() { return clip_to_ground_plane; }
+
 bool GLWidget::GetDoCyclesTest() { return do_cycles_test; }
 
 bool GLWidget::GetDoStabilityTest() { return do_stability_test; }
@@ -2882,6 +2893,8 @@ void GLWidget::SetPenModeOn(const bool b)
 }
 
 void GLWidget::SetDoLocalSymmetry(const bool b) { do_local_symmetry = b; }
+
+void GLWidget::SetClipToGroundPlane(const bool b) { clip_to_ground_plane = b; }
 
 void GLWidget::SetDoCyclesTest(const bool b)
 {
@@ -5043,7 +5056,9 @@ void GLWidget::AcceptPenCurve()
     }
 
     // enforce above-ground control points
-    active_section.SetCtrlPointsAboveXZPlane();
+    if (clip_to_ground_plane) {
+        active_section.SetCtrlPointsAboveXZPlane();
+    }
     active_section.UpdateCurveTrisSlab();
 
     if (!active_section.SliceTriangles().empty()) {

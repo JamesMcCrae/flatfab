@@ -60,6 +60,7 @@ private slots:
     void ToggleUseMagneticCuts();
     void TogglePenMode();
     void ToggleLocalSymmetry();
+    void ToggleClipToGroundPlane();
     void StartDimensioningTool();
 
     void ViewIso1();
@@ -148,6 +149,7 @@ private:
 
     QMenu *editMenu;
     QAction *useLocalSymmetryAct;
+    QAction *clipToGroundPlaneAct;
     QAction *copyMirrorXAct;
     QAction *copyRotateYAct;
     QAction *copyMirrorZAct;
