@@ -1692,7 +1692,6 @@ void GLWidget::mousePressEvent(QMouseEvent *event)
 void GLWidget::mouseMoveEvent(QMouseEvent *event)
 {
     const bool ctrl_held = ((event->modifiers() & Qt::ControlModifier) > 0);
-    const bool shift_held = ((event->modifiers() & Qt::ShiftModifier) > 0);
 
     QVector2D p(event->x(), height() - event->y());
     p *= devicePixelRatio();
@@ -2038,21 +2037,19 @@ void GLWidget::mouseMoveEvent(QMouseEvent *event)
                 break;
 
             case STATE_ORBIT:
-
-                if (ctrl_held) {
-                    cam.Zoom(mouse_diff);
-                } else if (shift_held) {
-                    cam.Dolly(mouse_diff);
-                } else {
-                    cam.Orbit(mouse_diff);
-                }
-
+                cam.Orbit(mouse_diff);
                 break;
 
             default:
                 break;
         }
 
+    } else if (event->buttons() & Qt::MiddleButton) {
+        if (ctrl_held) {
+            cam.Zoom(mouse_diff);
+        } else {
+            cam.Dolly(mouse_diff);
+        }
     } else if (event->buttons() & Qt::RightButton) {
         if (state == STATE_PEN_DRAG) {
             active_section.MoveCtrlPointMouseRayIntersect(mouse_pos,
@@ -2242,6 +2239,12 @@ void GLWidget::mouseReleaseEvent(QMouseEvent *event)
 
     // UpdateDraw();
     // updateGL();
+}
+
+void GLWidget::wheelEvent(QWheelEvent *event) {
+    const float zoomFactor = 0.2f;
+    const QPoint angle = event->angleDelta();
+    cam.Zoom(QVector2D(angle.x(), angle.y()) * zoomFactor);
 }
 
 void GLWidget::keyPressEvent(QKeyEvent *event)

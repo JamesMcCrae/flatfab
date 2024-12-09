@@ -5,8 +5,11 @@
 MainWindow::MainWindow()
 {
     // title/window stuff
-    window_title = "FlatFab 0.8.1";
+    window_title = "FlatFab 0.8.2";
     setWindowTitle(window_title);
+
+    // release 0.8.2
+    // use middle mouse button/mousewheel for more standard 3D navigation
 
     // release 0.8.1
     // modernize for Qt5, formatting, fix all compiler warnings
