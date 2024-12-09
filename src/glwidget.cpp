@@ -12,39 +12,31 @@ GLWidget::GLWidget()
     setAutoFillBackground(false);
     setFocusPolicy(Qt::ClickFocus);
 
+    open_filename = "untitled";
     grid_size = 10;
-
     max_undo_sections = 1000;
     undo_index = -1;
-
     x_symmetry = false;
     y_symmetry = false;
     z_symmetry = false;
-
     do_local_symmetry = true;
     clip_to_ground_plane = true;
     do_cycles_test = false;
     do_connected_test = false;
     do_stability_test = false;
     do_physics_test = false;
-
     pen_mode = false;
-
     do_show_tnb_frames = false;
     do_show_shadow = true;
     do_show_templates = true;
-
     do_magnetic_cuts = false;
     magnet_strength = 1.0f;
-
     deadzone_radius = 0.4f;
-
     template_image_tex = 0;
     template_pos = QVector2D(0, 0);
     template_rotation = 0.0f;
     template_scale = 5.0f;
     template_flipx = false;
-
     generate_grid_sizex = 2.0f;
     generate_grid_sizey = 2.0f;
     generate_grid_staplesize = 0.25f;
@@ -63,12 +55,9 @@ GLWidget::GLWidget()
         generate_radial_params[i] = 1.0f;
     }
     generate_surfacefacets_teeth = false;
-
     metres_per_unit = 0.0254;  // 0.01 means that each unit is 1cm, 0.0254 that
                                // means each unit is 1 inch
-
     quality_samples = 15;
-
     slab_thickness = 0.125f;  // this is for 1/8" acrylic
     calibration_factor = 1.0f;
     physics_new_weight_mass = 1.0f;      // in kg
@@ -79,26 +68,19 @@ GLWidget::GLWidget()
     physics.SetMaximumStress(physics_max_stress);
 
     template_cut_snap_distance_3d = 0.5f;
-
     section_error_tolerance = 0.015f;
     section_error_tolerance_template = 0.005f;
-
     animate_until = QDateTime::currentDateTime();
-
     cam_animate_duration = 800.0f;
     cam_animate_angle = 80.0f;
     cam_lookat_distance = 100.0f;
-
     state = STATE_NONE;
     last_op = OP_NONE;
-
     update_sections_disp_list = false;
     sections_disp_list = 0;
-
-    ClearAll();
-
     default_lookat = QVector3D(0, grid_size / 3, 0);
 
+    ClearAll();   
     ResetCamera();
 
     animate_timer.setSingleShot(false);

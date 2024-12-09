@@ -1,11 +1,6 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include <QNetworkAccessManager>
-#include <QNetworkReply>
-#include <QNetworkRequest>
-#include <QUrl>
-#include <QWebEngineView>
 #include <QtGui>
 
 #include "glwidget.h"
@@ -18,13 +13,14 @@ public:
     MainWindow();
     ~MainWindow();
 
+    void ShowWelcomeMessageBox();
+
 protected:
     void keyPressEvent(QKeyEvent *event);
     void keyReleaseEvent(QKeyEvent *event);
 
 private slots:
 
-    void ShowAppWidgets();
     void UpdateWindowTitle();
 
     void NewPlaneSketch();
@@ -76,11 +72,7 @@ private slots:
     void ToggleStabilityTest();
     void ToggleShowTNBFrames();
     void ToggleShowShadow();
-    void ToggleShowTemplates();
-
-    void SetMultisampling0();
-    void SetMultisampling4();
-    void SetMultisampling16();
+    void ToggleShowTemplates();   
 
     void GenerateBranchingSetRoot();
     void GenerateBranching();
@@ -102,11 +94,7 @@ private slots:
     void TogglePhysicsSection();
     void TogglePhysicsSectionMoment();
     void PhysicsAddExternalMass();
-    void PhysicsRemoveExternalMasses();
-
-    void closeDialog();
-
-    // New UI features
+    void PhysicsRemoveExternalMasses();   
 
     void openEditWidget();
     void openGenerateWidget();
@@ -122,13 +110,8 @@ private:
     void createActions();
     void createMenus();
 
-    void ShowWelcomePage();
-    void SendTrackRequest();
-
-    void SetMultisampling(const int i);
-
-    virtual void resizeEvent(QResizeEvent *event);
-    virtual void moveEvent(QMoveEvent *event);
+    void createSideBar();
+    void createQuickTools();
 
     QMenu *fileMenu;
     QAction *newPlaneSketchAct;
@@ -211,26 +194,12 @@ private:
     QAction *removeExternalWeightsAct;
 
     GLWidget glWidget;
-    QDockWidget *dockWidget;
 
-    QWidget *bottomWidget;
-    QDockWidget *bottomDockWidget;
-
-    QWebEngineView *webView;
-
-    // New UI features
-
-    void createSideBar();
     QToolBar *mainToolBar;
     QAction *openDock[5];
-    QDockWidget *docks[5];
-
-    void createQuickToolBar();
-    QToolBar *quickToolBar;
-    QDockWidget *toolWidget;
+    QDockWidget *docks[5];   
 
     QString window_title;
-    QTimer window_title_timer;
 };
 
 #endif  // MAINWINDOW_H

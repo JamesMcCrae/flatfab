@@ -1,6 +1,5 @@
 #include "mainwindow.h"
 #include <QApplication>
-#include <QWebEngineSettings>
 
 int main(int argc, char *argv[])
 {
@@ -62,6 +61,7 @@ int main(int argc, char *argv[])
 
     MainWindow w;
     w.show();
+    w.ShowWelcomeMessageBox();
 
     return a.exec();
 }

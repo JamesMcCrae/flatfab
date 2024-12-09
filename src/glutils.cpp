@@ -1031,31 +1031,27 @@ void GLutils::DrawSemiRingLineStrip(const QVector3D &p1, const QVector3D &p2,
     glPopMatrix();
 }
 
-// An efficient algorith for drawing an arc avoiding trig functions
-// This is from the website: http://slabode.exofire.net/circle_draw.shtml
+// An efficient algorithm for drawing an arc avoiding trig functions
+// http://slabode.exofire.net/circle_draw.shtml
 // The author has released it to the public
 
 void GLutils::DrawArc(float cx, float cy, float cz, float innerR, float outerR,
                       float start_angle, float arc_angle, int num_segments)
 {
-    float theta =
-        arc_angle /
-        float(num_segments -
-              1);  // theta is now calculated from the arc angle instead, the -
-                   // 1 bit comes from the fact that the arc is open
-
+    // theta is now calculated from the arc angle instead, the
+    // -1 bit comes from the fact that the arc is open
+    float theta = arc_angle / float(num_segments - 1);
     float tangetial_factor = tanf(theta);
-
     float radial_factor = cosf(theta);
 
-    float x = cosf(start_angle);  // we now start at the start angle
+    // we now start at the start angle
+    float x = cosf(start_angle);
     float y = sinf(start_angle);
 
-    glBegin(GL_TRIANGLE_STRIP);  // since the arc is not a closed curve, this is
-                                 // a strip now
+    // since the arc is not a closed curve, this is a strip now
+    glBegin(GL_TRIANGLE_STRIP);
     for (int ii = 0; ii < num_segments; ii++) {
         glVertex3f(innerR * x + cx, innerR * y + cy, cz);
-
         glVertex3f(outerR * x + cx, outerR * y + cy, cz);
 
         float tx = -y;

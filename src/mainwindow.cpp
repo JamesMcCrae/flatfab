@@ -1,12 +1,18 @@
-#include <QWebEngineSettings>
-
 #include "mainwindow.h"
 
 MainWindow::MainWindow()
 {
-    // title/window stuff
-    window_title = "FlatFab 0.8.3";
-    setWindowTitle(window_title);
+    window_title = "FlatFab 0.8.4";
+    UpdateWindowTitle();
+    createActions();
+    createMenus();
+    createSideBar();
+    createQuickTools();
+    setCentralWidget(&glWidget);
+
+    // release 0.8.4
+    // remove all network-related code (welcome webpage and analytics),
+    // UI refactoring, put quicktools in left toolbar
 
     // release 0.8.3
     // add toggle in edit menu to disable clipping with ground plane
@@ -56,103 +62,13 @@ MainWindow::MainWindow()
 
     // release 0.2
     //  fixed rippling effect of bezier curve fit
-    //  made 80 degrees the default rotation angle
-
-    // side dock widget stuff
-    // sideWidget = glWidget.GetSideWidget();
-    // dockWidget = new QDockWidget();
-    // dockWidget->setWindowTitle("Settings");
-    // dockWidget->setWidget(sideWidget);
-
-    // web view stuff
-    webView = new QWebEngineView(this);
-    webView->setGeometry(0, 0, 800, 700);
-
-    // does nothing for some reason
-    webView->settings()->setFontFamily(QWebEngineSettings::SansSerifFont,
-                                       "Arial");
-
-    webView->load(QUrl("http://flatfab.com/splash.html"));
-    webView->show();
-
-    createActions();
-    createMenus();
-
-    // set up bottom widget
-    ShowWelcomePage();
-
-    // track usage
-    SendTrackRequest();
-
-    toolWidget = NULL;
-
-    window_title_timer.setSingleShot(false);
-    window_title_timer.start(1000);
-
-    connect(&window_title_timer, SIGNAL(timeout()), this,
-            SLOT(UpdateWindowTitle()));
+    //  made 80 degrees the default rotation angle   
 }
 
 MainWindow::~MainWindow() {}
 
-void MainWindow::ShowWelcomePage()
+void MainWindow::ShowWelcomeMessageBox()
 {
-    QPushButton *button1 = new QPushButton("New FlatFab");
-    QPushButton *button2 = new QPushButton("Open FlatFab...");
-    QPushButton *button3 = new QPushButton("Quit");
-
-    button1->setMinimumHeight(40);
-    button2->setMinimumHeight(40);
-    button3->setMinimumHeight(40);
-
-    connect(button1, SIGNAL(clicked()), this, SLOT(NewPlaneSketch()));
-    connect(button2, SIGNAL(clicked()), this, SLOT(LoadPlaneSketch()));
-    connect(button3, SIGNAL(clicked()), this, SLOT(Exit()));
-
-    QHBoxLayout *layout = new QHBoxLayout;
-    layout->addWidget(button1);
-    layout->addWidget(button2);
-    layout->addWidget(button3);
-
-    bottomWidget = new QWidget(this);
-    bottomWidget->setLayout(layout);
-
-    bottomDockWidget = new QDockWidget();
-    bottomDockWidget->setFeatures(QDockWidget::NoDockWidgetFeatures);
-    bottomDockWidget->setWindowTitle("Start using FlatFab:");
-    bottomDockWidget->setWidget(bottomWidget);
-
-    setCentralWidget(webView);
-    addDockWidget(Qt::TopDockWidgetArea, bottomDockWidget);
-}
-
-void MainWindow::ShowAppWidgets()
-{
-    // main widget/window layout
-    if (webView != NULL) {
-        webView->hide();
-        delete webView;
-        webView = NULL;
-    } else {
-        // skip everything else if webview is NULL,
-        // as it means this method has been called before
-        return;
-    }
-
-    this->removeDockWidget(bottomDockWidget);
-
-    createSideBar();
-    createQuickToolBar();
-    setCentralWidget(&glWidget);
-
-    this->update();  //@chris: maybe this solves that issue (a quick redraw
-                     // after changing widgets and before showing the
-                     // messagebox?)
-    glWidget.repaint();
-
-    // For some reason the message box causes the webView to show up for a
-    // fraction of a second as a side widget is opened on Windows - this happens
-    // even after deleting the webView
     QMessageBox mb;
     mb.setPalette(QPalette(QColor(230, 230, 230), QColor(255, 255, 255)));
 
@@ -197,62 +113,40 @@ void MainWindow::ShowAppWidgets()
     mb.exec();
 }
 
-void MainWindow::closeDialog() {}
-
-void MainWindow::createQuickToolBar()
+void MainWindow::createQuickTools()
 {    
-    // Push buttons - all buttons are opposite of their boolean counterparts -
-    // this is an ugly hack to acheive the right gradient
-
-    //
-    QPushButton *button = new QPushButton(
+    // Local symmetry button
+    QPushButton *symButton = new QPushButton(
         QIcon(":/icons/appbar.transform.flip.horizontal.png"), "", this);
-    button->setCheckable(true);
-    button->setChecked(false);  // this is opposite of what it should be - ugly
-                                // hack to acheive the right gradient
-    button->setToolTip("Local Symmetry");
-    button->setStyleSheet(
+    symButton->setCheckable(true);
+    symButton->setChecked(false);
+    symButton->setToolTip("Local Symmetry");
+    symButton->setStyleSheet(
         "QPushButton {icon-size:35px; max-width:35px; max-height:35px;}"
         "QPushButton:closed {background-color: #22c024;}"
         "QPushButton:open {background-color: #fff;}");
-    connect(button, SIGNAL(clicked()), this, SLOT(ToggleLocalSymmetry()));
-    button->setFocusPolicy(Qt::NoFocus);
+    connect(symButton, SIGNAL(clicked()), this, SLOT(ToggleLocalSymmetry()));
 
     // Pen method
-    QPushButton *button2 =
+    QPushButton *penButton =
         new QPushButton(QIcon(":/icons/appbar.vector.pen.png"), "", this);
-    button2->setCheckable(true);
-    button2->setChecked(true);  // this is opposite of what it should be - ugly
-                                // hack to acheive the right gradient
-    button2->setToolTip("Pen Mode");
-    button2->setStyleSheet(
+    penButton->setCheckable(true);
+    penButton->setChecked(true);
+    penButton->setToolTip("Pen Mode");
+    penButton->setStyleSheet(
         "QPushButton {icon-size:35px; max-width:35px; max-height:35px;}"
         "QPushButton:closed {background-color: #22c024;}"
         "QPushButton:open {background-color: #fff;}");
-    connect(button2, SIGNAL(clicked()), this, SLOT(TogglePenMode()));
-    button2->setFocusPolicy(Qt::NoFocus);
+    connect(penButton, SIGNAL(clicked()), this, SLOT(TogglePenMode()));
 
     // Setting up layout and widget
     QHBoxLayout *layout = new QHBoxLayout();
-    layout->addWidget(button);
-    layout->addWidget(button2);
+    layout->addWidget(symButton);
+    layout->addWidget(penButton);
     QWidget *widget = new QWidget();
     widget->setLayout(layout);
-    widget->setFocusPolicy(Qt::NoFocus);
-    toolWidget = new QDockWidget("Tools", this);
-    toolWidget->setWidget(widget);
 
-    // Setting tool widget properties
-    toolWidget->setFloating(true);
-
-    QPoint point = mapToGlobal(QPoint(width() - 10, 10));
-    toolWidget->setGeometry(point.x(), point.y(), 0, 0);
-
-    toolWidget->setAllowedAreas(Qt::NoDockWidgetArea);
-    toolWidget->setWindowFlags(Qt::Tool | Qt::FramelessWindowHint);
-    toolWidget->setWindowTitle("Tools");
-    toolWidget->setFocusPolicy(Qt::NoFocus);
-    toolWidget->show();
+    mainToolBar->addWidget(widget);
 }
 
 void MainWindow::createSideBar()
@@ -361,24 +255,6 @@ void MainWindow::createSideBar()
     docks[2]->setWindowTitle("Guides and Dimensions");
     docks[3]->setWindowTitle("Physical Simulation");
     docks[4]->setWindowTitle("View");
-}
-
-void MainWindow::SendTrackRequest()
-{
-    // this code sends a track request to Google Anayltics
-    // for "splash.html" for the FFF account
-    QNetworkAccessManager *nam = new QNetworkAccessManager(this);
-
-    QUrl collect_url("http://www.google-analytics.com/collect");
-
-    QNetworkRequest request(collect_url);
-    request.setHeader(QNetworkRequest::ContentTypeHeader,
-                      "application/x-www-form-urlencoded");
-
-    QByteArray query_items(
-        "v=1&tid=UA-51900137-1&cid=555&t=pageview&dp=%2Fsplash.html");
-
-    nam->post(request, query_items);
 }
 
 void MainWindow::keyPressEvent(QKeyEvent *event)
@@ -939,8 +815,8 @@ void MainWindow::UpdateWindowTitle()
 
 void MainWindow::NewPlaneSketch()
 {
-    ShowAppWidgets();
     glWidget.NewPlaneSketch();
+    UpdateWindowTitle();
 }
 
 void MainWindow::LoadTemplateOBJ() { glWidget.LoadTemplateOBJ(); }
@@ -951,12 +827,14 @@ void MainWindow::LoadTemplateImage() { glWidget.LoadTemplateImage(); }
 
 void MainWindow::LoadPlaneSketch()
 {
-    if (glWidget.LoadPlaneSketch()) {
-        ShowAppWidgets();
-    }
+    glWidget.LoadPlaneSketch();
+    UpdateWindowTitle();
 }
 
-void MainWindow::SavePlaneSketch() { glWidget.SavePlaneSketch(); }
+void MainWindow::SavePlaneSketch() {
+    glWidget.SavePlaneSketch();
+    UpdateWindowTitle();
+}
 
 void MainWindow::SaveSliceOBJ() { glWidget.SaveSliceOBJ(); }
 
@@ -1197,21 +1075,6 @@ void MainWindow::PhysicsRemoveExternalMasses()
     glWidget.DoPhysicsRemoveWeights();
 }
 
-void MainWindow::SetMultisampling0() { SetMultisampling(0); }
-
-void MainWindow::SetMultisampling4() { SetMultisampling(4); }
-
-void MainWindow::SetMultisampling16() { SetMultisampling(16); }
-
-void MainWindow::SetMultisampling(const int i)
-{
-    //  Setting up Multi-sampling
-    QGLFormat glf = QGLFormat::defaultFormat();
-    glf.setSampleBuffers(i > 0);
-    glf.setSamples(i);
-    QGLFormat::setDefaultFormat(glf);
-}
-
 // UI slots
 void MainWindow::openEditWidget()
 {
@@ -1294,22 +1157,3 @@ void MainWindow::setPhysicsMenuChecks()
     testPhysicsAct->setChecked(glWidget.GetDoPhysicsTest());
 }
 
-void MainWindow::resizeEvent(QResizeEvent *)
-{
-    // this moves the toolwidget on resize
-    if (toolWidget != NULL) {
-        QPoint point =
-            mapToGlobal(QPoint(width() - toolWidget->width() - 5, 25));
-        toolWidget->setGeometry(point.x(), point.y(), 0, 0);
-    }
-}
-
-void MainWindow::moveEvent(QMoveEvent *)
-{
-    // this moves the toolwidget on window move
-    if (toolWidget != NULL) {
-        QPoint point =
-            mapToGlobal(QPoint(width() - toolWidget->width() - 5, 25));
-        toolWidget->setGeometry(point.x(), point.y(), 0, 0);
-    }
-}
