@@ -132,34 +132,6 @@ void GLutils::ColorByIndex(const int ind)
     }
 }
 
-/*
-void GLutils::DrawTNBFrame(const vec3 & o, const TNBFrame & tnb, const float
-scale)
-{
-
-    vec3 t = o + tnb.T() * scale;
-    vec3 n = o + tnb.N() * scale;
-    vec3 b = o + tnb.B() * scale;
-
-    glBegin(GL_LINES);
-
-    glColor3f(1,0,0);
-    glVertex3d(o[0], o[1], o[2]);
-    glVertex3d(t[0], t[1], t[2]);
-
-    glColor3f(0,1,0);
-    glVertex3d(o[0], o[1], o[2]);
-    glVertex3d(n[0], n[1], n[2]);
-
-    glColor3f(0,0,1);
-    glVertex3d(o[0], o[1], o[2]);
-    glVertex3d(b[0], b[1], b[2]);
-
-    glEnd();
-
-}
-*/
-
 void GLutils::DrawArrowFixedLength(const QVector3D &p1, const QVector3D &p2,
                                    const float len)
 {
@@ -215,9 +187,6 @@ void GLutils::DrawCylinder(const QVector3D &p1, const QVector3D &p2,
     QVector3D axis =
         QVector3D::crossProduct(QVector3D(0, 0, 1), (p2 - p1) / line_len);
 
-    // qDebug() << "DrawCylinder theta_deg" << theta_deg << "axis" << axis << p1
-    // << p2;
-
     glPushMatrix();
 
     glTranslatef(p1.x(), p1.y(), p1.z());
@@ -268,27 +237,6 @@ void GLutils::DrawCylinderFixedLength(const QVector3D &p1, const QVector3D &p2,
     const float cur_len = (p2 - p1).length();
     DrawCylinder(p1, p1 + (p2 - p1) / cur_len * len, radius);
 }
-
-/*
-vec2 GLutils::ProjectPoint(const vec3 & p)
-{
-
-    GLdouble model_view[16];
-    GLdouble projection[16];
-    GLint viewport[4];
-    GLdouble winx, winy, winz;
-
-    glGetDoublev(GL_MODELVIEW_MATRIX, model_view);
-    glGetDoublev(GL_PROJECTION_MATRIX, projection);
-    glGetIntegerv(GL_VIEWPORT, viewport);
-
-    gluProject(p[0], p[1], p[2], model_view, projection, viewport, &winx, &winy,
-&winz);
-
-    return vec2(winx, winy);
-
-}
-*/
 
 QVector3D GLutils::ProjectPoint(const QVector3D &p)
 {
@@ -488,7 +436,6 @@ float GLutils::SignedAngleBetweenRad(const QVector3D &v1, const QVector3D &v2,
                                      const QVector3D &axis)
 {
     const float dot = QVector3D::dotProduct(v1, v2);
-    // det = x1*y2*zn + x2*yn*z1 + xn*y1*z2 - z1*y2*xn - z2*yn*x1 - zn*y1*x2
     const float det = v1.x() * v2.y() * axis.z() + v2.x() * axis.y() * v1.z() +
                       axis.x() * v1.y() * v2.z() - v1.z() * v2.y() * axis.x() -
                       v2.z() * axis.y() * v1.x() - axis.z() * v1.y() * v2.x();
@@ -700,6 +647,7 @@ bool GLutils::PlanePlaneIntersection(const QVector3D &n1, const QVector3D &p1,
 void GLutils::ConvexHull_GiftWrapping(const QList<QVector3D> &pts,
                                       QList<int> &hull)
 {
+    // http://en.wikipedia.org/wiki/Gift_wrapping_algorithm
     hull.clear();
 
     if (pts.empty()) {
@@ -711,8 +659,7 @@ void GLutils::ConvexHull_GiftWrapping(const QList<QVector3D> &pts,
         hull.push_back(0);
         hull.push_back(1);
         return;
-    }
-    // http://en.wikipedia.org/wiki/Gift_wrapping_algorithm
+    }    
 
     // get left-most point (smallest X)
 
@@ -780,7 +727,6 @@ bool GLutils::ConvexHull_PointInside(const QList<QVector3D> &hull,
             }
         }
 
-        // qDebug() << cross_prod << p_dot_prod << hull_length;
         return false;
 
     } else if (hull.size() >= 3) {
@@ -1130,22 +1076,20 @@ void GLutils::DrawArcLineStrip(float cx, float cy, float cz, float radius,
 {
     glPushAttrib(GL_LIGHTING);
     glDisable(GL_LIGHTING);
-    float theta =
-        arc_angle /
-        float(num_segments -
-              1);  // theta is now calculated from the arc angle instead, the -
-                   // 1 bit comes from the fact that the arc is open
+    // theta is now calculated from the arc angle instead,
+    // the -1 bit comes from the fact that the arc is open
+    float theta = arc_angle / float(num_segments - 1);
 
     float tangetial_factor = tanf(theta);
-
     float radial_factor = cosf(theta);
 
     float x = cosf(start_angle);  // we now start at the start angle
     float y = sinf(start_angle);
 
     glLineWidth(thickness);
-    glBegin(GL_LINE_STRIP);  // since the arc is not a closed curve, this is a
-                             // strip now
+
+    // since the arc is not a closed curve, this is a strip now
+    glBegin(GL_LINE_STRIP);
     for (int ii = 0; ii < num_segments; ii++) {
         glVertex3f(radius * x + cx, radius * y + cy, cz);
 
@@ -1169,11 +1113,9 @@ void GLutils::DrawArcLineStrip(QVector3D c, QVector3D dir, QVector3D axis,
 {
     glPushAttrib(GL_LIGHTING);
     glDisable(GL_LIGHTING);
-    float theta =
-        arc_angle /
-        float(num_segments -
-              1);  // theta is now calculated from the arc angle instead, the -
-                   // 1 bit comes from the fact that the arc is open
+    // theta is now calculated from the arc angle instead,
+    // the -1 bit comes from the fact that the arc is open
+    float theta = arc_angle / float(num_segments - 1);
 
     glPushMatrix();
     glTranslatef(c.x(), c.y(), c.z());
@@ -1181,8 +1123,8 @@ void GLutils::DrawArcLineStrip(QVector3D c, QVector3D dir, QVector3D axis,
 
     glPushAttrib(GL_LINE_BIT);
     glLineWidth(thickness);
-    glBegin(
-        GL_LINES);  // since the arc is not a closed curve, this is a strip now
+    // since the arc is not a closed curve, this is a strip now
+    glBegin(GL_LINES);
     for (int ii = 0; ii < num_segments; ii++) {
         glVertex3f(rotVec.x(), rotVec.y(), rotVec.z());
         rotVec = RotateVector(rotVec, axis, theta);
@@ -1194,13 +1136,11 @@ void GLutils::DrawArcLineStrip(QVector3D c, QVector3D dir, QVector3D axis,
     glPopAttrib();
 }
 
-// Note: segements is assumed to be a list of pairs of vertices defining
+// Note: segments is assumed to be a list of pairs of vertices defining
 // segments, an even number of verts is expected
 void GLutils::CurvesFromLineSegments(QList<QVector2D> &segments,
                                      QList<QList<QVector2D> > &curves)
 {
-    // qDebug() << "GLutils::CurvesFromLineSegments - segments size" <<
-    // segments.size();
     curves.clear();
 
     const float max_dist = 0.0005f;
@@ -1268,18 +1208,8 @@ void GLutils::CurvesFromLineSegments(QList<QVector2D> &segments,
 
         } while (find_next);
 
-        curves.push_back(curve);
-        // NOTE: curve closed test presently disabled!
-        // push the curve back if it's closed (the endpoints are about the same)
-        // if ((curve.first() - curve.last()).length() < max_dist) {
-        //
-        // }
+        curves.push_back(curve);        
     }
-
-    // qDebug() << "GLutils::CurvesFromLineSegments - curves created " <<
-    // curves.size(); if (curves.size() > 0) {
-    //     qDebug() << curves[0];
-    // }
 }
 
 int GLutils::GetClosestPoint(const QList<QVector2D> &pts, const QVector2D &p)

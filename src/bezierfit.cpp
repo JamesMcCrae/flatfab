@@ -48,34 +48,6 @@ main()
 void BezierFit::FitCurve(const QList<QVector2D> & d, const double error,
                          QList<QVector2D> & fit_curve)
 {
-    // fit_curve.clear();
-
-    // const QVector2D tHat1 = ComputeLeftTangent(d, 0); /*  Unit tangent
-    // vectors at endpoints */ const QVector2D tHat2 = ComputeRightTangent(d,
-    // d.size() - 1); FitCubic(d, 0, d.size() - 1, tHat1, tHat2, error,
-    // fit_curve);
-
-    // compute curve length
-    // float len = 0.0f;
-    // for (int i=1; i<d.size(); ++i) {
-    //     len += (d[i] - d[i-1]).length();
-    // }
-    // qDebug() << d.size() << len;
-
-    /*
-    const int n_split = 40;
-    for (int i=0; i<d.size()-1; i+=n_split) {
-
-        const int i2 = qMin(d.size()-1, i+n_split);
-        //qDebug() << i << i2 << d.size();
-
-        const QVector2D tHat1 = ComputeLeftTangent(d, i); // Unit tangent
-    vectors at endpoints const QVector2D tHat2 = ComputeRightTangent(d, i2);
-        FitCubic(d, i, i2, tHat1, tHat2, error, fit_curve);
-
-    }
-    */
-
     const float smoothThreshold = 0.6f;
     const float curvatureThreshold = 0.6f;
     const int iterations = 3;
@@ -110,8 +82,6 @@ void BezierFit::FitCurve(const QList<QVector2D> & d, const double error,
         }
     }
     segment_indexes.push_back(d.size() - 1);  // always include the last point
-
-    // qDebug() << "segment_indexes" << segment_indexes;
 
     // 5.  Fit cubic bezier splines to each segmented curve
     for (int i = 0; i < segment_indexes.size() - 1; ++i) {
@@ -168,14 +138,10 @@ void BezierFit::FitCubic(const QList<QVector2D> & d, const int first,
         bezCurve[2] = bezCurve[3] +
                       (tHat2 * dist);  // V2Add(&bezCurve[3], V2Scale(&tHat2,
                                        // dist), &bezCurve[2]);
-        // DrawBezierCurve(3, bezCurve);
-        // qDebug() << "BezierFit::FitCubic - line 99" << first << last;
         fit_curve.push_back(bezCurve[0]);
         fit_curve.push_back(bezCurve[1]);
         fit_curve.push_back(bezCurve[2]);
         fit_curve.push_back(bezCurve[3]);
-        // qDebug() << bezCurve;
-        // free((void *)bezCurve);
         return;
     }
 
@@ -187,15 +153,10 @@ void BezierFit::FitCubic(const QList<QVector2D> & d, const int first,
     maxError = ComputeMaxError(d, first, last, bezCurve, u, splitPoint);
     if (maxError < error) {
         // TODO: do something here to provide curves
-        // qDebug() << "BezierFit::FitCubic - line 113" << first << last;
         fit_curve.push_back(bezCurve[0]);
         fit_curve.push_back(bezCurve[1]);
         fit_curve.push_back(bezCurve[2]);
         fit_curve.push_back(bezCurve[3]);
-        // qDebug() << bezCurve;
-        // DrawBezierCurve(3, bezCurve);
-        // free((void *)u);
-        // free((void *)bezCurve);
         return;
     }
 
@@ -212,28 +173,18 @@ void BezierFit::FitCubic(const QList<QVector2D> & d, const int first,
 
             if (maxError < error) {
                 // TODO: do something with this curve
-                // qDebug() << "BezierFit::FitCubic - line 134" << first <<
-                // last;
                 fit_curve.push_back(bezCurve[0]);
                 fit_curve.push_back(bezCurve[1]);
                 fit_curve.push_back(bezCurve[2]);
                 fit_curve.push_back(bezCurve[3]);
-                // qDebug() << bezCurve;
-                // DrawBezierCurve(3, bezCurve);
-                // free((void *)u);
-                // free((void *)bezCurve);
-                // free((void *)uPrime);
                 return;
             }
 
-            // free((void *)u);
             u = uPrime;
         }
     }
 
     /* Fitting failed -- split at max error point and fit recursively */
-    // free((void *)u);
-    // free((void *)bezCurve);
     tHatCenter = ComputeCenterTangent(d, splitPoint);
     FitCubic(d, first, splitPoint, tHat1, tHatCenter, error, fit_curve);
     tHatCenter = -tHatCenter;  // V2Negate(&tHatCenter);
@@ -263,24 +214,15 @@ void BezierFit::GenerateBezier(const QList<QVector2D> & d, const int first,
         det_C0_X, det_X_C1;
     double alpha_l, /* Alpha values, left and right	*/
         alpha_r;
-    // QVector2D 	tmp;			/* Utility variable
-    // */ BezierCurve	bezCurve;	/* RETURN bezier curve ctl pts	*/
 
     bezCurve.resize(4);  // bezCurve = (Point2 *)malloc(4 * sizeof(Point2));
     nPts = last - first + 1;
 
-    // QVector2D A[nPts][2];	/* Precomputed rhs for eqn	*/
     QVector<QVector<QVector2D> > A(nPts, QVector<QVector2D>(2));
 
     /* Compute the A's	*/
     for (int i = 0; i < nPts; i++) {
         QVector2D v1, v2;
-        /*
-        v1 = tHat1;
-        v2 = tHat2;
-        V2Scale(&v1, B1(uPrime[i]));
-        V2Scale(&v2, B2(uPrime[i]));
-        */
         v1 = tHat1 * B1(uPrime[i]);
         v2 = tHat2 * B2(uPrime[i]);
         A[i][0] = v1;
@@ -300,22 +242,9 @@ void BezierFit::GenerateBezier(const QList<QVector2D> & d, const int first,
             A[i][0], A[i][0]);  // V2Dot(&A[i][0], &A[i][0]);
         C[0][1] += QVector2D::dotProduct(
             A[i][0], A[i][1]);  // V2Dot(&A[i][0], &A[i][1]);
-        /*					C[1][0] += V2Dot(&A[i][0],
-         * &A[i][1]);*/
         C[1][0] = C[0][1];
         C[1][1] += QVector2D::dotProduct(
             A[i][1], A[i][1]);  // V2Dot(&A[i][1], &A[i][1]);
-
-        /*
-        tmp = V2SubII(d[first + i],
-                V2AddII(
-                    V2ScaleIII(d[first], B0(uPrime[i])),
-                    V2AddII(
-                        V2ScaleIII(d[first], B1(uPrime[i])),
-                        V2AddII(
-                            V2ScaleIII(d[last], B2(uPrime[i])),
-                            V2ScaleIII(d[last], B3(uPrime[i]))))));
-                            */
 
         const QVector2D p0 = d[first] * B0(uPrime[i]);
         const QVector2D p1 = d[first] * B1(uPrime[i]);
@@ -340,9 +269,8 @@ void BezierFit::GenerateBezier(const QList<QVector2D> & d, const int first,
     /* If alpha negative, use the Wu/Barsky heuristic (see text) */
     /* (if alpha is 0, you get coincident control points that lead to
      * divide by zero in any subsequent NewtonRaphsonRootFind() call. */
-    double segLength =
-        (d[last] - d[first])
-            .length();  // V2DistanceBetween2Points(&d[last], &d[first]);
+    // V2DistanceBetween2Points(&d[last], &d[first]);
+    double segLength = (d[last] - d[first]).length();
     double epsilon = 1.0e-6 * segLength;
     if (alpha_l < epsilon || alpha_r < epsilon) {
         /* fall back on standard (probably inaccurate) formula, and subdivide
@@ -385,19 +313,16 @@ void BezierFit::Reparameterize(const QList<QVector2D> & d, const int first,
                                const QVector<QVector2D> & bezCurve,
                                QVector<double> & uPrime)
 //    Point2	*d;			/*  Array of digitized points	*/
-//    int		first, last;		/*  Indices defining region
-//    */ double	*u;			/*  Current parameter values	*/
+//    int		first, last;		/*  Indices defining region */
+//    double	*u;			/*  Current parameter values	*/
 //    BezierCurve	bezCurve;	/*  Current fitted curve	*/
 {
     int nPts = last - first + 1;
-    // double	*uPrime;		/*  New parameter values	*/
 
-    // uPrime = (double *)malloc(nPts * sizeof(double));
     uPrime.resize(nPts);
     for (int i = first; i <= last; i++) {
         uPrime[i - first] = NewtonRaphsonRootFind(bezCurve, d[i], u[i - first]);
     }
-    // return (uPrime);
 }
 
 /*
@@ -412,30 +337,24 @@ double BezierFit::NewtonRaphsonRootFind(const QVector<QVector2D> & Q,
 //    */
 {
     double numerator, denominator;
-    // QVector2D 		Q1[3], Q2[2];	/*  Q' and Q'' */
     QVector<QVector2D> Q1;
     Q1.resize(3);
     QVector<QVector2D> Q2; /*  Q' and Q''			*/
     Q2.resize(2);
     QVector2D Q_u, Q1_u, Q2_u; /*u evaluated at Q, Q', & Q''	*/
     double uPrime;             /*  Improved u			*/
-    // int 		i;
 
     /* Compute Q(u)	*/
     Q_u = BezierII(3, Q, u);
 
     /* Generate control vertices for Q'	*/
     for (int i = 0; i <= 2; i++) {
-        // Q1[i].x = (Q[i+1].x - Q[i].x) * 3.0;
-        // Q1[i].y = (Q[i+1].y - Q[i].y) * 3.0;
         Q1[i] = QVector2D((Q[i + 1].x() - Q[i].x()) * 3.0,
                           (Q[i + 1].y() - Q[i].y()) * 3.0);
     }
 
     /* Generate control vertices for Q'' */
     for (int i = 0; i <= 1; i++) {
-        // Q2[i].x = (Q1[i+1].x - Q1[i].x) * 2.0;
-        // Q2[i].y = (Q1[i+1].y - Q1[i].y) * 2.0;
         Q2[i] = QVector2D((Q1[i + 1].x() - Q1[i].x()) * 2.0,
                           (Q1[i + 1].y() - Q1[i].y()) * 2.0);
     }
@@ -466,18 +385,15 @@ double BezierFit::NewtonRaphsonRootFind(const QVector<QVector2D> & Q,
  */
 QVector2D BezierFit::BezierII(const int degree, const QVector<QVector2D> & V,
                               const double t)
-//    int		degree;		/* The degree of the bezier curve
-//    */ Point2 	*V;		/* Array of control points
-//    */ double 	t;		/* Parametric value to find point for
-//    */
+//    int		degree;		/* The degree of the bezier curve */
+//    Point2 	*V;		/* Array of control points */
+//    double 	t;		/* Parametric value to find point for */
 {
-    // int 	i, j;
-    QVector2D Q;              /* Point on curve at parameter t	*/
-    QVector<QVector2D> Vtemp; /* Local copy of control points		*/
+    QVector<QVector2D> Vtemp; /* Local copy of control points */
 
-    /* Copy array	*/
-    Vtemp.resize(degree + 1);  // Vtemp = (Point2 *)malloc((unsigned)((degree+1)
-                               // * sizeof (Point2)));
+    /* Copy array */
+    // Vtemp = (Point2 *)malloc((unsigned)((degree+1) * sizeof (Point2)));
+    Vtemp.resize(degree + 1);
 
     for (int i = 0; i <= degree; i++) {
         Vtemp[i] = V[i];
@@ -486,17 +402,13 @@ QVector2D BezierFit::BezierII(const int degree, const QVector<QVector2D> & V,
     /* Triangle computation	*/
     for (int i = 1; i <= degree; i++) {
         for (int j = 0; j <= degree - i; j++) {
-            // Vtemp[j].x = (1.0 - t) * Vtemp[j].x + t * Vtemp[j+1].x;
-            // Vtemp[j].y = (1.0 - t) * Vtemp[j].y + t * Vtemp[j+1].y;
             Vtemp[j] =
                 QVector2D((1.0 - t) * Vtemp[j].x() + t * Vtemp[j + 1].x(),
                           (1.0 - t) * Vtemp[j].y() + t * Vtemp[j + 1].y());
         }
     }
 
-    Q = Vtemp[0];
-    // free((void *)Vtemp);
-    return Q;
+    return Vtemp[0];
 }
 
 /*
@@ -525,7 +437,7 @@ double BezierFit::B3(const double u) { return (u * u * u); }
 
 /*
  * ComputeLeftTangent, ComputeRightTangent, ComputeCenterTangent :
- *Approximate unit tangents at endpoints and "center" of digitized curve
+ * Approximate unit tangents at endpoints and "center" of digitized curve
  */
 QVector2D BezierFit::ComputeLeftTangent(const QList<QVector2D> & d,
                                         const int end)
@@ -558,8 +470,7 @@ QVector2D BezierFit::ComputeCenterTangent(const QList<QVector2D> & d,
 
     V1 = d[center - 1] - d[center];  // V2SubII(d[center-1], d[center]);
     V2 = d[center] - d[center + 1];  // V2SubII(d[center], d[center+1]);
-    // tHatCenter.x = (V1.x + V2.x)/2.0;
-    // tHatCenter.y = (V1.y + V2.y)/2.0;
+
     tHatCenter = QVector2D((V1.x() + V2.x()) / 2.0, (V1.y() + V2.y()) / 2.0);
     tHatCenter.normalize();  // tHatCenter = *V2Normalize(&tHatCenter);
     return tHatCenter;
@@ -577,24 +488,18 @@ void BezierFit::ChordLengthParameterize(const QList<QVector2D> & d,
 //    int		first, last;		//  Indices defining region
 {
     int i;
-    // double	*u;			/*  Parameterization		*/
 
-    // u = (double *)malloc((unsigned)(last-first+1) * sizeof(double));
     u.resize(last - first + 1);
 
     u[0] = 0.0;
     for (i = first + 1; i <= last; i++) {
-        u[i - first] =
-            u[i - first - 1] +
-            (d[i] - d[i - 1])
-                .length();  // V2DistanceBetween2Points(&d[i], &d[i-1]);
+        // V2DistanceBetween2Points(&d[i], &d[i-1]);
+        u[i - first] = u[i - first - 1] + (d[i] - d[i - 1]).length();
     }
 
     for (i = first + 1; i <= last; i++) {
         u[i - first] = u[i - first] / u[last - first];
     }
-
-    // return(u);
 }
 
 /*
@@ -630,31 +535,6 @@ double BezierFit::ComputeMaxError(const QList<QVector2D> & d, const int first,
     }
     return (maxDist);
 }
-/*
-static Vector2 V2AddII(a, b)
-Vector2 a, b;
-{
-Vector2	c;
-c.x = a.x + b.x;  c.y = a.y + b.y;
-return (c);
-}
-static Vector2 V2ScaleIII(v, s)
-Vector2	v;
-double	s;
-{
-Vector2 result;
-result.x = v.x * s; result.y = v.y * s;
-return (result);
-}
-
-static Vector2 V2SubII(a, b)
-Vector2	a, b;
-{
-Vector2	c;
-c.x = a.x - b.x; c.y = a.y - b.y;
-return (c);
-}
-*/
 
 void BezierFit::ComputeCurvatures(const QList<QVector2D> & d,
                                   QVector<float> & ks)

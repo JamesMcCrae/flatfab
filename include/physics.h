@@ -295,9 +295,7 @@ private:  // static functions
     // solve one iteration
     static void SolveOneIteration(std::vector<CRigidBody>& aRigidBody,
                                   std::vector<CJoint>& aJoint,
-                                  ////
                                   double damping_ratio,
-                                  ////
                                   const CVector3D n, const CVector3D gravity,
                                   const double cont_stiff,
                                   const double trans_stiff,
@@ -305,23 +303,19 @@ private:  // static functions
 
     static void GetPlateLocalForce(
         std::vector<CPlate::CLocalForce>& alForce,
-        ////
         int irb, const std::vector<CRigidBody>& aRigidBody,
         const std::vector<CJoint>& aJoint, const CVector3D& vec_p,
         const CVector3D& vec_t, const CVector3D& vec_b, const CVector3D& vec_n,
         const std::vector<double>& aXY);
 
     static void AddWeakSection_Inside(CPlate& plate,  // (in,out)
-                                                      ///
                                       const std::vector<double>& aXY,
                                       const CRigidBody& rb,
                                       const CVector3D gravity,
-                                      ////
                                       const std::vector<double>& aDir2D,
                                       const int nH, const double max_stress);
 
     static void AddWeakSection_Slit(CPlate& plt,  // (in,out)
-                                                  ////
                                     const std::vector<double>& aXY,
                                     const CRigidBody& rb,
                                     const CVector3D gravity,
@@ -348,7 +342,6 @@ public:
 
     int nitr;
     double damping_ratio;
-    ////
     bool is_draw_force;
     bool is_draw_skeleton;
     bool is_draw_deformed;

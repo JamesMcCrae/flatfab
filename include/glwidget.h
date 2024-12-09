@@ -89,9 +89,7 @@ enum GenerateState
     GENSTATE_GRID,
     GENSTATE_BRANCH,
     GENSTATE_SURFACE_FACETS,
-    GENSTATE_NUM  // note: enum declaration guaranteed to be in order: 0,
-                  // 1, 2... therefore this enum is the # of previously defined
-                  // enums
+    GENSTATE_NUM
 };
 
 class GLWidget : public QGLWidget
@@ -305,7 +303,6 @@ public slots:
     void StartGenerateRevolve();
     void StartGenerateSlices();
     void StartGenerateGrid();
-    //    void StartGenerateBranch();
 
     void SetSelectedAsRadial();
     void RemoveRadial();
@@ -350,8 +347,6 @@ private:
     void DeleteTemplateImage();
 
     void QVector3DToArray(const QVector3D &p, double array[3]);
-
-    // QTabWidget * sideWidget;
 
     QWidget *editWidget;
     QWidget *genWidget;

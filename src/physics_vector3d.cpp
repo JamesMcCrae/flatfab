@@ -1,16 +1,12 @@
 #include "physics_vector3d.h"
 
-/*!
-@brief inner product
-*/
+// inner product
 double Dot(const CVector3D& arg1, const CVector3D& arg2)
 {
     return arg1.x * arg2.x + arg1.y * arg2.y + arg1.z * arg2.z;
 }
 
-/*!
-@brief cross product
-*/
+// cross product
 CVector3D Cross(const CVector3D& arg1, const CVector3D& arg2)
 {
     CVector3D temp;
@@ -20,7 +16,7 @@ CVector3D Cross(const CVector3D& arg1, const CVector3D& arg2)
     return temp;
 }
 
-//! add
+// add
 CVector3D operator+(const CVector3D& lhs, const CVector3D& rhs)
 {
     CVector3D temp = lhs;
@@ -28,7 +24,7 @@ CVector3D operator+(const CVector3D& lhs, const CVector3D& rhs)
     return temp;
 }
 
-//! subtract
+// subtract
 CVector3D operator-(const CVector3D& lhs, const CVector3D& rhs)
 {
     CVector3D temp = lhs;
@@ -36,7 +32,7 @@ CVector3D operator-(const CVector3D& lhs, const CVector3D& rhs)
     return temp;
 }
 
-//! scale
+// scale
 CVector3D operator*(double d, const CVector3D& rhs)
 {
     CVector3D temp = rhs;
@@ -44,7 +40,7 @@ CVector3D operator*(double d, const CVector3D& rhs)
     return temp;
 }
 
-//! scale
+// scale
 CVector3D operator*(const CVector3D& vec, double d)
 {
     CVector3D temp = vec;
@@ -52,13 +48,13 @@ CVector3D operator*(const CVector3D& vec, double d)
     return temp;
 }
 
-//! mult
+// mult
 double operator*(const CVector3D& lhs, const CVector3D& rhs)
 {
     return Dot(lhs, rhs);
 }
 
-//! divide by real number
+// divide by real number
 CVector3D operator/(const CVector3D& vec, double d)
 {
     CVector3D temp = vec;
@@ -66,7 +62,7 @@ CVector3D operator/(const CVector3D& vec, double d)
     return temp;
 }
 
-//! mult
+// mult
 CVector3D operator^(const CVector3D& lhs, const CVector3D& rhs)
 {
     return Cross(lhs, rhs);
@@ -237,7 +233,7 @@ void GetVertical2Vector3D(const double vec_n[3], double vec_x[3],
     }
 }
 
-//! Hight of a tetrahedra
+// Height of a tetrahedra
 double Height(const CVector3D& v1, const CVector3D& v2, const CVector3D& v3,
               const CVector3D& v4)
 {
@@ -259,8 +255,6 @@ double Height(const CVector3D& v1, const CVector3D& v2, const CVector3D& v3,
     return (v4.x - v1.x) * dtmp_x + (v4.y - v1.y) * dtmp_y +
            (v4.z - v1.z) * dtmp_z;
 }
-
-////////////////////////////////////////////////////////////////
 
 void GetVertical2Vector(const CVector3D& vec_n, CVector3D& vec_x,
                         CVector3D& vec_y)
@@ -305,7 +299,7 @@ CVector3D GetMinDist_LineSegPoint(const CVector3D& p,  // point
     return s + t * d;
 }
 
-//! Volume of a tetrahedra
+// Volume of a tetrahedra
 double TetVolume(const CVector3D& v1, const CVector3D& v2, const CVector3D& v3,
                  const CVector3D& v4)
 {
@@ -318,16 +312,12 @@ double TetVolume(const CVector3D& v1, const CVector3D& v2, const CVector3D& v3,
            0.16666666666666666666666666666667;
 }
 
-//! élñ ëÃÇÃëÃêœ
 double TetVolume(int iv1, int iv2, int iv3, int iv4,
                  const std::vector<CVector3D>& node)
 {
     return TetVolume(node[iv1], node[iv2], node[iv3], node[iv4]);
 }
 
-////////////////////////////////////////////////
-
-//! äOê⁄ÉxÉNÉgÉã
 void Cross(CVector3D& lhs, const CVector3D& v1, const CVector3D& v2)
 {
     lhs.x = v1.y * v2.z - v2.y * v1.z;
@@ -335,7 +325,6 @@ void Cross(CVector3D& lhs, const CVector3D& v1, const CVector3D& v2)
     lhs.z = v1.x * v2.y - v2.x * v1.y;
 }
 
-//! ÇRéüå≥ÇRäpå`ÇÃñ êœ
 double TriArea(const CVector3D& v1, const CVector3D& v2, const CVector3D& v3)
 {
     double x, y, z;
@@ -345,14 +334,12 @@ double TriArea(const CVector3D& v1, const CVector3D& v2, const CVector3D& v3)
     return 0.5 * sqrt(x * x + y * y + z * z);
 }
 
-//! ÇRéüå≥ÇRäpå`ÇÃñ êœ
 double TriArea(const int iv1, const int iv2, const int iv3,
                const std::vector<CVector3D>& node)
 {
     return TriArea(node[iv1], node[iv2], node[iv3]);
 }
 
-//! ÇRéüå≥ÇRäpå`ÇÃñ êœÇÃÇQèÊ
 double SquareTriArea(const CVector3D& v1, const CVector3D& v2,
                      const CVector3D& v3)
 {
@@ -365,9 +352,6 @@ double SquareTriArea(const CVector3D& v1, const CVector3D& v2,
     return (dtmp_x * dtmp_x + dtmp_y * dtmp_y + dtmp_z * dtmp_z) * 0.25;
 }
 
-////////////////////////////////////////////////
-
-//! í∑Ç≥ÇÃÇQèÊ
 double SquareDistance(const CVector3D& ipo0, const CVector3D& ipo1)
 {
     return (ipo1.x - ipo0.x) * (ipo1.x - ipo0.x) +
@@ -375,31 +359,24 @@ double SquareDistance(const CVector3D& ipo0, const CVector3D& ipo1)
            (ipo1.z - ipo0.z) * (ipo1.z - ipo0.z);
 }
 
-//! í∑Ç≥ÇÃÇQèÊ
 double SquareLength(const CVector3D& point)
 {
     return point.x * point.x + point.y * point.y + point.z * point.z;
 }
 
-////////////////////////////////////////////////
-
-//! length of vector
+// length of vector
 double Length(const CVector3D& point)
 {
     return sqrt(point.x * point.x + point.y * point.y + point.z * point.z);
 }
 
-//! distance between two points
+// distance between two points
 double Distance(const CVector3D& ipo0, const CVector3D& ipo1)
 {
     return sqrt(SquareDistance(ipo0, ipo1));
 }
 
-////////////////////////////////////////////////
-
-//! ÇSì_Çå›Ç¢Ç…åãÇ‘ÇUÇ¬ÇÃê¸ï™ÇÃÇ§Çøç≈Ç‡í∑Ç¢Ç‡ÇÃÇÃí∑Ç≥Åiélñ
-//! ëÃÇÃéøï]âøÇ≈ópÇ¢ÇÈÅj
-double SqareLongestEdgeLength(const CVector3D& ipo0, const CVector3D& ipo1,
+double SquareLongestEdgeLength(const CVector3D& ipo0, const CVector3D& ipo1,
                               const CVector3D& ipo2, const CVector3D& ipo3)
 {
     double edge1, edge2;
@@ -417,21 +394,13 @@ double SqareLongestEdgeLength(const CVector3D& ipo0, const CVector3D& ipo1,
     return edge1;
 }
 
-////////////////////////////////////////////////
-
-//! ÇSì_Çå›Ç¢Ç…åãÇ‘ÇUÇ¬ÇÃê¸ï™ÇÃÇ§Çøç≈Ç‡í∑Ç¢Ç‡ÇÃÇÃí∑Ç≥Åiélñ
-//! ëÃÇÃéøï]âøÇ≈ópÇ¢ÇÈÅj
 double LongestEdgeLength(const CVector3D& ipo0, const CVector3D& ipo1,
                          const CVector3D& ipo2, const CVector3D& ipo3)
 {
-    return sqrt(SqareLongestEdgeLength(ipo0, ipo1, ipo2, ipo3));
+    return sqrt(SquareLongestEdgeLength(ipo0, ipo1, ipo2, ipo3));
 }
 
-////////////////////////////////////////////////
-
-//! ÇSì_Çå›Ç¢Ç…åãÇ‘ÇUÇ¬ÇÃê¸ï™ÇÃÇ§Çøç≈Ç‡íZÇ¢Ç‡ÇÃÇÃí∑Ç≥Åiélñ
-//! ëÃÇÃéøï]âøÇ≈ópÇ¢ÇÈÅj
-double SqareShortestEdgeLength(const CVector3D& ipo0, const CVector3D& ipo1,
+double SquareShortestEdgeLength(const CVector3D& ipo0, const CVector3D& ipo1,
                                const CVector3D& ipo2, const CVector3D& ipo3)
 {
     double edge1, edge2;
@@ -449,19 +418,12 @@ double SqareShortestEdgeLength(const CVector3D& ipo0, const CVector3D& ipo1,
     return edge1;
 }
 
-////////////////////////////////////////////////
-
-//! ÇSì_Çå›Ç¢Ç…åãÇ‘ÇUÇ¬ÇÃê¸ï™ÇÃÇ§Çøç≈Ç‡íZÇ¢Ç‡ÇÃÇÃí∑Ç≥Åiélñ
-//! ëÃÇÃéøï]âøÇ≈ópÇ¢ÇÈÅj
 double ShortestEdgeLength(const CVector3D& ipo0, const CVector3D& ipo1,
                           const CVector3D& ipo2, const CVector3D& ipo3)
 {
-    return sqrt(SqareShortestEdgeLength(ipo0, ipo1, ipo2, ipo3));
+    return sqrt(SquareShortestEdgeLength(ipo0, ipo1, ipo2, ipo3));
 }
 
-////////////////////////////////////////////////
-
-//! ñ@ê¸ÉxÉNÉgÉã
 void Normal(CVector3D& vnorm, const CVector3D& v1, const CVector3D& v2,
             const CVector3D& v3)
 {
@@ -470,9 +432,6 @@ void Normal(CVector3D& vnorm, const CVector3D& v1, const CVector3D& v2,
     vnorm.z = (v2.x - v1.x) * (v3.y - v1.y) - (v2.y - v1.y) * (v3.x - v1.x);
 }
 
-////////////////////////////////////////////////
-
-//! íPà ñ@ê¸ÉxÉNÉgÉã
 void UnitNormal(CVector3D& vnorm, const CVector3D& v1, const CVector3D& v2,
                 const CVector3D& v3)
 {
@@ -485,11 +444,6 @@ void UnitNormal(CVector3D& vnorm, const CVector3D& v1, const CVector3D& v2,
     vnorm.z *= dtmp1;
 }
 
-////////////////////////////////////////////////
-
-/*!
-äOê⁄ãÖÇÃîºåa
-*/
 double SquareCircumradius(const CVector3D& ipo0, const CVector3D& ipo1,
                           const CVector3D& ipo2, const CVector3D& ipo3)
 {
@@ -528,20 +482,7 @@ double SquareCircumradius(const CVector3D& ipo0, const CVector3D& ipo1,
         t[5] * s[0] + t[1] * s[1] + t[3] * s[2],
         t[4] * s[0] + t[3] * s[1] + t[2] * s[2],
     };
-    return 0.5 * (u[0] * s[0] + u[1] * s[1] + u[2] * s[2]);
-    /*
-    const double square_radius = 0.5*(u[0]*s[0]+u[1]*s[1]+u[2]*s[2]);
-    CVector3D vec1;
-    vec1.x = base[0][0]*u[0]+base[1][0]*u[1]+base[2][0]*u[2] + ipo0.x;
-    vec1.y = base[0][1]*u[0]+base[1][1]*u[1]+base[2][1]*u[2] + ipo0.y;
-    vec1.z = base[0][2]*u[0]+base[1][2]*u[1]+base[2][2]*u[2] + ipo0.z;
-    std::cout << square_radius << " ";
-    std::cout << SquareLength(vec1,ipo0) << " ";
-    std::cout << SquareLength(vec1,ipo1) << " ";
-    std::cout << SquareLength(vec1,ipo2) << " ";
-    std::cout << SquareLength(vec1,ipo3) << std::endl;;
-    return square_radius;
-    */
+    return 0.5 * (u[0] * s[0] + u[1] * s[1] + u[2] * s[2]);   
 }
 
 CVector3D CircumCenter(const CVector3D& ipo0, const CVector3D& ipo1,
@@ -581,8 +522,7 @@ CVector3D CircumCenter(const CVector3D& ipo0, const CVector3D& ipo1,
         t[0] * s[0] + t[5] * s[1] + t[4] * s[2],
         t[5] * s[0] + t[1] * s[1] + t[3] * s[2],
         t[4] * s[0] + t[3] * s[1] + t[2] * s[2],
-    };
-    //    const double square_radius = 0.5*(u[0]*s[0]+u[1]*s[1]+u[2]*s[2]);
+    };    
     CVector3D vec1;
     vec1.x = base[0][0] * u[0] + base[1][0] * u[1] + base[2][0] * u[2] + ipo0.x;
     vec1.y = base[0][1] * u[0] + base[1][1] * u[1] + base[2][1] * u[2] + ipo0.y;
@@ -590,11 +530,7 @@ CVector3D CircumCenter(const CVector3D& ipo0, const CVector3D& ipo1,
     return vec1;
 }
 
-////////////////////////////////////////////////
-
-/*!
-curcumradius of a tetrahedra
-*/
+// circumradius of a tetrahedra
 double Circumradius(const CVector3D& ipo0, const CVector3D& ipo1,
                     const CVector3D& ipo2, const CVector3D& ipo3)
 {
@@ -616,7 +552,6 @@ CVector3D RotateVector(const CVector3D& vec0, const CVector3D& rot)
     e2.SetNormalizedVector();
     CVector3D e1 = ::Cross(e2, e0);
     assert(fabs(e1.Length() - 1) < 1.0e-10);
-    //	assert( e2.x*vec_0.x + e2.y*vec_0.y + e2.z*vec_0.z < 1.0e-10 );
     const double dot00 = Dot(vec0, e0);
     const double dot01 = Dot(vec0, e1);
     const double cost = cos(theta);

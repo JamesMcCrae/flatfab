@@ -21,8 +21,6 @@ public:
 
     // drawing related
     static void DrawPointGL(const float x, const float y, const float rad);
-    // static void DrawTNBFrame(const vec3 & o, const TNBFrame & tnb, const
-    // float scale);
     static void DrawArrow(const QVector3D &p1, const QVector3D &p2);
     static void DrawArrowFixedLength(const QVector3D &p1, const QVector3D &p2,
                                      const float len);

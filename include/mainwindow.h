@@ -211,7 +211,6 @@ private:
     QAction *removeExternalWeightsAct;
 
     GLWidget glWidget;
-    // QWidget * sideWidget;
     QDockWidget *dockWidget;
 
     QWidget *bottomWidget;

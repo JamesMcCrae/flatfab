@@ -18,11 +18,6 @@ CMatrix3 operator+(const CMatrix3& lhs, const CMatrix3& rhs);
 CMatrix3 operator*(const CMatrix3& lhs, const CMatrix3& rhs);
 CMatrix3 operator-(const CMatrix3& lhs, const CMatrix3& rhs);
 
-// CMatrix3 operator*(double, const CMatrix3&);
-// CMatrix3 operator*(const CMatrix3&, double);
-// CMatrix3 operator*(const CMatrix3&, const CMatrix3&);
-
-//!< 3x3 matrix
 class CMatrix3
 {
 public:
@@ -80,7 +75,6 @@ public:
             mat[i] = m[i];
         }
     }
-    ////
     void SetDiag(const CVector3D& d)
     {
         mat[0 * 3 + 0] = d.x;

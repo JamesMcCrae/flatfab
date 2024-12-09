@@ -136,7 +136,6 @@ void PivotCamera::StartPivot(const QVector3D & p, const QVector3D & v,
     interp_duration = duration;
     interp_active = true;
 
-    // do awesome stuff
     // 1.  find intersection line between 2 planes
     QVector3D lp, ld;
     GLutils::PlanePlaneIntersection(QVector3D(0, 1, 0), QVector3D(0, 0, 0),
@@ -162,13 +161,10 @@ void PivotCamera::Update(const QVector2D & mouse_pos)
     // unproject both out, at p's depth
     // whatever the difference is, make that the camera translation offset
 
-    // so we rotate some vectors some amount, based on time... if time is
-    // greater than duration we stop
+    // so we rotate some vectors some amount, based on time...
+    // if time is greater than duration we stop
     if (interp_active) {
-        // 1.  zero out pivot offset
-        // pivot_offset = QVector3D(0, 0, 0);
-
-        // 2.  update eye/look/up
+        // 1.  update eye/look/up
         float interp_time = InterpTime();
 
         // rotate pivot bases about the pivot point
@@ -188,10 +184,10 @@ void PivotCamera::Update(const QVector2D & mouse_pos)
             interp_active = false;
         }
 
-        // 3.  test offset
+        // 2.  test offset
         pivot_offset = GetPivotOffset(mouse_pos);
 
-        // 4.  update eye and look
+        // 3.  update eye and look
         eye += pivot_offset;
         lookat += pivot_offset;
     }
@@ -199,17 +195,8 @@ void PivotCamera::Update(const QVector2D & mouse_pos)
 
 void PivotCamera::Orbit(const QVector2D & delta)
 {
-    const float factor = 0.005f;
-
     // rotate existing eye and up by delta
-    /*
-    eye = lookat + GLutils::RotateVector(eye - lookat, QVector3D(0, 1, 0),
-    delta.x() * factor); const QVector3D eye_last = eye; eye = lookat +
-    GLutils::RotateVector(eye - lookat, GetRightVector(), -delta.y() * factor);
-    if (Up().y() < 0.0f) { //this rotation about up vector made up vector upside
-    down, we don't allow it eye = eye_last;
-    }
-    */
+    const float factor = 0.005f;   
 
     // rotate about y-axis (x movement)
     eye = lookat + GLutils::RotateVector(eye - lookat, QVector3D(0, 1, 0),
@@ -259,10 +246,6 @@ QVector3D PivotCamera::GetPivotOffset(const QVector2D & mouse_pos) const
                             mouse_pos_unproject);
 
     QVector3D offset = pivot_p - mouse_pos_unproject;
-
-    // qDebug() << "mouse" << mouse_pos << "proj_p" << pivot_p_project <<
-    // "pivot_offset" << pivot_offset; qDebug() << "offset_length" <<
-    // offset.length();
 
     return offset;
 }

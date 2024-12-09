@@ -7,7 +7,6 @@ TransformWidget::TransformWidget()
 
 void TransformWidget::DrawGL(const float cam_width, const int screen_height)
 {
-    // qDebug() << "TransformWidget::DrawGL()";
     if (!visible) {
         return;
     }
@@ -31,20 +30,14 @@ void TransformWidget::DrawGL(const float cam_width, const int screen_height)
     GLutils::DrawArrowFixedLength(p, p + z, 1.0f * s);
 
     // rotate x
-    //    glColor3f(1,0,0);
-    //    GLutils::DrawRing(p - x*0.05f, p + x*0.05f, 0.45f, 0.55f);
     glColor3f(0, 0, 1);
     GLutils::DrawArcLineStrip(p, z * 1.5f * s, x, .5 * M_PI, 30, 7.0f, true);
 
     // rotate y
-    //    glColor3f(0,1,0);
-    //    GLutils::DrawRing(p - y*0.05f, p + y*0.05f, 0.45f, 0.55f);
     glColor3f(1, 0, 0);
     GLutils::DrawArcLineStrip(p, x * 1.5f * s, y, .5 * M_PI, 30, 7.0f, true);
 
     // rotate z
-    //    glColor3f(0,0,1);
-    //    GLutils::DrawRing(p - z*0.05f, p + z*0.05f, 0.45f, 0.55f);
     glColor3f(0, 1, 0);
     GLutils::DrawArcLineStrip(p, y * 1.5f * s, z, .5 * M_PI, 30, 7.0f, true);
 
@@ -68,7 +61,6 @@ void TransformWidget::DrawSelectionGL(const float cam_width,
 
     const float s = 0.2f * cam_width * 500.0f / screen_height;
 
-    //    //qDebug() << "TransformWidget::DrawSelectionGL()";
     GLutils::SetPickColor(TRANS_X);
     GLutils::DrawArrowFixedLength(p, p + x, 1.0f * s);
 
@@ -79,15 +71,12 @@ void TransformWidget::DrawSelectionGL(const float cam_width,
     GLutils::DrawArrowFixedLength(p, p + z, 1.0f * s);
 
     GLutils::SetPickColor(ROT_X);
-    //    GLutils::DrawRing(p - x*0.05f, p + x*0.05f, 0.45f, 0.55f);
     GLutils::DrawArcLineStrip(p, z * 1.5f * s, x, .5 * M_PI, 30, 7.0f);
 
     GLutils::SetPickColor(ROT_Y);
-    //    GLutils::DrawRing(p - y*0.05f, p + y*0.05f, 0.45f, 0.55f);
     GLutils::DrawArcLineStrip(p, x * 1.5f * s, y, .5 * M_PI, 30, 7.0f);
 
     GLutils::SetPickColor(ROT_Z);
-    //    GLutils::DrawRing(p - z*0.05f, p + z*0.05f, 0.45f, 0.55f);
     GLutils::DrawArcLineStrip(p, y * 1.5f * s, z, .5 * M_PI, 30, 7.0f);
 
     GLutils::SetPickColor(SCALE_X);

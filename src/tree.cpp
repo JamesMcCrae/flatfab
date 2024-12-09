@@ -34,10 +34,8 @@ void Tree::CreateFromGraph(const QVector<QVector<bool> > & graph,
     int num_visited = 0;
 
     // the following performs BFS from the root
-    // qDebug() << "doing BFS";
     while (!visiting.empty()) {
         const int cur_node = visiting.first();
-        // qDebug() << "visiting" << cur_node;
         visiting.pop_front();
 
         nodes[cur_node].visited = 2;  // black
@@ -47,20 +45,17 @@ void Tree::CreateFromGraph(const QVector<QVector<bool> > & graph,
                 continue;
             }
 
-            if (nodes[i].visited == 1) {  // node is grey (we have discovered
-                                          // it)
-
+            if (nodes[i].visited == 1) {
+                // node is grey (we have discovered it)
                 has_cycles = true;
 
                 // add the cycle to this list
-                // qDebug() << "found cycle via backedge between" << cur_node <<
-                // i;
                 QList<int> new_cycle;
                 TraceBackCycle(cur_node, i, new_cycle);
                 cycles.push_back(new_cycle);
 
-            } else if (nodes[i].visited ==
-                       0) {  // node is white (we have not discovered it)
+            } else if (nodes[i].visited == 0) {
+                // node is white (we have not discovered it)
 
                 // set the topology now
                 nodes[cur_node].children.push_back(i);
@@ -84,9 +79,6 @@ void Tree::CreateFromGraph(const QVector<QVector<bool> > & graph,
             }
         }
     }
-
-    // qDebug() << "has cycles?" << has_cycles << "is connected?" <<
-    // is_connected;
 }
 
 int Tree::GetNumNodes() { return nodes.size(); }
@@ -157,8 +149,7 @@ void Tree::TraceBackCycle(const int i1, const int i2, QList<int> & cycle)
     QSet<int> s1(path_i1.begin(), path_i1.end());
     QSet<int> s2(path_i2.begin(), path_i2.end());
 
-    // 2.  for a tree, any i1 and i2 in the tree must share one common
-    // (grand)parent
+    // 2.  for a tree, any i1 and i2 in the tree must share a common ancestor
     QSet<int> common_parents = s1.intersect(s2);
     if (common_parents.empty()) {
         qDebug() << "Tree::TraceBackCycle - Problem!  Could not find common "
@@ -169,8 +160,8 @@ void Tree::TraceBackCycle(const int i1, const int i2, QList<int> & cycle)
         return;
     }
 
-    // 3.  get the parent with smallest index in path_i1 (since multiple parents
-    // can be shared)
+    // 3.  get the parent with smallest index in path_i1
+    // (since multiple parents can be shared)
     int common_parent = -1;
     for (int i = 0; i < path_i1.size(); ++i) {
         if (common_parents.contains(path_i1[i])) {

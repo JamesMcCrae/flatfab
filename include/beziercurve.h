@@ -10,7 +10,7 @@
 struct BezierCurvePoint
 {
     QVector2D point;
-    int segment;  // index to the POINT, so this will be some multile of 3
+    int segment;  // index to the POINT, so this will be some multiple of 3
     float t;      // t =[0,1]
 
     bool operator<(const BezierCurvePoint & p) const
@@ -115,7 +115,7 @@ private:
 
     bool closed;
 
-    // what do segments have
+    // segments have:
     // initial point
     //    "    tangent
     // end     point

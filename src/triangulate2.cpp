@@ -186,10 +186,7 @@ bool Triangulate2::Process(const QList<QList<QVector2D> > & contours,
     for (int i = 1; i < contours.size(); ++i) {
         QList<QVector2D> hole = contours[i];
         if (!GetClockwise(hole)) {
-            // qDebug() << "hole" << i << "clockwise false";
             Reverse(hole);
-        } else {
-            // qDebug() << "hole" << i << "clockwise true";
         }
         holes.push_back(hole);
     }
@@ -202,18 +199,12 @@ bool Triangulate2::Process(QList<QVector2D> & coords,
                            QList<QVector2D> & triangles,
                            QList<QVector2D> & poly)
 {
-    // QVector2D ab, bc, ca, ap, bp, cp, ac;
     triangles.clear();
 
-    QList<bool> reflex;
-
-    // polygon = [0...coords.length] // the "..." means exclusive not inclusive
-    // range
     QList<int> polygon;
     for (int i = 0; i < coords.size(); ++i) {
         polygon.push_back(i);
-    }
-    int reflexCount = 0;
+    }    
 
     // 1.  handle trivial cases
     if (coords.size() < 3) {
@@ -230,6 +221,8 @@ bool Triangulate2::Process(QList<QVector2D> & coords,
     // Repair the polygon if it has holes by duplicating verts along
     // a new edge called "slice".  The slice verts must be
     // visible to each other.  (ie, no edge intersections)
+    QList<bool> reflex;
+    int reflexCount = 0;
     for (int c = 0; c < holes.size(); ++c) {
         if (holes[c].size() < 3) {
             continue;
@@ -237,21 +230,18 @@ bool Triangulate2::Process(QList<QVector2D> & coords,
 
         reflex.clear();
         for (int p = 0; p < polygon.size(); ++p) {
-            // int n = polygon[p];
             reflex.push_back(IsReflexIndex(coords, polygon, p));
         }
 
-        const QList<QVector2D> & hole =
-            holes[c];  // NOTE: this needs to generalize to more than 1 hole
+        // NOTE: this needs to generalize to more than 1 hole
+        const QList<QVector2D> & hole = holes[c];
 
         // Find any two mutually visible vertices, the first
         // from the outer contour, the second from the hole.
         int slice[2];
         GetSlice(coords, polygon, hole, slice);
-        // qDebug() << "Slicing with index" << slice[0] << slice[1];
 
         // Clone the outer contour and append the hole verts.
-        // QList <QVector2D> coords2 = coords;
         int holeStart = coords.size();
         coords += hole;
 
@@ -276,7 +266,6 @@ bool Triangulate2::Process(QList<QVector2D> & coords,
         // the new "slice" edge.
         newPolygon.push_back(newPolygon[polygon.length()]);
         newPolygon.push_back(newPolygon[polygon.length() - 1]);
-        // qDebug() << polygon << newPolygon;
         polygon = newPolygon;
     }
 
@@ -287,7 +276,6 @@ bool Triangulate2::Process(QList<QVector2D> & coords,
     reflexCount = 0;
 
     for (int p = 0; p < polygon.size(); ++p) {
-        // int n = polygon[p];
         if (IsReflexIndex(coords, polygon, p)) {
             reflex.push_back(true);
             ++reflexCount;
@@ -307,36 +295,20 @@ bool Triangulate2::Process(QList<QVector2D> & coords,
         }
     }
 
-    // Diagnostic output.
-    // verbose = false
-    // if verbose
-    // console.info ""
-    // console.info "ears    #{ears}"
-    // console.info "reflex  #{reflex}"
-    // console.info "convex  #{convex}"
-    // qDebug() << "Ears:" << ears.size() << "Reflex:" << reflex.size() <<
-    // reflexCount << "Convex:" << convex.size() << "Coords:" << coords.size();
-
     poly.clear();
     for (int i = 0; i < polygon.size(); ++i) {
         poly.push_back(coords[polygon[i]]);
     }
 
     // Remove ears, one by one.
-    // int watchdog = 100000;
     triangles.clear();
     while (polygon.size() > 0) {
-        // qDebug() << "Polygon:" << polygon.size() << "Ears:" << ears.size();
-
         // Remove the index from the ear list.
         if (ears.empty()) {
-            // qDebug() << "Triangulate2::Process() - Warning, ears list empty,
-            // halting";
             break;
         }
         int pcurr = ears.last();
         ears.pop_back();
-        //--watchdog;
 
         // Insert the ear into the triangle list that we're building.
         int pprev, pnext;
@@ -345,8 +317,6 @@ bool Triangulate2::Process(QList<QVector2D> & coords,
         ptriangle[0] = pprev;
         ptriangle[1] = pcurr;
         ptriangle[2] = pnext;
-
-        // qDebug() << "PolyIndexes:" << pprev << pcurr << pnext;
 
         int ntriangle[3];
         ntriangle[0] = polygon[ptriangle[0]];
@@ -372,13 +342,6 @@ bool Triangulate2::Process(QList<QVector2D> & coords,
             --pprev;
         }
 
-        // if (polygon.empty() || reflex.empty()) {
-        // qDebug() << "LEAVING FUNCTION NOW!";
-        // break;
-        //}
-
-        // qDebug() << "PolyIndexes after removal:" << pprev << pcurr << pnext;
-
         // Removing an ear changes the configuration as follows:
         //  - If the neighbor is reflex, it might become convex and possibly an
         //  ear.
@@ -388,7 +351,6 @@ bool Triangulate2::Process(QList<QVector2D> & coords,
         for (int i = 0; i < 2; ++i) {
             int neighbour = ((i == 0) ? pprev : pnext);
 
-            // qDebug() << "reflex test" << reflex.size() << neighbour;
             if (neighbour >= 0 && neighbour < reflex.size() &&
                 reflex[neighbour] &&
                 !IsReflexIndex(coords, polygon, neighbour)) {
@@ -410,8 +372,6 @@ bool Triangulate2::Process(QList<QVector2D> & coords,
             }
         }
     }
-
-    // qDebug() << "POLY:" << poly;
 
     return true;
 }

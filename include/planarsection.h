@@ -12,7 +12,6 @@
 
 #include "beziercurve.h"
 #include "bezierfit.h"
-// #include "triangulate.h"
 #include "glutils.h"
 #include "triangulate2.h"
 
@@ -29,8 +28,6 @@ class PlanarSection
 {
 public:
     PlanarSection();
-
-    // PlanarSection & operator=(const PlanarSection & rhs);
 
     BezierCurve & GetCurve(const int i);
     int GetNumCurves() const;
@@ -167,8 +164,6 @@ public:
                                     QVector<bool> & isecs);
     static void ComputeIntersectionGraph(const QList<PlanarSection> & sections,
                                          QVector<QVector<bool> > & graph);
-    // static void ComputeCycles(const QVector <QVector <bool> > & graph, QList
-    // <QList <int> > & cycles, QList <QList <int> > & all_paths);
     static void TestConnectedness(QList<PlanarSection> & sections,
                                   QList<QList<int> > & all_paths);
 
@@ -328,12 +323,6 @@ private:
     // external weights attached to this plane
     QList<ExternalWeight> weights;
     int selected_weight;
-
-    // display lists for some drawing
-    // bool update_slab_disp_list;
-    // GLuint slab_disp_list;
-    // bool update_slabcurves_disp_list;
-    // GLuint slabcurves_disp_list;
 
     bool local_symmetry_mode;
 

@@ -8,8 +8,6 @@ BezierCurve::BezierCurve() :
 {
 }
 
-// does this show up in the commit
-
 void BezierCurve::AddPoint(const QVector2D & v)
 {
     pts.push_back(v);
@@ -41,7 +39,8 @@ void BezierCurve::SetPointsFromPolyline(const QList <QVector2D> & polyline)
 void BezierCurve::SetPoint(const int index, const QVector2D & v)
 {
     if (index < 0 || index >= pts.size()) {
-        qDebug() << "BezierCurve::SetPoint - Warning, index" << index << "out of range";
+        qDebug() << "BezierCurve::SetPoint - Warning, index"
+                 << index << "out of range";
         return;
     }
     pts[index] = v;
@@ -146,20 +145,7 @@ void BezierCurve::LoadFromSVGData(const QString & s)
 
         }
         else if (QString::compare(last_command, "Z") == 0 || QString::compare(last_command, "z") == 0) { //Z/z - close the curve
-
-            /*
-            QVector2D first_pos = pts.first();
-
-            QVector2D tan1 = current_pos + (first_pos - current_pos) * 0.25;
-            QVector2D tan2 = current_pos + (first_pos - current_pos) * 0.75;
-
-            //add a bezier segment which closes this path
-            pts.push_back(current_pos);
-            pts.push_back(tan1);
-            pts.push_back(tan2);
-            pts.push_back(first_pos);
-            */
-
+            ;
         }
         else if (QString::compare(last_command, "C") == 0 || QString::compare(last_command, "c") == 0 || //C - cubic Bezier "curveto" (absolute), c (relative)
                  QString::compare(last_command, "S") == 0 || QString::compare(last_command, "s") == 0) { //S - cubic Bezier "shorthand curveto" (absolute), s (relative)
@@ -265,8 +251,6 @@ void BezierCurve::LoadFromSVGData(const QString & s)
 
     };
 
-    //qDebug() << "Loaded curve" << pts;
-
     //next we normalize this
     QVector2D bmin(FLT_MAX, FLT_MAX);
     QVector2D bmax(-FLT_MAX, -FLT_MAX);
@@ -286,14 +270,10 @@ void BezierCurve::LoadFromSVGData(const QString & s)
         pts[i].setX(pts[i].x() * scale_fac - scale_fac/2.0f);
         pts[i].setY(scale_fac - (pts[i].y() * scale_fac));
     }
-
-    //qDebug() << "Loaded curve" << pts;
-
 }
 
 int BezierCurve::GetPreviousSegmentIndex(const int i) const
 {
-
     int next = i - 3;
 
     if (next < 0) {
@@ -301,12 +281,10 @@ int BezierCurve::GetPreviousSegmentIndex(const int i) const
     }
 
     return next;
-
 }
 
 int BezierCurve::GetNextSegmentIndex(const int i) const
 {
-
     int next = i + 3;
 
     if (next >= pts.size()-1) {
@@ -314,7 +292,6 @@ int BezierCurve::GetNextSegmentIndex(const int i) const
     }
 
     return next;
-
 }
 
 void BezierCurve::SetClosed(bool b)
@@ -324,7 +301,6 @@ void BezierCurve::SetClosed(bool b)
 
 void BezierCurve::Draw2D()
 {
-
     glColor3f(0.75f, 0.75f, 0.75f);
     glBegin(GL_LINES);
     for (int i=0; i+3<pts.size(); i+=3) {
@@ -360,7 +336,6 @@ void BezierCurve::Draw2D()
     }
 
     glEnd();
-
 }
 
 
@@ -376,7 +351,6 @@ void BezierCurve::SetSamplesPerSegment(const int i)
 
 void BezierCurve::UpdateSamples()
 {
-
     samples.clear();
 
     for (int i=0; i+3<pts.size(); i+=3) {
@@ -384,13 +358,11 @@ void BezierCurve::UpdateSamples()
         for (int j=0; j<samples_per_segment; ++j) {
 
             QVector2D p;
-            SamplePoint(pts[i], pts[i+1], pts[i+2], pts[i+3], float(j) / float(samples_per_segment), p);
+            const float interp = float(j) / float(samples_per_segment);
+            SamplePoint(pts[i], pts[i+1], pts[i+2], pts[i+3], interp, p);
             samples.push_back(p);
-
         }
-
     }
-
 }
 
 const QList <QVector2D> & BezierCurve::Samples() const
@@ -410,7 +382,6 @@ const QVector2D BezierCurve::Point(const int i) const
 
 void BezierCurve::SelectPoint(const QVector2D & p, const float select_size)
 {
-
     selected = -1;
     float min_dist = select_size;
 
@@ -422,9 +393,7 @@ void BezierCurve::SelectPoint(const QVector2D & p, const float select_size)
             min_dist = each_dist;
             selected = i;
         }
-
     }
-
 }
 
 void BezierCurve::SetSelectedPoint(const int index)
@@ -439,17 +408,17 @@ int BezierCurve::SelectedPoint() const
 
 void BezierCurve::MoveSelectedPoint(const QVector2D & p, const bool keep_g1, const bool equal_lengths)
 {
-
     if (selected == -1) {
-        qDebug() << "BezierCurve::MoveSelectedPoint - Warning, trying to move no selected point";
+        qDebug() << "BezierCurve::MoveSelectedPoint - Warning, trying to move "
+                    "no selected point";
         return;
     }
     else if (selected >= pts.size()) {
-        qDebug() << "BezierCurve::MoveSelectedPoint - Warning, selected point index >= size of points";
+        qDebug() << "BezierCurve::MoveSelectedPoint - Warning, selected point "
+                    "index >= size of points";
     }
 
-    if (selected % 3 != 0) { //if there is a tangent point we may need to keep collinear
-
+    if (selected % 3 != 0) { //if tangent point we may need to keep collinear
         int other_index = -1;
         int ctrl_pt = -1;
 
@@ -489,15 +458,11 @@ void BezierCurve::MoveSelectedPoint(const QVector2D & p, const bool keep_g1, con
         }
 
         pts[selected] = p;
-
     }
     else if (selected % 3 == 0) {
-
         QVector2D movement = p - pts[selected];
 
         if (closed && (selected == 0 || selected == pts.size()-1)) {
-
-
             pts[0] += movement;
             pts[pts.size()-1] += movement;
             if(keep_g1)
@@ -505,10 +470,8 @@ void BezierCurve::MoveSelectedPoint(const QVector2D & p, const bool keep_g1, con
                 pts[1] += movement;
                 pts[pts.size()-2] += movement;
             }
-
         }
         else {
-
             if(keep_g1)
             {
                 if (selected > 0) {
@@ -518,28 +481,28 @@ void BezierCurve::MoveSelectedPoint(const QVector2D & p, const bool keep_g1, con
                     pts[selected+1] += movement;
                 }
             }
-
             pts[selected] += movement;
-
         }
-
     }
-
 }
 
 void BezierCurve::DeletePoint(const int segment_index)
 {
 
     if (closed && pts.size() <= 7) {
-        qDebug() << "BezierCurve::DeleteSelectedPoint() - Warning, not deleting since curve closed and only" << pts.size() << "pts.";
+        qDebug() << "BezierCurve::DeleteSelectedPoint() - Warning, not "
+                    "deleting since curve closed and only"
+                 << pts.size() << "pts.";
         return;
     }
     if (!closed && pts.size() <= 4) {
-        qDebug() << "BezierCurve::DeleteSelectedPoint() - Warning, not deleting since curve not closed and only" << pts.size() << "pts.";
+        qDebug() << "BezierCurve::DeleteSelectedPoint() - Warning, not "
+                    "deleting since curve not closed and only"
+                 << pts.size() << "pts.";
         return;
     }
 
-    //move to nearest endpoint
+    // move to nearest endpoint
     int index = segment_index;
     if (index % 3 == 1) {
         --index;
@@ -548,33 +511,26 @@ void BezierCurve::DeletePoint(const int segment_index)
         ++index;
     }
 
-    //now we remove the endpoint, plus the tangent before and after
-    //TODO: this could be more optimal in that the shape is better preserved following removal
+    // now we remove the endpoint, plus the tangent before and after
+    // TODO: this could be more optimal in that the shape is better
+    // preserved following removal
     if (index > 0 && index < pts.size()-1) {
-
         pts.removeAt(index-1);
         pts.removeAt(index-1);
         pts.removeAt(index-1);
-
     }
     else {
-
         if (!closed && index == 0) {
-
             pts.removeFirst();
             pts.removeFirst();
             pts.removeFirst();
-
         }
         else if (!closed && index == pts.size()-1) {
-
             pts.removeLast();
             pts.removeLast();
             pts.removeLast();
-
         }
         else { //closed and at the endpoint
-
             QVector2D t2 = pts[2];
 
             pts.removeLast();
@@ -586,11 +542,8 @@ void BezierCurve::DeletePoint(const int segment_index)
 
             pts.push_back(t2);
             pts.push_back(pts.first());
-
         }
-
     }
-
 }
 
 void BezierCurve::DeleteSelectedPoint()
@@ -601,9 +554,9 @@ void BezierCurve::DeleteSelectedPoint()
 
 void BezierCurve::InsertPoint(const int segment_index)
 {
-
     if (segment_index < 0 || segment_index >= pts.size()) {
-        qDebug() << "BezierCurve::InsertPoint() - Warning, selected is" << segment_index;
+        qDebug() << "BezierCurve::InsertPoint() - Warning, selected is"
+                 << segment_index;
         return;
     }
 
@@ -611,9 +564,7 @@ void BezierCurve::InsertPoint(const int segment_index)
     index -= (index % 3);
 
     QList <QVector2D> subdiv_pts;
-
     Subdivide(index, 0.5f);
-
 }
 
 void BezierCurve::InsertSelectedPoint()
@@ -628,7 +579,6 @@ void BezierCurve::UnselectPoint()
 
 void BezierCurve::SamplePoint(const QVector2D & p1, const QVector2D & t1, const QVector2D & t2, const QVector2D & p2, const float t, QVector2D & point)
 {
-
     const float omt = 1.0f - t;
     const float omt_2 = omt * omt;
     const float t_2 = t * t;
@@ -639,12 +589,10 @@ void BezierCurve::SamplePoint(const QVector2D & p1, const QVector2D & t1, const 
     const float a3 = t_2 * t;
 
     point = (p1 * a0) + (t1 * a1) + (t2 * a2) + (p2 * a3);
-
 }
 
 void BezierCurve::SampleTangent(const QVector2D & p1, const QVector2D & t1, const QVector2D & t2, const QVector2D & p2, const float t, QVector2D & tangent)
 {
-
     const float omt = 1.0f - t;
 
     const QVector2D p10 = p1 * omt + t1 * t;
@@ -655,17 +603,16 @@ void BezierCurve::SampleTangent(const QVector2D & p1, const QVector2D & t1, cons
     const QVector2D p21 = p11 * omt  + p12 * t;
 
     tangent = (p21 - p20).normalized();
-
 }
 
 bool BezierCurve::IsPointInside(const QVector2D & p)
 {
 
-    //use ray casting algorithm, count intersection points with x value less than p.x
+    //use ray casting algorithm, count intersection points
+    //with x value less than p.x
     int intersects_left_of_p = 0;
 
     for (int i=0; i<samples.size(); ++i) {
-
         int i1 = i;
         int i2 = (i+1)%samples.size();
         QVector2D intersect;
@@ -685,7 +632,6 @@ bool BezierCurve::IsPointInside(const QVector2D & p)
 
 void BezierCurve::Subdivide(const int i, const float t)
 {
-
     const float omt = 1.0f - t;
 
     const QVector2D p00 = pts[i];
@@ -720,12 +666,10 @@ void BezierCurve::Subdivide(const int i, const float t)
     pts.insert(i+3, p30);
     pts.insert(i+4, p21);
     pts.insert(i+5, p12);
-
 }
 
 void BezierCurve::Subdivide(const BezierCurve & c, const int i, const float t, QList <QVector2D> & subdiv_pts)
 {
-
     const float omt = 1.0f - t;
 
     const QVector2D p00 = c.pts[i];
@@ -769,7 +713,6 @@ void BezierCurve::GetLineIntersections(const QVector2D & line_p, const QVector2D
 
     QVector2D line_n(-line_d.y(), line_d.x());
 
-    //qDebug() << "pts size" << pts.size();
     for (int i=0; i+3<pts.size(); i+=3) {
 
         QVector <QVector2D> segment_samples;
@@ -785,7 +728,6 @@ void BezierCurve::GetLineIntersections(const QVector2D & line_p, const QVector2D
 
         //now we iterate through and observe changes in signed distance
         for (int t=0; t<tests_sample_rate; ++t) {
-
             if (segment_line_dists[t] * segment_line_dists[t+1] > 0.0f) {
                 continue;
             }
@@ -795,9 +737,7 @@ void BezierCurve::GetLineIntersections(const QVector2D & line_p, const QVector2D
             bcp.point = (segment_samples[t] + segment_samples[t+1]) * 0.5f;
             bcp.t = (float(t) + 0.5f)/float(tests_sample_rate);
             intersects.push_back(bcp);
-
         }
-
     }
 
     //sort intersections along the ray direction
@@ -807,17 +747,13 @@ void BezierCurve::GetLineIntersections(const QVector2D & line_p, const QVector2D
             if (QVector2D::dotProduct(intersects[i].point, line_d) > QVector2D::dotProduct(intersects[j].point, line_d)) {
                 intersects.swapItemsAt(i, j);
             }
-
         }
     }
-
 }
 
 void BezierCurve::GetLineSegmentIntersections(const QVector2D & line_p1, const QVector2D & line_p2, QList <BezierCurvePoint> & intersects)
 {
-
      for (int i=0; i+3<pts.size(); i+=3) {
-
         QVector <QVector2D> segment_samples;
         SamplePointsForSegment(i, segment_samples);
 
@@ -832,28 +768,18 @@ void BezierCurve::GetLineSegmentIntersections(const QVector2D & line_p1, const Q
                 bcp.t = (float(t) + 0.5f)/float(tests_sample_rate);
                 intersects.push_back(bcp);
             }
-
         }
-
     }
-
 }
 
 void BezierCurve::SplitAlongLine(const QVector2D & split_p, const QVector2D & split_d, QList <BezierCurve> & curves)
 {  
-
     //1.  compute the intersections with the bezier curve
     QList <BezierCurvePoint> split;
     GetLineIntersections(split_p, split_d, split);
 
 
-    //2.  go through making loops starting at each split segment (in both directions)
-    //qDebug() << "Splitting info:";
-    //qDebug() << "---------------";
-    //qDebug() << split_segment;
-    //qDebug() << split_point;
-    //qDebug() << split_t;
-
+    //2.  go through making loops starting at each split segment (in both directions)    
     //if the line didn't split this curve, we just return
     if (split.empty()) {
         return;
@@ -861,12 +787,14 @@ void BezierCurve::SplitAlongLine(const QVector2D & split_p, const QVector2D & sp
 
     //if there's an odd number of intersections, we return
     if (split.size() % 2 == 1) {
-        qDebug() << "BezierCurve::SplitAlongLine() - Problem, grid line made odd number of intersections";
+        qDebug() << "BezierCurve::SplitAlongLine() - Problem, grid line "
+                    "made odd number of intersections";
         return;
     }
 
     //subdivide if two adjacent split point share the same segment
-    //TODO!!!: special case where split_segment[start] and split_segment[start+1] are the same
+    //TODO!!!: special case where split_segment[start] and
+    //split_segment[start+1] are the same
     //(i.e. no position ctrl points on one side, but interpolated curve crosses)
     for (int i=0; i+1<split.size(); i+=2) {
         if (split[i].segment == split[i+1].segment) {
@@ -918,7 +846,6 @@ void BezierCurve::SplitAlongLine(const QVector2D & split_p, const QVector2D & sp
         Subdivide((*this), split[start+1].segment, split[start+1].t, next_subdiv_pts);
 
         if (go_forward) {
-
             new_curve.AddPoint(subdiv_pts[0]);
             new_curve.AddPoint(subdiv_pts[1]);
             new_curve.AddPoint(subdiv_pts[2]);
@@ -935,10 +862,8 @@ void BezierCurve::SplitAlongLine(const QVector2D & split_p, const QVector2D & sp
 
             i0 = split[start].segment;
             i = split[start+1].segment;
-
         }
         else {           
-
             new_curve.AddPoint(next_subdiv_pts[0]);
             new_curve.AddPoint(next_subdiv_pts[1]);
             new_curve.AddPoint(next_subdiv_pts[2]);
@@ -955,17 +880,12 @@ void BezierCurve::SplitAlongLine(const QVector2D & split_p, const QVector2D & sp
 
             i0 = split[start+1].segment;
             i = split[start].segment;
-
         }
 
         i = GetNextSegmentIndex(i);
 
         //halt when the curve is closed
         while (i0 != i) {
-
-            //qDebug() << "tracing through forward?" << go_forward << "i0?" << i0 << "i?" << i;
-            //qDebug() << "Curve" << curves.size() << ":" << go_forward << i << i0;
-
             //check if this segment is in the split list
             int ind = -1;
             for (int j=0; j<split.size(); ++j) {
@@ -976,22 +896,17 @@ void BezierCurve::SplitAlongLine(const QVector2D & split_p, const QVector2D & sp
             }
 
             if (ind == -1) { //the segment is NOT in the split_list
-
                 //no subdivision
-                //qDebug() << "adding pts" << i+1 << i+2 << i+3;
                 new_curve.AddPoint(pts[i+1]);
                 new_curve.AddPoint(pts[i+2]);
                 new_curve.AddPoint(pts[i+3]);
-
             }
             else { //the segment IS in the split_list
 
                 if (go_forward && visited_forward[ind]) {
-                    //qDebug() << "already been here?";
                     break;
                 }
                 else if (!go_forward && visited_backward[ind]) {
-                    //qDebug() << "already been here?";
                     break;
                 }
 
@@ -1003,20 +918,17 @@ void BezierCurve::SplitAlongLine(const QVector2D & split_p, const QVector2D & sp
                 QList <QVector2D> next_subdiv_pts;
                 Subdivide((*this), split[next_ind].segment, split[next_ind].t, next_subdiv_pts);
 
-                //qDebug() << "traversing! adding split of" << split_segment[ind];
                 //segment to line
                 new_curve.AddPoint(subdiv_pts[1]);
                 new_curve.AddPoint(subdiv_pts[2]);
                 new_curve.AddPoint(subdiv_pts[3]);
 
                 //intermediate along line
-                //qDebug() << "traversing! adding line between" << split_segment[ind] << split_segment[next_ind];
                 new_curve.AddPoint(subdiv_pts[3] * 0.75 + next_subdiv_pts[3] * 0.25);
                 new_curve.AddPoint(subdiv_pts[3] * 0.25 + next_subdiv_pts[3] * 0.75);
                 new_curve.AddPoint(next_subdiv_pts[3]);
 
                 //next segment
-                //qDebug() << "traversing! finishing with end of " << split_segment[next_ind];
                 new_curve.AddPoint(next_subdiv_pts[4]);
                 new_curve.AddPoint(next_subdiv_pts[5]);
                 new_curve.AddPoint(next_subdiv_pts[6]);
@@ -1031,32 +943,21 @@ void BezierCurve::SplitAlongLine(const QVector2D & split_p, const QVector2D & sp
                     visited_backward[next_ind] = true;
                 }
 
-                //i = (split_segment[split_list_index+1] + 3) % pts.size();
-                //qDebug() << " jumping" << i << "->" << split[next_ind].segment;
                 i = split[next_ind].segment;
-
-                //qDebug() << "i now at " << i;
-
             }
 
             //increment i (move along the loop)
             i = GetNextSegmentIndex(i);
-
         }
 
         //add this curve to the list
         new_curve.UpdateSamples();
         curves.push_back(new_curve);
-
     }
-
-    //qDebug() << "Curves generated: " << curves.size();
-
 }
 
 void BezierCurve::SubdivideLongestSegment()
 {
-
     //1.  figure out the longest segment
     int max_segment_index = -1;
     float max_segment_length = -FLT_MAX;
@@ -1094,12 +995,14 @@ void BezierCurve::GetCurvePointCorrespondence(const BezierCurve & other, int & c
 
     //1.  ensure the two curves have the same # of control points
     if (pts.size() != other.pts.size()) {
-        qDebug() << "BezierCurve::GetCurvePointCorrespondence() - Warning, two curves do not have same # of control points";
+        qDebug() << "BezierCurve::GetCurvePointCorrespondence() - Warning, "
+                    "two curves do not have same # of control points";
         corresp_offset = 0;
         return;
     }
 
-    //2.  iterate around the ring trying each offset, evaluate distances to control points
+    //2.  iterate around the ring trying each offset,
+    //    evaluate distances to control points
     int min_offset_index = -1;
     float min_offset_dist = FLT_MAX;
     bool min_offset_forward = true;
@@ -1120,9 +1023,11 @@ void BezierCurve::GetCurvePointCorrespondence(const BezierCurve & other, int & c
     for (int k=0; k<2; ++k) {
 
         for (int i=0; i<c1.pts.size(); i+=3) {
-            //note: (i+=3) only doing correspondences matching position ctrl point <--> position ctrl point
+            //note: (i+=3) only doing correspondences matching position
+            //ctrl point <--> position ctrl point
 
-            //sum up lengths between all control points using offset i (even the tangent-related ones)
+            //sum up lengths between all control points using offset i
+            //(even the tangent-related ones)
             float each_offset_dist = 0.0f;
             for (int j=0; j<c1.pts.size(); ++j) {
 
@@ -1137,35 +1042,27 @@ void BezierCurve::GetCurvePointCorrespondence(const BezierCurve & other, int & c
                 }
 
                 each_offset_dist += (c1.pts[ind1] - c2.pts[ind2]).length();
-                //qDebug() << "  adding length between" << ind1 << "and" << ind2 << "which is" << (c1.pts[ind1] - c2.pts[ind2]).length();
-
             }
 
-            //qDebug() << "testing" << i << (k == 0) << each_offset_dist;
-
             if (each_offset_dist < min_offset_dist) {
-                //qDebug() << "found a better offset dist" << each_offset_dist << "using offset" << i << (k == 0);
                 min_offset_dist = each_offset_dist;
                 min_offset_index = i;
                 min_offset_forward = (k == 0);
             }
-
         }
-
     }
 
     //3.  use the offset where the sum of distances to control points is minimized
     corresp_offset = min_offset_index;
     corresp_forward = min_offset_forward;
-
 }
 
 void BezierCurve::InterpolateCurvePointCorrespondence(const BezierCurve & other, const int corresp_offset, const bool corresp_forward, const float t, BezierCurve & interp_curve) const
 {
-
     //1.  ensure the two curves have the same # of control points
     if (pts.size() != other.pts.size()) {
-        qDebug() << "BezierCurve::InterpolateCurvePointCorrespondnece() - Warning, two curves do not have same # of control points";
+        qDebug() << "BezierCurve::InterpolateCurvePointCorrespondnece() - "
+                    "Warning, two curves do not have same # of control points";
         return;
     }
 
@@ -1189,7 +1086,6 @@ void BezierCurve::InterpolateCurvePointCorrespondence(const BezierCurve & other,
             ind2 = (-i + corresp_offset + c1.pts.size()) % c1.pts.size();
         }
 
-        //qDebug() << "blending" << i << "corresp:" << corresp_offset << corresp_forward << "index could be" <<(i + corresp_offset) % c1.pts.size() << "or" << (i - corresp_offset + c1.pts.size()) % c1.pts.size();
         QVector2D interp_pt = c1.pts[ind1] * (1.0f - t) + c2.pts[ind2] * t;
 
         interp_curve.AddPoint(interp_pt);
@@ -1205,7 +1101,6 @@ void BezierCurve::InterpolateCurvePointCorrespondence(const BezierCurve & other,
 
 float BezierCurve::Length() const
 {
-
     float len = 0.0f;
 
     for (int i=0; i<samples.size()-1; ++i) {        
@@ -1213,7 +1108,6 @@ float BezierCurve::Length() const
     }
 
     return len;
-
 }
 
 void BezierCurve::Reverse()
@@ -1280,11 +1174,7 @@ void BezierCurve::GetSubCurve(const BezierCurvePoint & b1, const BezierCurvePoin
         //ii) add the intermediate segments
         int i = GetNextSegmentIndex(b1.segment);
 
-        //qDebug() << "constructing a subcurve, pts i have is" << pts.size();
-        //qDebug() << "starting at" << b1.segment;
         while (i != b2.segment) {
-
-            //qDebug() << "marched to " << i;
             sub_curve.AddPoint(pts[i+1]);
             sub_curve.AddPoint(pts[i+2]);
             sub_curve.AddPoint(pts[i+3]);
@@ -1292,7 +1182,6 @@ void BezierCurve::GetSubCurve(const BezierCurvePoint & b1, const BezierCurvePoin
             i = GetNextSegmentIndex(i);
 
         }
-        //qDebug() << "ending at" << b2.segment;
 
         //iii) add the first part of the last segment's subdivision
         sub_curve.AddPoint(b2_subdiv[1]);
@@ -1311,12 +1200,14 @@ void BezierCurve::GetPointsTangentsAlongCurve(const int num, QVector <QVector2D>
 {
 
     if (num < 2) {
-        qDebug() << "BezierCurve::GetPointsTangentsAlongCurve() - Warning, parameter less than 2 passed in";
+        qDebug() << "BezierCurve::GetPointsTangentsAlongCurve() - "
+                    "Warning, parameter less than 2 passed in";
         return;
     }
 
     if (pts.size() < 4) {
-        qDebug() << "BezierCurve::GetPointsTangentsAlongCurve() - Warning, less than 4 control points";
+        qDebug() << "BezierCurve::GetPointsTangentsAlongCurve() - "
+                    "Warning, less than 4 control points";
         return;
     }
 
@@ -1326,8 +1217,6 @@ void BezierCurve::GetPointsTangentsAlongCurve(const int num, QVector <QVector2D>
     //assign first point/tangent
     points[0] = pts.first();
     SampleTangent(pts[0], pts[1], pts[2], pts[3], 0.0f, tangents[0]);
-    //points[num-1] = pts.last();
-    //SampleTangent(pts[pts.size()-4], pts[pts.size()-3], pts[pts.size()-2], pts[pts.size()-1], 1.0f, tangents[num-1]);
 
     //now deal with the middle ones by sampling along arc-length of curve
     int n_index = 1;
@@ -1347,22 +1236,20 @@ void BezierCurve::GetPointsTangentsAlongCurve(const int num, QVector <QVector2D>
 
             const float len_needed = (float(n_index) / float(num)) * total_len;
 
-            //if we've travelled the length of the spacing between samples, we sample here
+            //if we've travelled the length of the spacing between samples,
+            //we sample here
             if (cur_len >= len_needed) {
 
                 const float t = float(j + 0.5f) / float(tests_sample_rate+1);
 
                 SamplePoint(pts[i], pts[i+1], pts[i+2], pts[i+3], t, points[n_index]);
                 SampleTangent(pts[i], pts[i+1], pts[i+2], pts[i+3], t, tangents[n_index]);
-                //qDebug() << "at" << points[n_index] << i << pts.size() << j << tests_sample_rate << total_len << num;
 
                 ++n_index;
                 if (n_index >= num) {
                     break;
                 }
-
             }
-
         }      
     }
 
@@ -1370,7 +1257,6 @@ void BezierCurve::GetPointsTangentsAlongCurve(const int num, QVector <QVector2D>
     int i = pts.size()-4;
     SamplePoint(pts[i], pts[i+1], pts[i+2], pts[i+3], 1.0f, points[num]);
     SampleTangent(pts[i], pts[i+1], pts[i+2], pts[i+3], 1.0f, tangents[num]);
-
 }
 
 void BezierCurve::SamplePointsForSegment(const int i, QVector <QVector2D> & sample_segment) const

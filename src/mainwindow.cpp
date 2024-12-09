@@ -68,13 +68,11 @@ MainWindow::MainWindow()
     webView = new QWebEngineView(this);
     webView->setGeometry(0, 0, 800, 700);
 
-    // --- does nothing for some reason
+    // does nothing for some reason
     webView->settings()->setFontFamily(QWebEngineSettings::SansSerifFont,
                                        "Arial");
-    // ---
 
     webView->load(QUrl("http://flatfab.com/splash.html"));
-
     webView->show();
 
     createActions();
@@ -111,11 +109,6 @@ void MainWindow::ShowWelcomePage()
     connect(button2, SIGNAL(clicked()), this, SLOT(LoadPlaneSketch()));
     connect(button3, SIGNAL(clicked()), this, SLOT(Exit()));
 
-    // ShowAppWidgets() is now called from within NewPlaneSketch and
-    // LoadPlaneSketch connect(button1, SIGNAL(clicked()), this,
-    // SLOT(ShowAppWidgets())); connect(button2, SIGNAL(clicked()), this,
-    // SLOT(ShowAppWidgets()));
-
     QHBoxLayout *layout = new QHBoxLayout;
     layout->addWidget(button1);
     layout->addWidget(button2);
@@ -141,14 +134,13 @@ void MainWindow::ShowAppWidgets()
         delete webView;
         webView = NULL;
     } else {
-        // skip everything else if webview is NULL, as it means this method has
-        // been called before
+        // skip everything else if webview is NULL,
+        // as it means this method has been called before
         return;
     }
 
     this->removeDockWidget(bottomDockWidget);
 
-    // addDockWidget(Qt::RightDockWidgetArea, dockWidget);
     createSideBar();
     createQuickToolBar();
     setCentralWidget(&glWidget);
@@ -203,43 +195,12 @@ void MainWindow::ShowAppWidgets()
 
     mb.setStandardButtons(QMessageBox::Ok);
     mb.exec();
-    //    qDebug()<<"hey";
-    //    mb.close();
 }
 
 void MainWindow::closeDialog() {}
 
 void MainWindow::createQuickToolBar()
-{
-    // ---- old tool bar - this should stay till new tool bar has been tested
-    // enough
-
-    //    quickToolBar = new QToolBar(tr("Quick Settings"), this);
-    //    quickToolBar->setIconSize(QSize(25,25));
-
-    ////    quickToolBar->setMovable(false);
-    ////    quickToolBar->setFloatable(false);
-    ////    quickToolBar->setWindowFlags(Qt::Tool | Qt::FramelessWindowHint);
-    ////    quickToolBar->setStyleSheet("QToolButton {color: #aaa; font-size:
-    /// 10px;}" /                                "QToolButton::checked {
-    /// background-color: #fff;}" /                                "QToolBar
-    ///{position:absolute; top:10px; right:10px;}");
-
-    //    QAction *setLocalSymmetry = new
-    //    QAction(QIcon(":/icons/appbar.transform.flip.horizontal.png"), "Local
-    //    Symmetry", this); setLocalSymmetry->setStatusTip(tr("Local
-    //    Symmetry")); setLocalSymmetry->setCheckable(true);
-    //    setLocalSymmetry->setChecked(true);
-    //    connect(setLocalSymmetry, SIGNAL(triggered()), this,
-    //    SLOT(ToggleLocalSymmetry()));
-
-    //    quickToolBar->addAction(setLocalSymmetry);
-
-    ////    quickToolBar->setAllowedAreas(Qt::BottomToolBarArea);
-    //    addToolBar(quickToolBar);
-
-    // -----
-
+{    
     // Push buttons - all buttons are opposite of their boolean counterparts -
     // this is an ugly hack to acheive the right gradient
 
@@ -249,7 +210,6 @@ void MainWindow::createQuickToolBar()
     button->setCheckable(true);
     button->setChecked(false);  // this is opposite of what it should be - ugly
                                 // hack to acheive the right gradient
-    // button->setIconSize(QSize(25,25));
     button->setToolTip("Local Symmetry");
     button->setStyleSheet(
         "QPushButton {icon-size:35px; max-width:35px; max-height:35px;}"
@@ -264,7 +224,6 @@ void MainWindow::createQuickToolBar()
     button2->setCheckable(true);
     button2->setChecked(true);  // this is opposite of what it should be - ugly
                                 // hack to acheive the right gradient
-    // button->setIconSize(QSize(25,25));
     button2->setToolTip("Pen Mode");
     button2->setStyleSheet(
         "QPushButton {icon-size:35px; max-width:35px; max-height:35px;}"
@@ -306,7 +265,6 @@ void MainWindow::createSideBar()
                     QIcon::On);
 
     openDock[0] = new QAction(icon[0], tr("&Edit"), this);
-    // openEdit->setShortcuts(QKeySequence::Open);
     openDock[0]->setStatusTip(tr("Edit"));
     openDock[0]->setCheckable(true);
     connect(openDock[0], SIGNAL(triggered()), this, SLOT(openEditWidget()));
@@ -318,7 +276,6 @@ void MainWindow::createSideBar()
                     QIcon::On);
 
     openDock[1] = new QAction(icon[1], tr("&Generate"), this);
-    // openEdit->setShortcuts(QKeySequence::Open);
     openDock[1]->setStatusTip(tr("Generate"));
     openDock[1]->setCheckable(true);
     connect(openDock[1], SIGNAL(triggered()), this, SLOT(openGenerateWidget()));
@@ -330,7 +287,6 @@ void MainWindow::createSideBar()
                     QIcon::On);
 
     openDock[2] = new QAction(icon[2], tr("&Guides"), this);
-    // openEdit->setShortcuts(QKeySequence::Open);
     openDock[2]->setStatusTip(tr("Guides"));
     openDock[2]->setCheckable(true);
     connect(openDock[2], SIGNAL(triggered()), this, SLOT(openGuidesWidget()));
@@ -342,7 +298,6 @@ void MainWindow::createSideBar()
                     QIcon::On);
 
     openDock[3] = new QAction(icon[3], tr("&Physics"), this);
-    // openEdit->setShortcuts(QKeySequence::Open);
     openDock[3]->setStatusTip(tr("Physics"));
     openDock[3]->setCheckable(true);
     connect(openDock[3], SIGNAL(triggered()), this, SLOT(openPhysicsWidget()));
@@ -354,12 +309,9 @@ void MainWindow::createSideBar()
                     QIcon::On);
 
     openDock[4] = new QAction(icon[4], tr("&View"), this);
-    // openEdit->setShortcuts(QKeySequence::Open);
     openDock[4]->setStatusTip(tr("View"));
     openDock[4]->setCheckable(true);
     connect(openDock[4], SIGNAL(triggered()), this, SLOT(openViewWidget()));
-
-    // mainToolGroup->setExclusive(true);
 
     mainToolBar = new QToolBar(tr("Tools"));
     for (int i = 0; i < 4; i++) {
@@ -386,9 +338,6 @@ void MainWindow::createSideBar()
     widgets[4] = glWidget.GetViewWidget();
 
     for (int i = 0; i < 5; i++) {
-        //        QWidget *widget = new QWidget(this);
-        //        widget->setLayout(layout);
-
         docks[i] = new QDockWidget(this);
 
         if (i == 1) {
@@ -416,11 +365,9 @@ void MainWindow::createSideBar()
 
 void MainWindow::SendTrackRequest()
 {
-    // this code sends a track request to Google Anayltics for "splash.html" for
-    // the FFF account
+    // this code sends a track request to Google Anayltics
+    // for "splash.html" for the FFF account
     QNetworkAccessManager *nam = new QNetworkAccessManager(this);
-    // QObject::connect(nam, SIGNAL(finished(QNetworkReply*)), this,
-    // SLOT(finishedSlot(QNetworkReply*)));
 
     QUrl collect_url("http://www.google-analytics.com/collect");
 
@@ -431,7 +378,6 @@ void MainWindow::SendTrackRequest()
     QByteArray query_items(
         "v=1&tid=UA-51900137-1&cid=555&t=pageview&dp=%2Fsplash.html");
 
-    // QNetworkReply * reply = nam->post(request, query_items);
     nam->post(request, query_items);
 }
 
@@ -789,13 +735,13 @@ void MainWindow::createActions()
 
     generateMakeCircleAct = new QAction(tr("Set &Circle"), this);
     generateMakeCircleAct->setStatusTip(
-        tr("Mkae the boundary of an existing planar section a circle."));
+        tr("Make the boundary of an existing planar section a circle."));
     connect(generateMakeCircleAct, SIGNAL(triggered()), this,
             SLOT(GenerateMakeCircle()));
 
     generateMakeRectangleAct = new QAction(tr("Set Rec&tangle"), this);
     generateMakeRectangleAct->setStatusTip(
-        tr("Mkae the boundary of an existing planar section a rectangle."));
+        tr("Make the boundary of an existing planar section a rectangle."));
     connect(generateMakeRectangleAct, SIGNAL(triggered()), this,
             SLOT(GenerateMakeRectangle()));
 
@@ -849,7 +795,7 @@ void MainWindow::createActions()
             SLOT(TogglePhysicsSkeleton()));
 
     showPhysicsForceAct = new QAction(tr("Show &Force"), this);
-    showPhysicsForceAct->setStatusTip(tr("Show calcualted forces."));
+    showPhysicsForceAct->setStatusTip(tr("Show calculated forces."));
     showPhysicsForceAct->setCheckable(true);
     showPhysicsForceAct->setChecked(physics.GetDrawForce());
     connect(showPhysicsForceAct, SIGNAL(triggered()), this,
@@ -899,11 +845,9 @@ void MainWindow::createMenus()
     fileMenu->addAction(saveSliceOBJAct);
     fileMenu->addAction(saveSlabOBJAct);
     fileMenu->addAction(saveFlattenedSlabOBJAct);
-    // fileMenu->addAction(saveSurfaceOBJAct);
     fileMenu->addAction(saveSVGAct);
     fileMenu->addAction(saveDXFAct);
     fileMenu->addAction(saveCalibrationAct);
-    // fileMenu->addAction(savePhysicsOutput);
     fileMenu->addSeparator();
     fileMenu->addAction(exitAct);
 
@@ -918,9 +862,6 @@ void MainWindow::createMenus()
     editMenu->addAction(copyRotateYAct);
     editMenu->addAction(copyMirrorZAct);
     editMenu->addAction(copyDuplicateAct);
-    // editMenu->addSeparator();
-    //    editMenu->addAction(createSurfacePatchesAct);
-    //    editMenu->addAction(deleteSurfacePatchesAct);
     editMenu->addSeparator();
     editMenu->addAction(addHoleBoundaryAct);
     editMenu->addAction(removeHolesBoundaryAct);
@@ -928,7 +869,6 @@ void MainWindow::createMenus()
     editMenu->addSeparator();
     editMenu->addAction(generateMakeCircleAct);
     editMenu->addAction(generateMakeRadialAct);
-    // editMenu->addAction(generateMakeRadialHoleAct);
     editMenu->addAction(generateMakeRectangleAct);
 
     editMenu->addSeparator();
@@ -958,9 +898,6 @@ void MainWindow::createMenus()
     viewMenu->addAction(testCyclesAct);
     viewMenu->addAction(testConnectedAct);
     viewMenu->addAction(testStabilityAct);
-    // viewMenu->addAction(multisample0Act);
-    // viewMenu->addAction(multisample4Act);
-    // viewMenu->addAction(multisample16Act);
 
     generateMenu = menuBar()->addMenu(tr("&Generate"));
     generateMenu->addAction(generateBlendAct);
@@ -1068,7 +1005,6 @@ void MainWindow::StartDimensioningTool() { glWidget.StartDimensioningTool(); }
 void MainWindow::Undo()
 {
     glWidget.Undo(OP_UNDO);
-    // glWidget.updateGL();
 }
 
 void MainWindow::Redo() { glWidget.Redo(); }
@@ -1146,7 +1082,6 @@ void MainWindow::GenerateLinear()
     if (!docks[1]->isVisible()) {
         openGenerateWidget();
     }
-    // glWidget.DoGenerateLinear();
     glWidget.StartGenerateLinear();
 }
 
@@ -1155,7 +1090,6 @@ void MainWindow::GenerateBlend()
     if (!docks[1]->isVisible()) {
         openGenerateWidget();
     }
-    // glWidget.DoGenerateBlend();
     glWidget.StartGenerateBlend();
 }
 
@@ -1164,7 +1098,6 @@ void MainWindow::GenerateGrid()
     if (!docks[1]->isVisible()) {
         openGenerateWidget();
     }
-    // glWidget.DoGenerateGrid();
     glWidget.StartGenerateGrid();
 }
 
@@ -1173,7 +1106,6 @@ void MainWindow::GenerateRevolve()
     if (!docks[1]->isVisible()) {
         openGenerateWidget();
     }
-    // glWidget.DoGenerateRevolve();
     glWidget.StartGenerateRevolve();
 }
 
@@ -1227,60 +1159,42 @@ void MainWindow::GenerateSlices()
 
 void MainWindow::TogglePhysicsTest()
 {
-    // glWidget.SetDoPhysicsTest(!glWidget.GetDoPhysicsTest());
     glWidget.ToggleDoPhysicsTest();
 }
 
 void MainWindow::TogglePhysicsDeformed()
 {
-    //    CPhysics & physics = glWidget.GetPhysics();
-    //    physics.SetDrawDeformed(!physics.GetDrawDeformed());
-    //    //glWidget.updateGL();
     glWidget.ToggleDrawDeformed();
 }
 
 void MainWindow::TogglePhysicsSkeleton()
 {
-    //    CPhysics & physics = glWidget.GetPhysics();
-    //    physics.SetDrawSkeleton(!physics.GetDrawSkeleton());
-    //    //glWidget.updateGL();
     glWidget.ToggleDrawSkeleton();
 }
 
 void MainWindow::TogglePhysicsForce()
 {
-    //    CPhysics & physics = glWidget.GetPhysics();
-    //    physics.SetDrawForce(!physics.GetDrawForce());
-    //    //glWidget.updateGL();
     glWidget.ToggleDrawForce();
 }
 
 void MainWindow::TogglePhysicsSection()
 {
-    //    CPhysics & physics = glWidget.GetPhysics();
-    //    physics.SetDrawSection(!physics.GetDrawSection());
-    //    //glWidget.updateGL();
     glWidget.ToggleDrawSection();
 }
 
 void MainWindow::TogglePhysicsSectionMoment()
 {
-    //    CPhysics & physics = glWidget.GetPhysics();
-    //    physics.SetDrawSectionMoment(!physics.GetDrawSectionMoment());
-    //    //glWidget.updateGL();
     glWidget.ToggleDrawMoments();
 }
 
 void MainWindow::PhysicsAddExternalMass()
 {
     glWidget.DoPhysicsAddWeight();
-    // glWidget.updateGL();
 }
 
 void MainWindow::PhysicsRemoveExternalMasses()
 {
     glWidget.DoPhysicsRemoveWeights();
-    // glWidget.updateGL();
 }
 
 void MainWindow::SetMultisampling0() { SetMultisampling(0); }
@@ -1291,7 +1205,6 @@ void MainWindow::SetMultisampling16() { SetMultisampling(16); }
 
 void MainWindow::SetMultisampling(const int i)
 {
-    // qDebug() << "MainWindow::SetMultisampling(const int i)" << i;
     //  Setting up Multi-sampling
     QGLFormat glf = QGLFormat::defaultFormat();
     glf.setSampleBuffers(i > 0);
@@ -1300,7 +1213,6 @@ void MainWindow::SetMultisampling(const int i)
 }
 
 // UI slots
-
 void MainWindow::openEditWidget()
 {
     for (int i = 0; i < 5; i++) {
@@ -1384,8 +1296,6 @@ void MainWindow::setPhysicsMenuChecks()
 
 void MainWindow::resizeEvent(QResizeEvent *)
 {
-    // QMainWindow::resizeEvent(event);
-
     // this moves the toolwidget on resize
     if (toolWidget != NULL) {
         QPoint point =
@@ -1396,8 +1306,6 @@ void MainWindow::resizeEvent(QResizeEvent *)
 
 void MainWindow::moveEvent(QMoveEvent *)
 {
-    // QMainWindow::moveEvent(event);
-
     // this moves the toolwidget on window move
     if (toolWidget != NULL) {
         QPoint point =

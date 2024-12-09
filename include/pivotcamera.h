@@ -50,7 +50,6 @@ private:
     void SetUpRightAuto();
     QVector3D Slerp(const QVector3D & v1, const QVector3D & v2, const float t);
 
-    // void UpdateUpVector();
     QVector3D GetPivotOffset(const QVector2D & mouse_pos) const;
 
     double neardist;

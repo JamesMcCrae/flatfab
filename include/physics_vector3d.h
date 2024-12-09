@@ -72,12 +72,12 @@ double SquareDistance(const CVector3D& ipo0, const CVector3D& ipo1);
 double SquareLength(const CVector3D& point);
 double Length(const CVector3D& point);
 double Distance(const CVector3D& ipo0, const CVector3D& ipo1);
-double SqareLongestEdgeLength(const CVector3D& ipo0, const CVector3D& ipo1,
-                              const CVector3D& ipo2, const CVector3D& ipo3);
+double SquareLongestEdgeLength(const CVector3D& ipo0, const CVector3D& ipo1,
+                               const CVector3D& ipo2, const CVector3D& ipo3);
 double LongestEdgeLength(const CVector3D& ipo0, const CVector3D& ipo1,
                          const CVector3D& ipo2, const CVector3D& ipo3);
-double SqareShortestEdgeLength(const CVector3D& ipo0, const CVector3D& ipo1,
-                               const CVector3D& ipo2, const CVector3D& ipo3);
+double SquareShortestEdgeLength(const CVector3D& ipo0, const CVector3D& ipo1,
+                                const CVector3D& ipo2, const CVector3D& ipo3);
 double ShortestEdgeLength(const CVector3D& ipo0, const CVector3D& ipo1,
                           const CVector3D& ipo2, const CVector3D& ipo3);
 void Normal(CVector3D& vnorm, const CVector3D& v1, const CVector3D& v2,
@@ -92,7 +92,7 @@ double Circumradius(const CVector3D& ipo0, const CVector3D& ipo1,
                     const CVector3D& ipo2, const CVector3D& ipo3);
 CVector3D RotateVector(const CVector3D& vec0, const CVector3D& rot);
 
-//! 3 dimentional vector class
+// 3D vector class
 class CVector3D
 {
 public:
@@ -348,7 +348,7 @@ public:
     }
     bool IsInside(const CVector3D& vec) const
     {
-        if (!isnt_empty) return false;  // âΩÇ‡Ç»Ç¢èÍçáÇÕèÌÇ…ãU
+        if (!isnt_empty) return false;
         if (vec.x >= x_min && vec.x <= x_max && vec.y >= y_min &&
             vec.y <= y_max && vec.z >= z_min && vec.z <= z_max)
             return true;

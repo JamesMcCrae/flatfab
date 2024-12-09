@@ -45,9 +45,8 @@ CPhysics::CPhysics()
     aDir2D.push_back(0.70710678118);
     aDir2D.push_back(-0.70710678118);
     nHeight = 20;
-    // max_stress = 50000;
-    max_stress =
-        60000000;  // this is the value for acrylic, 60MPa (60 * 1,000,000)
+    // this is the value for acrylic, 60MPa (60 * 1,000,000)
+    max_stress = 60000000;
 }
 
 // main class interface methods to set up problem
@@ -225,8 +224,6 @@ void CPhysics::EdEddE_ContactFriction(
     dEdu = cont_stiff * (cq - cp);
     dEdw = cont_stiff * (Rv ^ (cq - cp));
     ddEddu = cont_stiff * CMatrix3::Identity();
-    //    ddEddw  = -cont_stiff*CMatrix3::OuterProduct(Rv,Rv) +
-    //    cont_stiff*CMatrix3::Spin(Rv)*CMatrix3::Spin(cq-cp);
     ddEddw = -cont_stiff * CMatrix3::Spin(Rv) * CMatrix3::Spin(Rv) +
              cont_stiff * CMatrix3::Spin(cq - cp) * CMatrix3::Spin(Rv);
     ddEdudw = cont_stiff * CMatrix3::Spin(Rv);
@@ -249,12 +246,12 @@ void CPhysics::EdEddE_Joint(double& energy, CVector3D& dEdu0, CVector3D& dEdw0,
                             const CVector3D& u1, const CMatrix3& R1)
 {
     CVector3D Rv0 = R0 * (pj - cg0);
-    CVector3D qj0 =
-        Rv0 + cg0 + u0;  // after deformation joint pos relative to rigid body 0
+    // after deformation joint pos relative to rigid body 0
+    CVector3D qj0 = Rv0 + cg0 + u0;
 
     CVector3D Rv1 = R1 * (pj - cg1);
-    CVector3D qj1 =
-        Rv1 + cg1 + u1;  // after deformation joint pos relative to rigid body 1
+    // after deformation joint pos relative to rigid body 1
+    CVector3D qj1 = Rv1 + cg1 + u1;
 
     energy = 0.5 * trans_stiff * (qj0 - qj1).DLength();
 
@@ -726,10 +723,8 @@ void CPhysics::AddMatrix(Eigen::MatrixXd& M, unsigned int i0, unsigned int j0,
 
 void CPhysics::EdEddE_Total(double& E, Eigen::VectorXd& dE,
                             Eigen::MatrixXd& ddE,
-                            ////
                             const std::vector<CRigidBody>& aRigidBody,
                             const std::vector<CJoint>& aJoint,
-                            ////
                             const CVector3D n, const CVector3D gravity,
                             const double cont_stiff, const double trans_stiff,
                             const double rot_stiff, bool is_friction)
@@ -738,7 +733,6 @@ void CPhysics::EdEddE_Total(double& E, Eigen::VectorXd& dE,
     ddE.setConstant(0);
     dE.setConstant(0);  // u0,w0, u1,w1, ....
 
-    ////
     for (unsigned int irb = 0; irb < aRigidBody.size(); irb++) {
         const CRigidBody& rb = aRigidBody[irb];
         CVector3D cg = rb.cg;
@@ -777,7 +771,6 @@ void CPhysics::EdEddE_Total(double& E, Eigen::VectorXd& dE,
             }
             AddMatrix(ddE, irb * 6 + 0, irb * 6 + 0, ddu, true);
             AddMatrix(ddE, irb * 6 + 0, irb * 6 + 3, dudw, false);
-            ////
             AddMatrix(ddE, irb * 6 + 3, irb * 6 + 0, dudw, true);
             AddMatrix(ddE, irb * 6 + 3, irb * 6 + 3, ddw, true);
         }
@@ -801,7 +794,6 @@ void CPhysics::EdEddE_Total(double& E, Eigen::VectorXd& dE,
             }
             AddMatrix(ddE, irb * 6 + 0, irb * 6 + 0, ddu, true);
             AddMatrix(ddE, irb * 6 + 0, irb * 6 + 3, dudw, false);
-            ////
             AddMatrix(ddE, irb * 6 + 3, irb * 6 + 0, dudw, true);
             AddMatrix(ddE, irb * 6 + 3, irb * 6 + 3, ddw, true);
         }
@@ -835,17 +827,14 @@ void CPhysics::EdEddE_Total(double& E, Eigen::VectorXd& dE,
             AddMatrix(ddE, irb0 * 6 + 0, irb0 * 6 + 3, du0dw0, false);
             AddMatrix(ddE, irb0 * 6 + 0, irb1 * 6 + 0, du0du1, false);
             AddMatrix(ddE, irb0 * 6 + 0, irb1 * 6 + 3, du0dw1, false);
-            ////
             AddMatrix(ddE, irb0 * 6 + 3, irb0 * 6 + 0, du0dw0, true);
             AddMatrix(ddE, irb0 * 6 + 3, irb0 * 6 + 3, dw0dw0, true);
             AddMatrix(ddE, irb0 * 6 + 3, irb1 * 6 + 0, dw0du1, false);
             AddMatrix(ddE, irb0 * 6 + 3, irb1 * 6 + 3, dw0dw1, false);
-            ////
             AddMatrix(ddE, irb1 * 6 + 0, irb0 * 6 + 0, du0du1, true);
             AddMatrix(ddE, irb1 * 6 + 0, irb0 * 6 + 3, dw0du1, true);
             AddMatrix(ddE, irb1 * 6 + 0, irb1 * 6 + 0, du1du1, true);
             AddMatrix(ddE, irb1 * 6 + 0, irb1 * 6 + 3, du1dw1, false);
-            ////
             AddMatrix(ddE, irb1 * 6 + 3, irb0 * 6 + 0, du0dw1, true);
             AddMatrix(ddE, irb1 * 6 + 3, irb0 * 6 + 3, dw0dw1, true);
             AddMatrix(ddE, irb1 * 6 + 3, irb1 * 6 + 0, du1dw1, true);
@@ -856,18 +845,6 @@ void CPhysics::EdEddE_Total(double& E, Eigen::VectorXd& dE,
 
 // solve one iteration
 void CPhysics::SolveOneIteration()
-/*
-(
- std::vector<CRigidBody>& aRigidBody,
- std::vector<CJoint>& aJoint,
- ////
- double damping_ratio,
- ////
- const CVector3D n,
- const CVector3D gravity,
- const double cont_stiff,
- const double trans_stiff,
- const double rot_stiff)*/
 {
     int nDof = (int)aRigidBody.size() * 6;
     double E = 0;
@@ -875,8 +852,7 @@ void CPhysics::SolveOneIteration()
     Eigen::MatrixXd ddE(nDof, nDof);
     EdEddE_Total(E, dE, ddE, aRigidBody, aJoint, n, gravity, cont_stiff,
                  trans_stiff, rot_stiff, true);
-    // std::cout << "energy : " << E << std::endl;
-    /////
+
     Eigen::VectorXd b(nDof);
     Eigen::MatrixXd A(nDof, nDof);
     b = -dE;
@@ -903,38 +879,14 @@ void CPhysics::SolveOneIteration()
 }
 
 void CPhysics::Solve_InterPlane()
-/*
-(std::vector<CRigidBody>& aRigidBody,
- std::vector<CJoint>& aJoint,
- ////
- double damping_ratio,
- int nitr,
- ////
- const CVector3D n,
- const CVector3D gravity,
- const double cont_stiff,
- const double trans_stiff,
- const double rot_stiff)
- */
 {
     for (int itr = 0; itr < nitr; itr++) {
-        // SolveOneIteration(aRigidBody, aJoint, damping_ratio,
-        // n,gravity,cont_stiff,trans_stiff,rot_stiff);
         SolveOneIteration();
     }
     ComputeForces();
 }
 
 void CPhysics::ComputeForces()
-/*
-(std::vector<CRigidBody>& aRigidBody,
- std::vector<CJoint>& aJoint,
- ////
- const CVector3D n,
- const double cont_stiff,
- const double trans_stiff,
- const double rot_stiff)
- */
 {
     for (CRigidBody& rb : aRigidBody) {
         const int ncp = rb.aCP.size();
@@ -993,13 +945,6 @@ void CPhysics::ComputeForces()
 }
 
 void CPhysics::PrintJointForce()
-/*
-(const std::vector<CRigidBody>& aRigidBody,
- const std::vector<CJoint>& aJoint,
- ////
- const double trans_stiff,
- const double rot_stiff)
- */
 {
     std::cout << "force on joint" << std::endl;
 
@@ -1022,13 +967,11 @@ void CPhysics::PrintJointForce()
         CVector3D trans_f;  // translation_force
         {
             CVector3D Rv0 = R0 * (pj - cg0);
-            CVector3D qj0 =
-                Rv0 + cg0 +
-                u0;  // after deformation joint pos relative to rigid body 0
+            // after deformation joint pos relative to rigid body 0
+            CVector3D qj0 = Rv0 + cg0 + u0;
             CVector3D Rv1 = R1 * (pj - cg1);
-            CVector3D qj1 =
-                Rv1 + cg1 +
-                u1;  // after deformation joint pos relative to rigid body 1
+            // after deformation joint pos relative to rigid body 1
+            CVector3D qj1 = Rv1 + cg1 + u1;
             trans_f = trans_stiff * (qj0 - qj1);
         }
 
@@ -1158,8 +1101,7 @@ void CPhysics::GetPlateLocalForce(
         CVector3D pos_cp = rb.aCP[icp];
         lf.lx = (pos_cp - vec_p) * vec_t;
         lf.ly = (pos_cp - vec_p) * vec_b;
-        //    double n = (pos_cp-vec_p)*vec_n;
-        //    std::cout << "n: " << (pos_cp-vec_p)*vec_n << std::endl;
+
         double lft = rb.aCForce[icp] * vec_t;
         double lfb = rb.aCForce[icp] * vec_b;
         double lfn = rb.aCForce[icp] * vec_n;
@@ -1173,8 +1115,7 @@ void CPhysics::GetPlateLocalForce(
         CPlate::CLocalForce lf;
         lf.lx = (p - vec_p) * vec_t;
         lf.ly = (p - vec_p) * vec_b;
-        //    double n = (pos_cp-vec_p)*vec_n;
-        //    std::cout << "n: " << (pos_cp-vec_p)*vec_n << std::endl;
+
         double lft = f * vec_t;
         double lfb = f * vec_b;
         double lfn = f * vec_n;
@@ -1193,7 +1134,7 @@ void CPhysics::GetPlateLocalForce(
         double lfb = j.linear * vec_b;
         double lfn = j.linear * vec_n;
         lf.lfrc = CVector3D(lft, lfb, lfn);
-        ////
+
         double ltt = j.torque * vec_t;
         double ltb = j.torque * vec_b;
         double ltn = j.torque * vec_n;
@@ -1205,10 +1146,9 @@ void CPhysics::GetPlateLocalForce(
         }
         alForce.push_back(lf);
     }
-    /////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // if the force is on boundary, register its edge index and ratio on the
-    // edge
-    // std::cout << "############### " << std::endl;
+
+    // if the force is on boundary,
+    // register its edge index and ratio on the edge
     double area = fabs(AreaLoop2D(aXY));
     double rep_len = sqrt(area);  // use to judge nearness
     for (CPlate::CLocalForce& clf : alForce) {
@@ -1232,22 +1172,16 @@ void CPhysics::GetPlateLocalForce(
                 dist_min = dist;
             }
         }
+
         if (dist_min < rep_len * 0.01) {
-            //      std::cout << ilf << "   boundary force  " << dist_min << " "
-            //      << rep_len << " " << r_min << "  " << clf.is_trq <<
-            //      std::endl;
             clf.is_boundary = true;
             clf.iedge0 = ie_min;
             clf.ratio_edge0 = r_min;
-        } else {
-            //      std::cout << ilf << "   non boundary force  " << dist_min <<
-            //      " " << rep_len << " " << r_min << "  " << clf.is_trq <<
-            //      std::endl;
         }
     }
 }
 
-//! Area of the Triangle
+// Area of the Triangle
 double CPhysics::TriArea2D(const double v1[2], const double v2[2],
                            const double v3[2])
 {
@@ -1255,7 +1189,7 @@ double CPhysics::TriArea2D(const double v1[2], const double v2[2],
                   (v3[0] - v1[0]) * (v2[1] - v1[1]));
 }
 
-//! Normalize vector
+// Normalize vector
 void CPhysics::NormalizeVector2D(double v[2])
 {
     double invlen = 1.0 / sqrt(v[0] * v[0] + v[1] * v[1]);
@@ -1368,7 +1302,6 @@ CVector3D CPhysics::MomentumHalfLoop2D(double lx, double ly,
     double org[2] = {lx, ly};
 
     int ie = ie0;
-    // double area = 0;
     for (;;) {
         unsigned int ip0 = ie;
         unsigned int ip1 = ip0 + 1;
@@ -1384,11 +1317,10 @@ CVector3D CPhysics::MomentumHalfLoop2D(double lx, double ly,
             p1[0] = (1 - re1) * p0[0] + re1 * p1[0];
             p1[1] = (1 - re1) * p0[1] + re1 * p1[1];
         }
-        ////
+
         double a;
         vm += MomentumTri(a, lg, p0, p1, org);
-        // area += a;
-        ////
+
         if (ie == ie1) break;
         ie = ie + 1;
         if (ie == static_cast<int>(aXY.size() / 2)) {
@@ -1400,9 +1332,8 @@ CVector3D CPhysics::MomentumHalfLoop2D(double lx, double ly,
         double p1[2] = {ps.ep0.x, ps.ep0.y};
         double a;
         vm += MomentumTri(a, lg, p0, p1, org);
-        // area += a;
     }
-    //  std::cout << area << std::endl;
+
     return vm;
 }
 
@@ -1410,7 +1341,7 @@ CVector3D CPhysics::MomentumLoop2D(double lx, double ly,
                                    const std::vector<double>& aXY,
                                    const CVector3D& lg)
 {
-    // double area = 0;
+
     CVector3D vm(0, 0, 0);
     double org[2] = {lx, ly};
     for (int ie = 0; ie < static_cast<int>(aXY.size() / 2); ie++) {
@@ -1423,9 +1354,7 @@ CVector3D CPhysics::MomentumLoop2D(double lx, double ly,
         double p1[2] = {aXY[ip1 * 2 + 0], aXY[ip1 * 2 + 1]};
         double a;
         vm += MomentumTri(a, lg, p0, p1, org);
-        // area += a;
     }
-    //  std::cout << area << std::endl;
     return vm;
 }
 
@@ -1443,7 +1372,6 @@ double CPhysics::AreaLoop2D(const std::vector<double>& aXY)
         double p1[2] = {aXY[ip1 * 2 + 0], aXY[ip1 * 2 + 1]};
         area += TriArea2D(p0, p1, org);
     }
-    //  std::cout << area << std::endl;
     return area;
 }
 
@@ -1507,22 +1435,14 @@ void CPhysics::GetPlateSection_Slit(std::vector<CPlateSection>& aPS, int ie0,
         ev[0] = +eu[1];
         ev[1] = -eu[0];
     }
-    const double PI = 3.1416;
-    /*
-    const int nSmpl = 3;
-    const double aSmpl[nSmpl][2] = {
-      {0.0,-PI*0.500},
-      {0.5,+PI*0.000},
-      {1.0,+PI*0.500},
-    };
-     */
+    const double PI = 3.1416;    
     const int nSmpl = 11;
     const double aSmpl[nSmpl][2] = {
         {0.0, -PI * 0.625}, {0.0, -PI * 0.500}, {0.0, -PI * 0.375},
         {0.0, -PI * 0.250}, {0.0, -PI * 0.125}, {0.5, +PI * 0.000},
         {1.0, +PI * 0.125}, {1.0, +PI * 0.250}, {1.0, +PI * 0.375},
         {1.0, +PI * 0.500}, {1.0, +PI * 0.625}};
-    ////
+
     for (int ismpl = 0; ismpl < nSmpl; ismpl++) {
         CPlateSection ps;
         {
@@ -1560,7 +1480,6 @@ void CPhysics::GetPlateSection_Slit(std::vector<CPlateSection>& aPS, int ie0,
 }
 
 void CPhysics::AddWeakSection_Slit(CPlate& plt,  // (in,out)
-                                                 ////
                                    const std::vector<double>& aXY,
                                    const CRigidBody& /* rb */,
                                    const CVector3D gravity,
@@ -1580,12 +1499,6 @@ void CPhysics::AddWeakSection_Slit(CPlate& plt,  // (in,out)
         const CPlate::CLocalForce& lfi = plt.alForce[ilf];
         if (!lfi.is_boundary || !lfi.is_trq) continue;
         const int ie0 = lfi.iedge0;
-        // const double r0 = lfi.ratio_edge0;
-        // assert( r0 > 0.1 && r0 < 0.9); // joint point should be middle.
-        // qDebug() << "CPhysics::AddWeakWection_Slit() - Warning!! Joint point
-        // should be middle";
-        //    std::cout << ie0 << " " << r0 << std::endl;
-        //    std::vector<CPlateSection> aPS;
         std::vector<CPlateSection> aPS;
         GetPlateSection_Slit(aPS, ie0, aXY, area > 0);
         for (CPlateSection& ps : aPS) {
@@ -1611,7 +1524,6 @@ void CPhysics::AddWeakSection_Slit(CPlate& plt,  // (in,out)
                 if (lfj.is_trq) {
                     t0 += lfj.ltrq;
                 }
-                //////
                 if (ilf == jlf) {
                     ti = t0;
                 } else {
@@ -1623,7 +1535,6 @@ void CPhysics::AddWeakSection_Slit(CPlate& plt,  // (in,out)
                     }
                 }
             }
-            ////
             for (int iside = 0; iside < 2; iside++) {
                 CVector3D bm0a = bm0;
                 CVector3D bm1a = bm1;
@@ -1636,7 +1547,6 @@ void CPhysics::AddWeakSection_Slit(CPlate& plt,  // (in,out)
                 double len =
                     sqrt((ps.ep1.x - ps.ep0.x) * (ps.ep1.x - ps.ep0.x) +
                          (ps.ep1.y - ps.ep0.y) * (ps.ep1.y - ps.ep0.y));
-                // double len_med = len;
                 double dir_med[2];
                 {
                     const int ne = static_cast<int>(aXY.size() / 2);
@@ -1668,22 +1578,16 @@ void CPhysics::AddWeakSection_Slit(CPlate& plt,  // (in,out)
                     }
                     if (cos_theta < cos(3.1415 * 0.25))
                         continue;  // more than sampling direction interval
-                    // len_med = len * cos_theta;
                     dir_med[0] = -n[1];
                     dir_med[1] = +n[0];
                 }
                 double t = plt.thickness;
-                ////
                 double z0 = t * len * len / 6.0;  // section modulus
                 double stress0 = fabs(ltrq.z / z0);
-                ////
                 double z1 = t * t * len / 6.0;  // section modulus
                 double stress1 =
                     fabs(ltrq.x * dir_med[0] + ltrq.y * dir_med[1]) / z1;
-                ////
                 double stress = (stress0 > stress1) ? stress0 : stress1;
-                //        std::cout << fabs(stress0) << " " << fabs(stress1) <<
-                //        std::endl;
                 ps.ltrq = ltrq;
                 ps.weakness = stress / max_stress;
                 if (stress > max_stress) {
@@ -1701,44 +1605,7 @@ void CPhysics::AddWeakSection_Inside(CPlate& plt,  // (in,out)
                                      const CVector3D gravity,
                                      const std::vector<double>& aDir2D,
                                      const int nH, const double max_stress)
-{
-    /*
-    std::cout << std::endl;
-    {
-      // check
-      CVector3D lgf;
-      {
-        double t = gravity*plt.t;
-        double b = gravity*plt.b;
-        double n = gravity*plt.n;
-        lgf = CVector3D(t,b,n)*rb.m;
-      }
-      CVector3D sumF(0,0,0);
-      {
-        for(int ifrc=0;ifrc<plt.alForce.size();ifrc++){
-          const CPlate::CLocalForce& lf = plt.alForce[ifrc];
-          sumF += lf.lfrc;
-        }
-        sumF += lgf;
-        std::cout << "sumF: " << sumF.x << " " << sumF.y << " " << sumF.z <<
-    std::endl;
-      }
-      CVector3D sumT(0,0,0);
-      {
-        double cgx = (rb.cg-plt.p)*plt.t;
-        double cgy = (rb.cg-plt.p)*plt.b;
-        for(int ifrc=0;ifrc<plt.alForce.size();ifrc++){
-          const CPlate::CLocalForce& lf = plt.alForce[ifrc];
-          CVector3D v(lf.lx-cgx,lf.ly-cgy,0);
-          sumT += lf.lfrc^v;
-          if( lf.is_trq ){ sumT += lf.ltrq; }
-        }
-        std::cout << "sumT: " << sumT.x << " " << sumT.y << " " << sumT.z <<
-    std::endl;
-      }
-    }
-     */
-    //////
+{    
     CVector3D lg;
     {  // get gravity in local geometry
         double t = gravity * plt.t;
@@ -1770,7 +1637,6 @@ void CPhysics::AddWeakSection_Inside(CPlate& plt,  // (in,out)
                 if (lf.is_trq) {
                     t0 += lf.ltrq;
                 }
-                //////
                 bool is_inside0 = IsForceInsideHalfLoop2D(aXY, lf, ps);
                 if (is_inside0) {
                     bm0 += t0;
@@ -1789,9 +1655,6 @@ void CPhysics::AddWeakSection_Inside(CPlate& plt,  // (in,out)
                 bm0 += m0 * dflg;
                 bm1 += m1 * dflg;
             }
-            //      std::cout << bm0.x << " " << bm0.y << " " << bm0.z << " ";
-            //      std::cout << bm1.x << " " << bm1.y << " " << bm1.z <<
-            //      std::endl;
             const CVector3D ltrq = (bm1 - bm0) * 0.5;
             double len = sqrt((ps.ep1.x - ps.ep0.x) * (ps.ep1.x - ps.ep0.x) +
                               (ps.ep1.y - ps.ep0.y) * (ps.ep1.y - ps.ep0.y));
@@ -1832,17 +1695,12 @@ void CPhysics::AddWeakSection_Inside(CPlate& plt,  // (in,out)
                 dir_med[1] = +n[0];
             }
             double t = plt.thickness;
-            ////
             double z0 = t * len_med * len_med / 6.0;  // section modulus
             double stress0 = fabs(ltrq.z / z0);
-            ////
             double z1 = t * t * len_med / 6.0;  // section modulus
             double stress1 =
                 fabs(ltrq.x * dir_med[0] + ltrq.y * dir_med[1]) / z1;
-            ////
             double stress = (stress0 > stress1) ? stress0 : stress1;
-            //       std::cout << fabs(stress0) << " " << fabs(stress1) <<
-            //       std::endl;
             ps.ltrq = ltrq;
             ps.weakness = stress / max_stress;
             if (stress < max_stress) {
@@ -1895,9 +1753,8 @@ void CPhysics::CutSlit()
             }
         }
         const int nv = static_cast<int>(aXY.size() / 2);
-        std::vector<int> aFlgV0(
-            nv,
-            0);  // mark if this vertex is between the slit and will be removed
+        // mark if this vertex is between the slit and will be removed
+        std::vector<int> aFlgV0(nv, 0);
         for (unsigned int isl = 0; isl < aSlitData.size(); isl++) {
             const CSlitData& sld = aSlitData[isl];
             if (sld.ie0 == sld.ie1) continue;
@@ -2137,7 +1994,7 @@ void CPhysics::DrawGL()
                     double y1 = ps.ep1.y;
                     CVector3D q0 = x0 * t + y0 * b + p;
                     CVector3D q1 = x1 * t + y1 * b + p;
-                    //          ::glColor3d(ps.r,ps.g,ps.b);
+
                     int lw = (int)((ps.weakness - 1.0) / 1.0 + 1.0);
                     ::glLineWidth(lw);
                     float color[4];
@@ -2178,7 +2035,6 @@ void CPhysics::DrawGL()
             ::glColor3d(0, 1, 0);
             ::glPushMatrix();
             ::glTranslated(cg.x, cg.y, cg.z);
-            //::glutWireSphere(0.1, 16, 16);
             gluSphere(quadricSphere, big_rad, 16, 16);
             ::glPopMatrix();
         }
@@ -2190,7 +2046,6 @@ void CPhysics::DrawGL()
             ::glColor3d(1, 0, 0);
             ::glPushMatrix();
             ::glTranslated(p.x, p.y, p.z);
-            //::glutWireSphere(0.02, 16, 16);
             gluSphere(quadricSphere, small_rad, 16, 16);
             ::glPopMatrix();
 
@@ -2230,39 +2085,16 @@ void CPhysics::DrawGL()
             p1 = rb1.R * (p1 - rb1.cg) + rb1.cg + rb1.u;
         }
 
-        /*
-         for(int i=0;i<2;i++){
-         int irb = (i==0) ? irb0 : irb1;
-         const double* ep = (i==0) ? joint.jp0 : joint.jp1;
-         if( irb < 0 || irb >= aPlate.size() ) continue;
-         const CVector3D& t = aPlate[irb].t;
-         const CVector3D& b = aPlate[irb].b;
-         const CVector3D& p = aPlate[irb].p;
-         ////
-         CVector3D q = ep[2]*t+ ep[3]*b + p;
-         //      std::cout << ij << " " << i << "  " << ep[0] << " " << ep[1] <<
-         " " << ep[2] << " " << ep[3] << std::endl;
-         ::glPushMatrix();
-         ::glTranslated(q.x,q.y,q.z);
-         //::glutWireSphere(0.02, 16, 16);
-         ::glColor3d(0,0,0);
-         gluSphere(quadricSphere, small_rad, 16, 16);
-         ::glPopMatrix();
-         }
-         */
-
         // joint point seen from rb0
         ::glColor3d(0, 0, 1);
         ::glPushMatrix();
         ::glTranslated(p0.x, p0.y, p0.z);
-        //::glutWireSphere(0.02, 16, 16);
         gluSphere(quadricSphere, small_rad, 16, 16);
         ::glPopMatrix();
 
         // joint point seen from rb1
         ::glPushMatrix();
         ::glTranslated(p1.x, p1.y, p1.z);
-        //::glutWireSphere(0.02, 16, 16);
         gluSphere(quadricSphere, small_rad, 16, 16);
         ::glPopMatrix();
 
@@ -2350,11 +2182,9 @@ void CPhysics::DrawEnhancedGL(const double scale_fac)
             cg += rb.u;
         }
         if (aPlate.size() == aRigidBody.size()) {
-            // const std::vector<double>& aXY = aPlate[irb].aXY_slit;
             const CVector3D& t = aPlate[irb].t;
             const CVector3D& b = aPlate[irb].b;
             const CVector3D& p = aPlate[irb].p;
-            // const int np = (int)aXY.size() / 2;
 
             if (is_draw_section) {
                 const CPlate& plt = aPlate[irb];
@@ -2404,9 +2234,6 @@ void CPhysics::DrawEnhancedGL(const double scale_fac)
                     float color[4];
                     heatmap(color, (ps.weakness - 1.0) / 4.0);
                     ::glColor3fv(color);
-                    // GLutils::DrawArrowFixedLength(QVector3D(qm.x, qm.y,
-                    // qm.z), QVector3D(qmtrq.x, qmtrq.y, qmtrq.z), 0.25f +
-                    // 0.75f * ps.weakness); qDebug() << ps.weakness;
                     GLutils::DrawArrowFixedLength(
                         QVector3D(qm.x, qm.y, qm.z),
                         QVector3D(qmtrq.x, qmtrq.y, qmtrq.z),
@@ -2513,25 +2340,15 @@ void CPhysics::DrawEnhancedGL(const double scale_fac)
             const float t2 = each_t.length() / max_joint_torque;
 
             // linear
-            // glColor3f(1.0f, 0.0f, 1.0f);
-            // glColor3f(1.0f, 1.0f-t1, 1.0f);
-            // glColor3f(1.0f, 1.0f-t1, 1.0f-t1);
             float color[4];
             heatmap(color, t1);
             ::glColor3fv(color);
-            // GLutils::DrawArrowFixedLength(a1, a2,  t1*0.5f);
-            // GLutils::DrawArrowFixedLength(a3, a4,  t1*0.5f);
             GLutils::DrawArrowFixedLength(a1, a2, 0.5f / scale_fac);
             GLutils::DrawArrowFixedLength(a3, a4, 0.5f / scale_fac);
 
             // torque
-            // glColor3f(1.0f-t2, 1.0f, 1.0f);
-            // glColor3f(1.0f, 1.0f-t2, 1.0f-t2);
             heatmap(color, t2);
             ::glColor3fv(color);
-            // GLutils::DrawCylinderFixedLength(a1, a5, small_rad*0.5f,
-            // t2*0.5f); GLutils::DrawCylinderFixedLength(a3, a6,
-            // small_rad*0.5f, t2*0.5f);
             GLutils::DrawCylinderFixedLength(a1, a5, small_rad * 0.5f,
                                              0.5f / scale_fac);
             GLutils::DrawCylinderFixedLength(a3, a6, small_rad * 0.5f,

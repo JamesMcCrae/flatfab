@@ -10,8 +10,6 @@ void ContourGraph::Create(const QList<PlanarSection> & sections)
     // graph vertices and contours are the edges
     PlanarSection::ComputeIntersectionGraph(sections, plane_graph);
 
-    // qDebug() << plane_graph;
-
     // step 1
     ComputeVerts(sections);
 
@@ -89,27 +87,10 @@ void ContourGraph::Draw() const
 {
     glEnable(GL_LIGHTING);
 
-    /*
-    //draw verts
-    for (int i=0; i<verts.size(); ++i) {
-
-        glPushMatrix();
-        glTranslatef(verts[i].x(), verts[i].y(), verts[i].z());
-        GLutils::ColorByIndex(i);
-        gluSphere(gluNewQuadric(), 0.1, 20, 20);
-        glPopMatrix();
-
-    }
-    */
-
-    // glBegin(GL_POINTS);
     glBegin(GL_TRIANGLES);
     for (int i = 0; i < cycle_coons_patches.size(); ++i) {
         for (int s = 1; s < cycle_coons_patches[i].size(); ++s) {
             for (int t = 1; t < cycle_coons_patches[i][s].size(); ++t) {
-                // if (s > 2 && t > 2 && s < cycle_coons_patches[i].size()-3 &&
-                // t < cycle_coons_patches[i][s].size()-3) { continue; } if (s >
-                // 2 && t > 2) { continue; }
 
                 GLutils::ColorByIndex(i + (s + t) % 2);
 
@@ -135,40 +116,7 @@ void ContourGraph::Draw() const
     }
     glEnd();
 
-    glDisable(GL_LIGHTING);
-    /*
-    const bool draw_cycles = true;
-    if (draw_cycles) {
-
-        //draw cycle edges
-        for (int i=0; i<cycle_edge_points.size(); ++i) {
-            GLutils::ColorByIndex(i);
-            glBegin(GL_LINE_STRIP);
-            for (int j=0; j<cycle_edge_points[i].size(); ++j) {
-                for (int k=0; k<cycle_edge_points[i][j].size(); ++k) {
-                    glVertex3f(cycle_edge_points[i][j][k].x(),
-    cycle_edge_points[i][j][k].y(), cycle_edge_points[i][j][k].z());
-                }
-            }
-            glEnd();
-        }
-
-    }
-    else {
-
-        //draw contour edges
-        for (int i=0; i<edges.size(); ++i) {
-            GLutils::ColorByIndex(i);
-            glBegin(GL_LINE_STRIP);
-            for (int j=0; j<edge_points[i].size(); ++j) {
-                glVertex3f(edge_points[i][j].x(), edge_points[i][j].y(),
-    edge_points[i][j].z());
-            }
-            glEnd();
-        }
-
-    }
-    */
+    glDisable(GL_LIGHTING);    
 }
 
 void ContourGraph::SaveToOBJFile(QTextStream & ofs)
@@ -217,8 +165,8 @@ void ContourGraph::ComputeVerts(const QList<PlanarSection> & sections)
                 continue;
             }
 
-            // we now have to go through each contour, and organize intervals of
-            // the contour into EDGES
+            // we now have to go through each contour,
+            // and organize intervals of the contour into EDGES
             QList<QVector3D> isecs;
             QList<bool> isecs_which;
             sections[i].GetContourIntersections(sections[j], isecs,
@@ -248,8 +196,8 @@ void ContourGraph::ComputeEdges(const QList<PlanarSection> & sections)
         edge_matrix[i] = QVector<bool>(verts.size(), false);
     }
 
-    // iterate through the section i's contour, finding all the intersection
-    // points, and push them back
+    // iterate through the section i's contour,
+    // finding all the intersection points, and push them back
     for (int i = 0; i < sections.size(); ++i) {
         QList<int> split_index;
         QList<QVector3D> split_point;
@@ -319,8 +267,6 @@ void ContourGraph::ComputeEdges(const QList<PlanarSection> & sections)
             AddEdge(each_endpts, sections[i].N(), each_edge, i);
         }
     }
-
-    // qDebug() << "Edges:" << edges;
 }
 
 // TODO!  switch this to using the tree data structure and back edges
@@ -347,15 +293,12 @@ void ContourGraph::ComputeCycles()
 
     // we do an iteration on our spreaders
     for (int i = 0; i < verts_walked.size(); ++i) {
-        // qDebug() << verts_walked;
-        // qDebug() << edges_walked;
 
         int first_vert = verts_walked[i].first();
         int end_vert = verts_walked[i].last();
 
         // is it a cycle?  if so we keep it
         if (!edges_walked[i].empty() && first_vert == end_vert) {
-            // qDebug() << "found cycle of length" << edges_walked[i].size();
             cycles.push_back(verts_walked[i]);
             cycle_edges.push_back(edges_walked_list[i]);
 
@@ -375,8 +318,6 @@ void ContourGraph::ComputeCycles()
 
             // new edge index
             const int new_edge_key = j;
-            // qDebug() << "at vertex" << end_vert << "considering edge" <<
-            // new_edge_key << "to go to" << next_vert;
 
             // only follow edge if we didn't yet
             if (!edges_walked[i].contains(new_edge_key)) {
@@ -401,8 +342,6 @@ void ContourGraph::ComputeCycles()
                 // add it to the list to process
                 if (edgeset_not_yet_walked &&
                     new_edges_walked.size() <= max_cycle_size) {
-                    // qDebug() << "pushing back path" << new_edges_walked; //
-                    // << edges_walked;
                     verts_walked.push_back(new_verts_walked);
                     edges_walked.push_back(new_edges_walked);
                     edges_walked_list.push_back(new_edges_walked_list);
@@ -456,8 +395,6 @@ void ContourGraph::ComputeCycleEdgePoints(const QList<PlanarSection> & sections)
             }
         }
 
-        // qDebug() << "processed cycle" << i << each_cycle_edge_normals.size()
-        // << each_cycle_edge_points.size();
         cycle_edge_normals.push_back(each_cycle_edge_normals);
         cycle_edge_points.push_back(each_cycle_edge_points);
     }
@@ -535,10 +472,6 @@ void ContourGraph::ComputeCycleEdgePoints(const QList<PlanarSection> & sections)
         cycle_edge_normals[i] = new_cycle_edge_normals;
         cycle_edge_points[i] = new_cycle_edge_points;
     }
-
-    // qDebug() << "cycle edgepoints size" << cycle_edge_points.size();
-    // qDebug() << "cycles" << cycle_edges;
-    // qDebug() << cycle_edge_points;
 }
 
 void ContourGraph::ComputeCycleEdgeArcLengths()
@@ -614,7 +547,6 @@ void ContourGraph::PruneCycles(const QList<PlanarSection> & sections)
                     continue;
                 }
 
-                // QList <QVector3D> & other_edge_pts = cycle_edge_points[i][k];
                 QList<QVector3D> & other_edge_pts =
                     edge_points[cycle_edges[i][k]];
 
@@ -680,9 +612,6 @@ void ContourGraph::FitCoonsPatches()
     cycle_coons_patches.resize(cycles.size());
 
     for (int i = 0; i < cycle_edge_points.size(); ++i) {
-        // for (int i=0; i<1; ++i) {
-
-        // qDebug() << cycle_edge_normals[i];
 
         if (cycle_edge_points[i].size() != 4) {
             continue;
@@ -732,129 +661,14 @@ void ContourGraph::FitCoonsPatches()
                     coeff_t[2] = (-2.0f * t_f3 + 3.0f * t_f2);
                     coeff_t[3] = (t_f3 - t_f2);
 
-                    // const float norm_factor = 3.0f;
-                    // const QVector3D N_0t = (cycle_edge_normals[i][0]) *
-                    // norm_factor; const QVector3D N_1t =
-                    // (-cycle_edge_normals[i][2]) * norm_factor; const
-                    // QVector3D N_s0 = (cycle_edge_normals[i][3]) *
-                    // norm_factor; const QVector3D N_s1 =
-                    // (-cycle_edge_normals[i][1]) * norm_factor;
-
                     // this one doesn't incorporate normals (but best one yet)
                     const QVector3D H_c = C_s0 * coeff_t[0] + C_s1 * coeff_t[2];
-                    const QVector3D H_d = D_0t * coeff_s[0] + D_1t * coeff_s[2];
-                    // const QVector3D H_c = C_s0 * coeff_t[0] + N_s0 *
-                    // coeff_t[1] + C_s1 * coeff_t[2] + N_s1 * coeff_t[3]; const
-                    // QVector3D H_d = D_0t * coeff_s[0] + N_0t * coeff_s[1] +
-                    // D_1t * coeff_s[2] + N_1t * coeff_s[3]; const QVector3D
-                    // H_c = C_s0 * coeff_t[0] + N_s0 * coeff_t[1] * (1.0f -
-                    // s_f) + C_s1 * coeff_t[2] + N_s1 * coeff_t[3] * s_f; const
-                    // QVector3D H_d = D_0t * coeff_s[0] + N_0t * coeff_s[1] *
-                    // (1.0f - t_f) + D_1t * coeff_s[2] + N_1t * coeff_s[3] *
-                    // t_f;
-
-                    // this one is off in multiple directions
-                    // const QVector3D H_c = c0_s * coeff_t[0] + N0_s *
-                    // coeff_t[1] + c1_s * coeff_t[2] + N1_s * coeff_t[3]; const
-                    // QVector3D H_d = d0_t * coeff_s[0] + N0_t * coeff_s[1] +
-                    // d1_t * coeff_s[2] + N1_t * coeff_s[3];
+                    const QVector3D H_d = D_0t * coeff_s[0] + D_1t * coeff_s[2];                    
 
                     const QVector3D B = C_00 * coeff_s[0] * coeff_t[0] +
                                         C_01 * coeff_s[2] * coeff_t[0] +
                                         C_11 * coeff_s[2] * coeff_t[2] +
-                                        C_10 * coeff_s[0] * coeff_t[2];
-                    /*
-                    + N_s0 * coeff_t[1] * coeff_s[1]
-                    + N_s1 * coeff_t[3] * coeff_s[3]
-                    + N_0t * coeff_t[1] * coeff_s[1]
-                    + N_1t * coeff_t[3] * coeff_s[3];
-                    */
-                    //+ N0_s * coeff_t[1] * coeff_s[2];
-                    //+ N1_s * coeff_t[3] * coeff_s[0]
-                    //+ N1_t * coeff_s[3] * coeff_t[0];
-                    //+ N0_s * coeff_t[1] * coeff_s[2]
-                    //+ N0_t * coeff_s[1] * coeff_t[2];
-                    /*
-                            + 1.0f * N0_s * coeff_t[1] * coeff_s[0]
-                            + 1.0f * N1_s * coeff_t[3] * coeff_s[2]
-                            + 1.0f * N0_t * coeff_s[1] * coeff_t[0]
-                            + 1.0f * N1_t * coeff_s[3] * coeff_t[2];
-                            */
-
-                    // this is close but off by the other normal
-                    // e.g. for curve defined by P(s,0), it's pushed by the
-                    // normal N0_s const QVector3D H_c = c0_s * coeff_t[0] +
-                    // N0_s * coeff_t[1]* coeff_s[0] * s_f + c1_s * coeff_t[2] +
-                    // N1_s * coeff_t[3]* coeff_s[2] * (1.0f - s_f); const
-                    // QVector3D H_d = d0_t * coeff_s[0] + N0_t * coeff_s[1]*
-                    // coeff_t[0] * t_f + d1_t * coeff_s[2] + N1_t * coeff_s[3]*
-                    // coeff_t[2] * (1.0f - t_f);
-
-                    // const QVector3D H_c = c0_s * coeff_t[0] + N0_s *
-                    // (coeff_t[1]* coeff_s[0] - coeff_t[3]* coeff_s[2]) + c1_s
-                    // * coeff_t[2] + N1_s * (coeff_t[3]* coeff_s[2] -
-                    // coeff_t[1]* coeff_s[0]); const QVector3D H_d = d0_t *
-                    // coeff_s[0] + N0_t * (coeff_s[1]* coeff_t[0] - coeff_s[3]*
-                    // coeff_t[2]) + d1_t * coeff_s[2] + N1_t * (coeff_s[3]*
-                    // coeff_t[2] - coeff_s[1]* coeff_t[0]);
-
-                    // this B needs to contain some "normal killing" terms,
-                    // otherwise it is working const QVector3D B = c0_0 * (1.0f
-                    // - s_f) * (1.0f - t_f) + c0_1 * s_f * (1.0f - t_f) + c1_1
-                    // * s_f * t_f + c1_0 * (1.0f - s_f) * t_f; forget the
-                    // normals, the curves intersect the boundary, we need
-                    // correct basis functions const QVector3D B = c0_0 * (1.0f
-                    // - s_f) * (1.0f - t_f) + c0_1 * s_f * (1.0f - t_f) + c1_1
-                    // * s_f * t_f + c1_0 * (1.0f - s_f) * t_f
-                    //         + N0_t * coeff_t[0] * coeff_s[1] + N1_t *
-                    //         coeff_t[2] * coeff_s[3] + N0_s * coeff_s[0] *
-                    //         coeff_t[1] + N1_s * coeff_s[2] * coeff_t[3];
-
-                    // const QVector3D B = c0_0 * (1.0f - s_f) * (1.0f - t_f) +
-                    // c0_1 * s_f * (1.0f - t_f) + c1_1 * s_f * t_f + c1_0 *
-                    // (1.0f - s_f) * t_f;
-
-                    /*
-                    const QVector3D B = c0_0 * coeff_s[0] * coeff_t[0]
-                            + c0_1 * coeff_s[2] * coeff_t[0]
-                            + c1_1 * coeff_s[2] * coeff_t[2]
-                            + c1_0 * coeff_s[0] * coeff_t[2];
-                            */
-
-                    /*
-                    //best one yet
-                    const QVector3D B = c0_0 * coeff_s[0] * coeff_t[0]
-                            + c0_1 * coeff_s[2] * coeff_t[0]
-                            + c1_1 * coeff_s[2] * coeff_t[2]
-                            + c1_0 * coeff_s[0] * coeff_t[2];
-                            */
-
-                    /*
-                            + N0_t * coeff_t[0] * coeff_s[1]
-                            + N1_t * coeff_t[2] * coeff_s[3]
-                            + N0_s * coeff_s[0] * coeff_t[1]
-                            + N1_s * coeff_s[2] * coeff_t[3];
-                            */
-                    // const QVector3D B = c0_0 * (1.0f - s_f) * (1.0f - t_f) +
-                    // c0_1 * s_f * (1.0f - t_f) + c1_1 * s_f * t_f + c1_0 *
-                    // (1.0f - s_f) * t_f;
-                    /*
-                            + N0_t * coeff_t[0] * coeff_s[1]
-                            + N1_t * coeff_t[2] * coeff_s[3]
-                            + N0_s * coeff_s[0] * coeff_t[1]
-                            + N1_s * coeff_s[2] * coeff_t[3];
-                            */
-                    /*
-
-                            */
-
-                    // idea: use c0_s, c1_s, d0_t, d1_t for B
-                    // const QVector3D B = c0_0 * (1.0f - s_f) * (1.0f - t_f) +
-                    // c0_1 * s_f * (1.0f - t_f) + c1_1 * s_f * t_f + c1_0 *
-                    // (1.0f - s_f) * t_f
-                    //         + N0_t * coeff_t[0] * coeff_s[1] + N1_t *
-                    //         coeff_t[2] * coeff_s[3] + N0_s * coeff_s[0] *
-                    //         coeff_t[1] + N1_s * coeff_s[2] * coeff_t[3];
+                                        C_10 * coeff_s[0] * coeff_t[2];                    
 
                     cycle_coons_patches[i][s][t] = H_c + H_d - B;
 
@@ -877,26 +691,6 @@ void ContourGraph::FitCoonsPatches()
                     // F4_w -> coeff_t[3]
                     // using ZERO for twist vectors
 
-                    /*
-                    const float norm_factor = 0.0f;
-                    const QVector3D N0_s = cycle_edge_normals[i][0] *
-                    norm_factor; const QVector3D N1_s =
-                    (-cycle_edge_normals[i][2]) * norm_factor; const QVector3D
-                    N0_t = (-cycle_edge_normals[i][3]) * norm_factor; const
-                    QVector3D N1_t = cycle_edge_normals[i][1] * norm_factor;
-
-                    const QVector3D row1 = coeff_t[0] * (c0_s * coeff_s[0] +
-                    c1_s * coeff_s[2] + N0_s * coeff_s[1] + N1_s * coeff_s[3]);
-                    const QVector3D row2 = coeff_t[2] * (d0_t * coeff_s[0] +
-                    d1_t * coeff_s[2] + N0_t * coeff_s[1] + N1_t * coeff_s[3]);
-
-                    cycle_coons_patches[i][s][t] = row1;// + row2;
-                    */
-
-                    // qDebug() << s_f << c0_s << c1_s <<
-                    // cycle_edge_normals[i][0] << cycle_edge_normals[i][1] <<
-                    // cycle_edge_normals[i][2] << cycle_edge_normals[i][3];
-
                 } else {
                     const QVector3D L_c = C_s0 * (1.0f - t_f) + C_s1 * t_f;
                     const QVector3D L_d = D_0t * (1.0f - s_f) + D_1t * s_f;
@@ -907,10 +701,6 @@ void ContourGraph::FitCoonsPatches()
 
                     cycle_coons_patches[i][s][t] = L_c + L_d - B;
                 }
-
-                // qDebug() << c0_0 << c0_1 << c1_0 << c1_1;
-                // qDebug() << i << s << t << c0_s << c1_s << d0_t << d1_t;
-                // qDebug() << i << s << t << L_c << L_d << B;
             }
         }
     }

@@ -5,7 +5,6 @@ QList<QVector3D> PlanarSection::convex_hull;
 PlanarSection::PlanarSection()
 {
     p = QVector3D(0.0f, 0.0f, 0.0f);
-
     t = QVector3D(1.0f, 0.0f, 0.0f);
     b = QVector3D(0.0f, 1.0f, 0.0f);
     n = QVector3D(0.0f, 0.0f, 1.0f);
@@ -15,24 +14,15 @@ PlanarSection::PlanarSection()
 
     centroid = QVector2D(0, 0);
     area = 0.0f;
-
     part_of_cycle = false;
     connected = true;
-
     selected_weight = -1;
-
     quality_samples = 15;
-
-    // update_slab_disp_list = false;
-    // update_slabcurves_disp_list = false;
-    // slab_disp_list = 0;
-    // slabcurves_disp_list = 0;
 
     AddNewCurve();
 
     num_radial_sectors = 0;
     num_radial_points_per_sector = 0;
-
     radial = false;
     local_symmetry_mode = false;
 }
@@ -211,16 +201,7 @@ void PlanarSection::CopySectorRadially(QVector2D centre, int num_sectors,
         pts.push_back(bez_curve[0].Point(i));
     }
 
-    const float angularLength = 360.0f / num_sectors;
-
-    //    // This ensures that keep_g1 is satisfied
-    //    if(bez_curve[0].SelectedPoint() == 0)
-    //    {
-    //        lines.back() = QLineF(centre.toPointF(),
-    //        bez_curve[0].Point(bez_curve[0].Points().size() - 2).toPointF());
-    //        lines.back().setAngle(lines.back().angle() - angularLength);
-    //        pts.back() = QVector2D(lines.back().x2(), lines.back().y2());
-    //    }
+    const float angularLength = 360.0f / num_sectors;  
 
     for (int i = 1; i < num_sectors; ++i) {
         for (int j = 0; j < points_per_sector; ++j) {
@@ -274,7 +255,6 @@ void PlanarSection::CreateRadialHoles(QVector2D centre, const float base_rad,
             pts[i].push_back(c2 * radii[1]);
             pts[i].push_back(c1 * radii[0]);
         }
-    } else {
     }
 
     for (int i = 0; i < num_sectors; ++i) {
@@ -300,14 +280,10 @@ void PlanarSection::MoveP(const QVector3D & v)
 void PlanarSection::AddWeight(const QVector2D & pos_2d, const float mass)
 {
     ExternalWeight weight;
-
     weight.mass_kg = mass;
-    weight.p = pos_2d;
-    // weight.rad = powf(mass, 1.0f / 3.0f) / 3.14159f;
-    weight.rad = powf(mass, 1.0f / 3.0f) / 3.14159f *
-                 5.0f;  // exaggerate size for some figures
+    weight.p = pos_2d;    
+    weight.rad = powf(mass, 1.0f / 3.0f) / 3.14159f;
     weight.height = weight.rad;
-
     weights.push_back(weight);
 }
 
@@ -316,7 +292,6 @@ void PlanarSection::AddWeightAtMousePos(const QVector2D & mouse_pos,
 {
     QVector3D intersect;
     MouseRayIntersect(mouse_pos, intersect);
-
     AddWeight(GetPoint2D(intersect), mass);
 }
 
@@ -403,35 +378,22 @@ void PlanarSection::DrawInputPolyline()
 
 void PlanarSection::DrawCurve()
 {
-    // shows bridge edges for "repairing holes"
-    //    glBegin(GL_LINE_LOOP);
-    //    for (int i=0; i<poly.size(); ++i) {
-    //        QVector3D v = p + (t * poly[i].x()) + (b * poly[i].y());
-    //        glVertex3f(v.x(), v.y(), v.z());
-    //    }
-    //    glEnd();
-
-    for (int c = 0; c < bez_curve.size(); ++c) {
-        const QList<QVector2D> & samples = bez_curve[c].Samples();
-
+    for (const BezierCurve& c : bez_curve) {
         glBegin(GL_LINE_LOOP);
-        for (int i = 0; i < samples.size(); ++i) {
-            QVector3D v = p + (t * samples[i].x()) + (b * samples[i].y());
+        for (const QVector2D &s : c.Samples()) {
+            QVector3D v = p + (t * s.x()) + (b * s.y());
             glVertex3f(v.x(), v.y(), v.z());
         }
-
         glEnd();
     }
 }
 
 void PlanarSection::DrawCurveControlPolygon()
 {
-    for (int i = 0; i < bez_curve.size(); ++i) {
-        const QList<QVector2D> & pts = bez_curve[i].Points();
-
+    for (const BezierCurve& c : bez_curve) {
         glBegin(GL_LINE_STRIP);
-        for (int i = 0; i < pts.size(); ++i) {
-            const QVector3D v = p + (t * pts[i].x()) + (b * pts[i].y());
+        for (const QVector2D& s : c.Points()) {
+            const QVector3D v = p + (t * s.x()) + (b * s.y());
             glVertex3f(v.x(), v.y(), v.z());
         }
         glEnd();
@@ -440,12 +402,12 @@ void PlanarSection::DrawCurveControlPolygon()
 
 void PlanarSection::DrawCurveControlPoints(const float cam_width)
 {
-    for (int c = 0; c < bez_curve.size(); ++c) {
-        const QList<QVector2D> & pts = bez_curve[c].Points();
+    for (const BezierCurve& c : bez_curve) {
+        const QList<QVector2D> & pts = c.Points();
 
         glBegin(GL_LINES);
         for (int i = 0; i < pts.size(); ++i) {
-            const float s = (i == bez_curve[c].SelectedPoint())
+            const float s = (i == c.SelectedPoint())
                                 ? 0.015f * cam_width
                                 : 0.0075f * cam_width;
 
@@ -489,7 +451,6 @@ void PlanarSection::DrawCurveControlPointsHandleStyle(const float cam_width,
 {
     QVector3D colour1(1.0, 0.0, .5);
     QVector3D colour2(1.0, 0.5, 0.8);
-    ;
     QVector3D colour_rad(0.2, 0.2, 0.6);
 
     for (int c = 0; c < bez_curve.size(); ++c) {
@@ -498,9 +459,6 @@ void PlanarSection::DrawCurveControlPointsHandleStyle(const float cam_width,
         if (pts.empty()) {
             continue;
         }
-
-        float s;
-        // int numSegs;
 
         QVector3D lastPoint = p + (t * (pts[0].x())) + (b * (pts[0].y()));
         QVector3D point = p + (t * (pts[1].x())) + (b * (pts[1].y()));
@@ -535,10 +493,9 @@ void PlanarSection::DrawCurveControlPointsHandleStyle(const float cam_width,
         glLineWidth(1);
 
         for (int i = 0; i < num_points; ++i) {
-            s = (i == bez_curve[c].SelectedPoint()) ? 0.005f * cam_width
+            const float s = (i == bez_curve[c].SelectedPoint()) ?
+                                                    0.005f * cam_width
                                                     : 0.0035f * cam_width;
-
-            // numSegs = (i == bez_curve[c].SelectedPoint()) ? 20 : 10;
 
             point = p + (t * (pts[i].x())) + (b * (pts[i].y()));
 
@@ -550,11 +507,6 @@ void PlanarSection::DrawCurveControlPointsHandleStyle(const float cam_width,
                         0.0f, 2 * s);
                 } else {
                     GLutils::glColor(colour2);
-
-                    // for debug purposes
-                    // glColor3f(0, float(i)/num_points, 1 -
-                    // float(i)/num_points);
-
                     GLutils::DrawDisc(
                         point, point + (cam_pos - point).normalized() * .2,
                         0.0f, 1.5 * s);
@@ -571,10 +523,6 @@ void PlanarSection::DrawCurveControlPointsHandleStyle(const float cam_width,
                 } else {
                     GLutils::glColor(colour1);
                 }
-
-                // for debug purposes
-                // glColor3f(0, float(i)/num_points, 1 - float(i)/num_points);
-
                 GLutils::DrawDisc(
                     point, point + (cam_pos - point).normalized() * .2, 0, s);
             }
@@ -589,33 +537,7 @@ void PlanarSection::DrawTNBFrame()
     glColor3f(0, 1, 0);
     GLutils::DrawArrowFixedLength(p, p + n, 0.5f);
     glColor3f(0, 0, 1);
-    GLutils::DrawArrowFixedLength(p, p + b, 0.5f);
-
-    // const QVector3D c = GetPoint3D(centroid);
-    /*
-    const QVector3D c = p;
-
-    glPushMatrix();
-
-    glTranslatef(c.x(), c.y(), c.z());
-
-    //draw tnb frame
-    glBegin(GL_LINES);
-
-    //this draws at centroid
-    glColor3f(1, 0, 0);
-    glVertex3f(0, 0, 0);
-    glVertex3f(t.x(), t.y(), t.z());
-    glColor3f(0, 1, 0);
-    glVertex3f(0, 0, 0);
-    glVertex3f(n.x(), n.y(), n.z());
-    glColor3f(0, 0, 1);
-    glVertex3f(0, 0, 0);
-    glVertex3f(b.x(), b.y(), b.z());
-    glEnd();
-
-    glPopMatrix();
-    */
+    GLutils::DrawArrowFixedLength(p, p + b, 0.5f);   
 }
 
 void PlanarSection::DrawShadow()
@@ -634,8 +556,8 @@ void PlanarSection::DrawShadow()
 
 void PlanarSection::DrawXZPlaneLine()
 {
-    // draw line where this plane and xz plane meet (if they do meet, i.e. plane
-    // is not along xz)
+    // draw line where this plane and xz plane meet
+    // (if they do meet, i.e. plane is not along xz)
     const QVector3D ld =
         QVector3D::crossProduct(n, QVector3D(0, 1, 0)).normalized();
 
@@ -654,7 +576,6 @@ void PlanarSection::DrawXZPlaneLine()
     glVertex3f(lp.x() + ld.x() * 100.0f, lp.y() + ld.y() * 100.0f,
                lp.z() + ld.z() * 100.0f);
     glEnd();
-    // qDebug() << lp << ld;
 }
 
 void PlanarSection::DrawDeadzone(const QVector3D & slot_start,
@@ -741,15 +662,11 @@ void PlanarSection::Draw()
 void PlanarSection::DrawForPicking(const int pickval)
 {
     GLutils::SetPickColor(pickval);
-    // DrawTris();
     DrawSlab();
 }
 
 void PlanarSection::Update(const int c, const double error_tolerance)
 {
-    // const double error_tolerance = 0.04;
-    // const double error_tolerance = 0.02;
-    // const double error_tolerance = 0.01;
     if (sketch_pts[c].size() < 2) {
         return;
     }
@@ -765,9 +682,7 @@ void PlanarSection::Update(const int c, const double error_tolerance)
         bez_curve[c].AddPoint(fit_curve[i + 2]);
     }
 
-    // we do a hermite-closing
-    // QVector2D tan_end = (fit_curve[fit_curve.size()-1] -
-    // fit_curve[fit_curve.size()-2]).normalized();
+    // hermite closing of curve
     QVector2D tan_end;
     if (sketch_pts[c].size() > 5) {
         tan_end = (sketch_pts[c][sketch_pts[c].size() - 1] -
@@ -782,8 +697,6 @@ void PlanarSection::Update(const int c, const double error_tolerance)
 
     float dist = (fit_curve.last() - fit_curve.first()).length();
 
-    // tan_end *= dist * 0.25;
-    // tan_start *= dist * 0.25;
     tan_end *= dist * 0.35f;
     tan_start *= dist * 0.35f;
 
@@ -799,8 +712,8 @@ void PlanarSection::Update(const int c, const double error_tolerance)
 
 void PlanarSection::UpdateCurveTrisSlab()
 {
-    for (int c = 0; c < bez_curve.size(); ++c) {
-        bez_curve[c].UpdateSamples();
+    for (BezierCurve& c : bez_curve) {
+        c.UpdateSamples();
     }
 
     if (bez_curve.size() == 1) {
@@ -808,21 +721,10 @@ void PlanarSection::UpdateCurveTrisSlab()
         Triangulate2::Process(bez_curve[0].Samples(), tris, poly);
 
     } else {
-        // we triangulate multiple curves (indicating holes) using triangle lib
-        /*
-        QList <QList <QVector2D> > samples;
-        for (int c=0; c<bez_curve.size(); ++c) {
-            if (bez_curve[c].Samples().size() > 5) {
-                samples.push_back(bez_curve[c].Samples());
-            }
-        }
-        Triangulate::Process(samples, tris);
-        */
+        // we triangulate multiple curves (indicating holes) using triangle lib        
         QList<QList<QVector2D> > contours;
-        for (int c = 0; c < bez_curve.size(); ++c) {
-            // if (bez_curve[c].Samples().size() > 5) {
-            contours.push_back(bez_curve[c].Samples());
-            //}
+        for (BezierCurve& c : bez_curve) {
+            contours.push_back(c.Samples());
         }
         Triangulate2::Process(contours, tris, poly);
     }
@@ -831,22 +733,7 @@ void PlanarSection::UpdateCurveTrisSlab()
 
     if (!editing_sketch) {
         ComputeSlab();
-    }
-
-    /*
-    if (slab_disp_list > 0) {
-        glDeleteLists(1, slab_disp_list);
-        slab_disp_list = 0;
-    }
-
-    if (slab_curves_disp_list > 0) {
-        glDeleteLists(1, slab_curves_disp_list);
-        slab_curves_disp_list = 0;
-    }
-
-    update_slab_disp_list = true;
-    update_slabcurves_disp_list = true;
-        */
+    }   
 }
 
 void PlanarSection::SaveHeaderToFile(const QList<PlanarSection> & sections,
@@ -854,8 +741,6 @@ void PlanarSection::SaveHeaderToFile(const QList<PlanarSection> & sections,
 {
     ofs << "HeaderParameters 1\n";
     ofs << "FlatFab " << sections.size() << "\n";
-    // ofs << "RotateDuration " << rot_dur << "\n";
-    // ofs << "SlabThickness " << slab_thick << "\n";
 }
 
 int PlanarSection::LoadHeaderFromFile(QTextStream & ifs)
@@ -954,7 +839,6 @@ void PlanarSection::LoadFromFile(QTextStream & ifs)
 
     } else {
         // old way, before holes were supported
-        // const int nSketchPts = ifs.readLine().split(" ").last().toInt();
         const int nSketchPts = curves_line.last().toInt();
         for (int i = 0; i < nSketchPts; ++i) {
             line = ifs.readLine().split(" ");
@@ -988,15 +872,12 @@ void PlanarSection::ComputePacking(const QList<PlanarSection> & sections,
     // 1.  get each rectangle's dimensions and compute the total area
     QList<QPair<int, float> > pieces;
 
-    float total_area = 0.0f;
     QVector<QVector2D> bb = QVector<QVector2D>(sections.size());
 
     for (int i = 0; i < sections.size(); ++i) {
         QVector2D min_v, max_v;
         sections[i].GetBoundingBox2D(min_v, max_v);
         bb[i] = QVector2D(max_v.x() - min_v.x(), max_v.y() - min_v.y());
-
-        total_area += bb[i].x() * bb[i].y();
 
         QPair<int, float> new_piece =
             QPair<int, float>(i, qMax(bb[i].x(), bb[i].y()));
@@ -1015,17 +896,6 @@ void PlanarSection::ComputePacking(const QList<PlanarSection> & sections,
     // 2.  make a rectangle (double the area of this square) with boolean
     // occupancies
     pack_pts = QVector<QVector2D>(sections.size(), QVector2D(0, 0));
-
-    /*
-    const int rw = sqrtf(total_area) * 2.0f;
-    const int rh = sqrtf(total_area);
-
-    QVector <QVector <bool> > occ = QVector <QVector <bool> > (rw);
-    for (int i=0; i<rw; ++i) {
-        occ[i] = QVector <bool> (rh, false);
-    }
-    */
-
     bbox = QVector2D(0, 0);
 
     // 2.  start packing (using the axis-aligned bounding box)
@@ -1079,10 +949,6 @@ void PlanarSection::ComputePacking(const QList<PlanarSection> & sections,
             }
         }
 
-        // qDebug() << "Expanding square" << bb[p1].x() << bb[p1].y() << "at
-        // spot" << pack_pts[p1].x() << pack_pts[p1].y() << "of size" <<
-        // bb[p1].x() << bb[p1].y();
-
         bbox.setX(qMax(bbox.x(), pack_pts[p1].x() + bb[p1].x()));
         bbox.setY(qMax(bbox.y(), pack_pts[p1].y() + bb[p1].y()));
     }
@@ -1100,9 +966,6 @@ void PlanarSection::SaveToDXF(const QList<PlanarSection> & sections,
     // so say we have this 2x2 box... we want each unit to be 1 inch
     // the scaling factor is...
     // multiply by dpi.... then multiply by factor with inches
-    // const double scale_inches = metres_per_unit / 0.0254;
-    // const double scale = double(dpi) * scale_inches;
-    // const double scale = scale_inches;
     const double scale =
         metres_per_unit * 1000.0 * 1000.0;  // format calls for mm I believe
 
@@ -1131,19 +994,7 @@ void PlanarSection::SaveToDXF(const QList<PlanarSection> & sections,
     ofs << "$ACADVER\n";
     ofs << "1\n";
     ofs << "AC1006\n";
-    ofs << "9\n";
-    // ofs << "$MEASUREMENT\n";
-    // ofs << "70\n";
-    // ofs << "1\n";
-    // ofs << "9\n";
-    // ofs << "$INSUNITS\n";
-    // ofs << "70\n";
-    // ofs << "6\n"; //NOTE SHOULD BE 4 for mm, 6 is metres
-    // ofs << "9\n";
-    // ofs << "$LUNITS\n";
-    // ofs << "70\n";
-    // ofs << "6\n";
-    // ofs << "9\n";
+    ofs << "9\n";    
     ofs << "$INSBASE\n";
     ofs << "10\n";
     ofs << "0.0\n";
@@ -1161,10 +1012,8 @@ void PlanarSection::SaveToDXF(const QList<PlanarSection> & sections,
     ofs << "$EXTMAX\n";
     ofs << "10\n";
     ofs << "1000.0\n";
-    // ofs << bbox.x() * scale << "\n";
     ofs << "20\n";
     ofs << "1000.0\n";
-    // ofs << bbox.y() * scale  << "\n";
     ofs << "0\n";
     ofs << "ENDSEC\n";
     // 2c. TABLES
@@ -1289,21 +1138,7 @@ void PlanarSection::SaveToDXF(const QList<PlanarSection> & sections,
                         (slots_i_rect[k][i2] + pack_pts[i] - min_v) * scale;
 
                     DXFWriteLine(ofs, p1, p2, 0, 0);
-                }
-
-                /*
-                if (use_numeric_labels) {
-                    //ofs <<
-                "style=\"fill:none;fill-rule:evenodd;stroke:#ff0000;stroke-width:0.02in;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1\"
-                />\n";
-                }
-                else {
-                    //ofs << "style=\"fill:none;fill-rule:evenodd;stroke:#" <<
-                GLutils::ColorByIndexStr(j) <<
-                ";stroke-width:0.02in;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1\"
-                />\n";
-                }
-                */
+                }               
 
                 // draw numeric labels
                 if (use_numeric_labels && !slots_i_rect[k].empty()) {
@@ -1314,12 +1149,7 @@ void PlanarSection::SaveToDXF(const QList<PlanarSection> & sections,
                          pack_pts[i] - min_v) *
                             scale +
                         dir * 20.0f;
-                    DXFWriteText(ofs, p1, graph_labels[i][j], 1, 1, 100.0f);
-                    // ofs << "<text x=\"" << p.x() << "\" y=\"" << p.y() << "\"
-                    // text-anchor=\"middle\" "; ofs <<
-                    // "style=\"font-size:16px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#0000ff;fill-opacity:1;stroke:none;font-family:Sans\">\n";
-                    // ofs << graph_labels[i][j] << "\n";
-                    // ofs << "</text>\n";
+                    DXFWriteText(ofs, p1, graph_labels[i][j], 1, 1, 100.0f);                    
                 }
             }
         }
@@ -1383,8 +1213,8 @@ void PlanarSection::ComputeSlitNumericLabels(
     const QList<QString> & numeric_labels,
     QVector<QVector<QString> > & graph_labels)
 {
-    // if we are writing out the planar sections with labels, we require a
-    // connectivity matrix
+    // if we are writing out the planar sections with labels,
+    // we require a connectivity matrix
     int current_numeric_label = 1;
     QVector<QVector<bool> > graph;
 
@@ -1464,7 +1294,6 @@ void PlanarSection::SaveToSVG(const QList<PlanarSection> & sections,
                 continue;
             }
 
-            // ofs << "<g id=\"layer" << i << "curve" << c << "\">\n";
             ofs << "<path d=\"";
 
             QVector2D p = samples[0] + pack_pts[i] - min_v;
@@ -1507,11 +1336,6 @@ void PlanarSection::SaveToSVG(const QList<PlanarSection> & sections,
             QList<QList<QVector2D> > slots_i_rect;
             sections[i].GetSlots(sections[j], slots_i, slots_i_rect);
 
-            // if (!slots_i.empty()) {
-            //     qDebug() << "Section" << i << "intersects" << j << "?" <<
-            //     !slots_i.empty() << slots_i.size();
-            // }
-
             for (int k = 0; k < slots_i_rect.size(); k += 5) {
                 // ofs << "<g id=\"layerslot" << i << "to" << j << "at" << k <<
                 // "\">\n";
@@ -1537,7 +1361,6 @@ void PlanarSection::SaveToSVG(const QList<PlanarSection> & sections,
                         << ";stroke-width:0.02in;stroke-linecap:butt;stroke-"
                            "linejoin:miter;stroke-opacity:1\" />\n";
                 }
-                // ofs << "</g>\n";
 
                 // draw numeric labels
                 if (use_numeric_labels && !slots_i_rect[k].empty()) {
@@ -1569,8 +1392,6 @@ void PlanarSection::GetSlots(const PlanarSection & other,
                              QList<QVector2D> & my_slots,
                              QList<QList<QVector2D> > & my_slots_rect) const
 {
-    // qDebug() << "PlanarSection::GetSlots() - calling with " << index <<
-    // other_index;
     my_slots.clear();
     my_slots_rect.clear();
 
@@ -1586,8 +1407,7 @@ void PlanarSection::GetSlots(const PlanarSection & other,
     p1_slot_end = other.GetPoint2D(GetPoint3D(p0_slot_end));
 
     // 2.  determine the contour intersection points for THIS section and the
-    // OTHER section qDebug() << "PlanarSection::GetSlots()" << p0_slot_start <<
-    // p0_slot_end;
+    // OTHER section
     QList<QVector2D> p0_isecs;  // note: 2D coordinates are in that plane's
                                 // local coordinate system
     QList<QVector2D> p1_isecs;
@@ -1600,26 +1420,10 @@ void PlanarSection::GetSlots(const PlanarSection & other,
     other.ComputeContourLineIntersects(p1_slot_start, p1_slot_dir, p1_isecs);
 
     // 2a.  make sure there's intervals for both p0 and p1 (the THIS and OTHER
-    // plane)
-    //      if there's not, silently return
+    // plane), if there's not, silently return
     if (p0_isecs.empty() || p1_isecs.empty()) {
-        // qDebug() << "PlanarSection::GetSlots() - was empty, no big deal" <<
-        // p0_isecs << p1_isecs;
         return;
-    }
-
-    // 2b.  if there's an odd number of intersection points, we've got an issue
-    // (or we just tangentially grazed a point)
-    //      (for now, we abort when this happens)
-    /*
-    if ((p0_isecs.size() % 2) == 1 || (p1_isecs.size() % 2) == 1) {
-        qDebug() << "PlanarSection::GetSlots() - odd number of intersection
-    points along ray encountered, aborting" << p0_isecs.size() <<
-    p1_isecs.size(); qDebug() << p0_isecs; qDebug() << p1_isecs;
-
-        return;
-    }
-    */
+    }   
 
     // 3.  sort these points, using the common ray in 3D
     QVector3D slot_start_3d = GetPoint3D(p0_slot_start);
@@ -1637,30 +1441,7 @@ void PlanarSection::GetSlots(const PlanarSection & other,
     }
 
     GLutils::SortPointsAlongDirection3D(slot_dir_3d, p0_isecs_3d);
-    GLutils::SortPointsAlongDirection3D(slot_dir_3d, p1_isecs_3d);
-
-    // DEBUGGGGGGGGGGGGGGGGGGGGGG//DEBUGGGGGGGGGGGGGGGGGGGGGG//DEBUGGGGGGGGGGGGGGGGGGGGGG
-    /*
-    qDebug() << "PlanarSection::GetSlots() - HELLO!!!" << p0_isecs << p1_isecs;
-    QList <float> p0l, p1l;
-    for (int i=0; i<p0_isecs_3d.size(); i+=2) { //iterate over THIS's intervals
-
-        const float p0_start = QVector3D::dotProduct(slot_dir_3d,
-    p0_isecs_3d[i]); const float p0_end = QVector3D::dotProduct(slot_dir_3d,
-    p0_isecs_3d[i+1]); p0l.push_back(p0_start); p0l.push_back(p0_end);
-    }
-
-    for (int j=0; j<p1_isecs_3d.size(); j+=2) {//iterate over OTHER's intervals,
-    see if there's some overlap
-
-            const float p1_start = QVector3D::dotProduct(slot_dir_3d,
-    p1_isecs_3d[j]); const float p1_end = QVector3D::dotProduct(slot_dir_3d,
-    p1_isecs_3d[j+1]); p1l.push_back(p1_start); p1l.push_back(p1_end);
-    }
-    qDebug() << "p0l" << p0l;
-    qDebug() << "p1l" << p1l;
-    */
-    // DEBUGGGGGGGGGGGGGGGGGGGGGG//DEBUGGGGGGGGGGGGGGGGGGGGGG//DEBUGGGGGGGGGGGGGGGGGGGGGG
+    GLutils::SortPointsAlongDirection3D(slot_dir_3d, p1_isecs_3d);   
 
     // 4.  with the sorted points, and since these are closed bounary
     // intersection points, each sequential pair defines
@@ -1669,30 +1450,21 @@ void PlanarSection::GetSlots(const PlanarSection & other,
     //     create a slot rectangle. also, we only care about doing this for the
     //     THIS plane, not the OTHER plane
 
-    // qDebug() << "PlanarSection::GetSlots() - made it here" <<
-    // p0_isecs_3d.size() << p1_isecs_3d.size();
-
-    // bool found_anything = false;
-
-    for (int i = 0; i + 1 < p0_isecs_3d.size();
-         i += 2) {  // iterate over THIS's intervals
-
+    // iterate over THIS's intervals
+    for (int i = 0; i + 1 < p0_isecs_3d.size(); i += 2) {
         const float p0_start =
             QVector3D::dotProduct(slot_dir_3d, p0_isecs_3d[i]);
         const float p0_end =
             QVector3D::dotProduct(slot_dir_3d, p0_isecs_3d[i + 1]);
 
-        for (int j = 0; j + 1 < p1_isecs_3d.size();
-             j += 2) {  // iterate over OTHER's intervals, see if there's some
-                        // overlap
-
+        // iterate over OTHER's intervals, see if there's some overlap
+        for (int j = 0; j + 1 < p1_isecs_3d.size(); j += 2) {
             const float p1_start =
                 QVector3D::dotProduct(slot_dir_3d, p1_isecs_3d[j]);
             const float p1_end =
                 QVector3D::dotProduct(slot_dir_3d, p1_isecs_3d[j + 1]);
 
-            // qDebug() << "THE VALUES" << p0_start << p0_end << p1_start <<
-            // p1_end; so there's probably some set of conditions we're looking
+            // so there's probably some set of conditions we're looking
             // for here... a) p1's startpoint is within p0's start and end
             // points b) p1's endpoint is within p0's start and end points
 
@@ -1742,235 +1514,9 @@ void PlanarSection::GetSlots(const PlanarSection & other,
                                                          other.SlabThickness() *
                                                          0.5f);
                 my_slots_rect.push_back(slot_rect1);
-
-                // found_anything = true;
             }
         }
-    }
-
-    /*
-    if (!found_anything) {
-        qDebug() << "PlanarSection::GetSlots() - WARNING! Seemed good, but
-    didn't find anything" << p0_isecs.size() << p1_isecs.size(); QList <float>
-    p0l, p1l; for (int i=0; i<p0_isecs_3d.size(); i+=2) { //iterate over THIS's
-    intervals
-
-            const float p0_start = QVector3D::dotProduct(slot_dir_3d,
-    p0_isecs_3d[i]); const float p0_end = QVector3D::dotProduct(slot_dir_3d,
-    p0_isecs_3d[i+1]); p0l.push_back(p0_start); p0l.push_back(p0_end);
-        }
-
-        for (int j=0; j<p1_isecs_3d.size(); j+=2) {//iterate over OTHER's
-    intervals, see if there's some overlap
-
-                const float p1_start = QVector3D::dotProduct(slot_dir_3d,
-    p1_isecs_3d[j]); const float p1_end = QVector3D::dotProduct(slot_dir_3d,
-    p1_isecs_3d[j+1]); p1l.push_back(p1_start); p1l.push_back(p1_end);
-        }
-        qDebug() << "p0l" << p0l;
-        qDebug() << "p1l" << p1l;
-    }
-    */
-
-    // old method
-    /*
-    const QVector2D slot_dir = (slot_end - slot_start).normalized() * 1.005;
-    const QVector2D slot_ortho = QVector2D(-slot_dir.y(), slot_dir.x());
-
-    QList <QVector3D> isecs;
-    QList <bool> isecs_which;
-
-    //order is consistent for i-j intersection this way
-    if (index < other_index) {
-        GetContourIntersections(other, isecs, isecs_which);
-    }
-    else {
-        other.GetContourIntersections((*this), isecs, isecs_which);
-    }
-
-    //we now have an ordered set of contour-plane intersections between the two
-    planes bool inside_i = false; bool inside_j = false;
-
-    for (int k=0; k<isecs.size()-3; ++k) {
-
-        const float dist1 = (isecs[k+1]-isecs[k]).length();
-        const float dist2 = (isecs[k+3]-isecs[k+2]).length();
-
-        bool flip = false;
-
-        //as we move across axis, we go in and out of the planar contours
-        if (isecs_which[k]) {
-            inside_i = !inside_i;
-        }
-        else {
-            inside_j = !inside_j;
-        }
-
-        //we want to make a slot when we are inside one, and we encounter
-    another one if (isecs_which[k] != isecs_which[k+1] && ((inside_i &&
-    !inside_j) || (inside_j && !inside_i))) {
-
-            if (dist1 > dist2) {
-
-                if (index < other_index) {
-                    if (isecs_which[k]) {
-                        flip = true;
-                        //qDebug() << "S1";
-                    }
-                    else {
-                        flip = false;
-                        //qDebug() << "S2";
-                    }
-                }
-                else {
-                    if (isecs_which[k]) {
-                        flip = false;
-                        //qDebug() << "S3";
-                    }
-                    else {
-                        flip = true;
-                        //qDebug() << "S4";
-                    }
-                }
-
-
-            }
-            else {
-
-                if (index < other_index) {
-                    if (isecs_which[k]) {
-                        flip = false;
-                        //qDebug() << "S5";
-                    }
-                    else {
-                        flip = false;
-                        //qDebug() << "S6";
-                    }
-                }
-                else {
-                    if (isecs_which[k]) {
-                        flip = true;
-                        //qDebug() << "S7";
-                    }
-                    else {
-                        flip = true;
-                        //qDebug() << "S8";
-                    }
-                }
-
-            }
-
-            QVector2D slot_start1, slot_start2, slot_mid;
-            QList <QVector2D> slot_rect1, slot_rect2;
-
-            slot_start1 = flip ? GetPoint2D(isecs[k+2]) :
-    GetPoint2D(isecs[k+1]); slot_start2 = flip ? GetPoint2D(isecs[k+1]) :
-    GetPoint2D(isecs[k+2]); slot_mid = GetPoint2D((isecs[k+1] + isecs[k+2]) *
-    0.5);
-
-            float slot_len = (slot_start1 - slot_mid).length();
-            slot_start1 = slot_mid + (slot_start1 - slot_mid).normalized() *
-    slot_len * 1.01f; slot_start2 = slot_mid + (slot_start2 -
-    slot_mid).normalized() * slot_len * 1.01f;
-
-            slot_rect1.push_back(slot_start1 + slot_ortho * SlabThickness() *
-    0.5f); slot_rect1.push_back(slot_start1 - slot_ortho * SlabThickness() *
-    0.5f); slot_rect1.push_back(slot_mid - slot_ortho * SlabThickness() * 0.5f);
-            slot_rect1.push_back(slot_mid + slot_ortho * SlabThickness() *
-    0.5f); slot_rect1.push_back(slot_start1 + slot_ortho * SlabThickness() *
-    0.5f);
-
-            slot_rect2.push_back(slot_start2 + slot_ortho * SlabThickness() *
-    0.5f); slot_rect2.push_back(slot_start2 - slot_ortho * SlabThickness() *
-    0.5f); slot_rect2.push_back(slot_mid - slot_ortho * SlabThickness() * 0.5f);
-            slot_rect2.push_back(slot_mid + slot_ortho * SlabThickness() *
-    0.5f); slot_rect2.push_back(slot_start2 + slot_ortho * SlabThickness() *
-    0.5f);
-
-            if (LinesIntersectContour(slot_rect1) &&
-    !LinesIntersectContour(slot_rect2)) {
-
-                my_slots.push_back(slot_start1);
-                my_slots.push_back(slot_mid);
-                my_slots_rect.push_back(slot_rect1);
-
-            }
-            else if (!LinesIntersectContour(slot_rect1) &&
-    LinesIntersectContour(slot_rect2)) {
-
-                my_slots.push_back(slot_start2);
-                my_slots.push_back(slot_mid);
-                my_slots_rect.push_back(slot_rect2);
-
-            }
-            else {
-
-                //qDebug() << "PlanarSection::GetSlots() - Problem! slot_rect1
-    and slot_rect2 both inadequate for boundary intersection";
-
-                float slot_len = (slot_start1 - slot_mid).length();
-                slot_start1 = slot_mid + (slot_start1 - slot_mid).normalized() *
-    slot_len * 1.5f; slot_start2 = slot_mid + (slot_start2 -
-    slot_mid).normalized() * slot_len * 1.5f;
-
-                slot_rect1.clear();
-                slot_rect2.clear();
-
-                slot_rect1.push_back(slot_start1 + slot_ortho * SlabThickness()
-    * 0.5f); slot_rect1.push_back(slot_start1 - slot_ortho * SlabThickness() *
-    0.5f); slot_rect1.push_back(slot_mid - slot_ortho * SlabThickness() * 0.5f);
-                slot_rect1.push_back(slot_mid + slot_ortho * SlabThickness() *
-    0.5f); slot_rect1.push_back(slot_start1 + slot_ortho * SlabThickness() *
-    0.5f);
-
-                slot_rect2.push_back(slot_start2 + slot_ortho * SlabThickness()
-    * 0.5f); slot_rect2.push_back(slot_start2 - slot_ortho * SlabThickness() *
-    0.5f); slot_rect2.push_back(slot_mid - slot_ortho * SlabThickness() * 0.5f);
-                slot_rect2.push_back(slot_mid + slot_ortho * SlabThickness() *
-    0.5f); slot_rect2.push_back(slot_start2 + slot_ortho * SlabThickness() *
-    0.5f);
-
-                if (LinesIntersectContour(slot_rect1) &&
-    !LinesIntersectContour(slot_rect2)) {
-
-                    my_slots.push_back(slot_start1);
-                    my_slots.push_back(slot_mid);
-                    my_slots_rect.push_back(slot_rect1);
-
-                }
-                else if (!LinesIntersectContour(slot_rect1) &&
-    LinesIntersectContour(slot_rect2)) {
-
-                    my_slots.push_back(slot_start2);
-                    my_slots.push_back(slot_mid);
-                    my_slots_rect.push_back(slot_rect2);
-
-                }
-                else {
-                    //we need to expand out the rectangle some now
-                    qDebug() << "slotlen" << slot_len << slot_start1 << slot_mid
-    << slot_start2 << isecs[k+1] << isecs[k+2] << isecs_which[k] <<
-    isecs_which[k+1] << isecs_which[k+2] << isecs_which[k+3] << isecs_which;
-                    qDebug() << "PlanarSection::GetSlots() - Problem! slot_rect1
-    and slot_rect2 both inadequate for boundary intersection";
-                }
-
-
-            }
-
-            //markers.push_back(GetPoint3D(slot_start1));
-            //markers_col.push_back(QVector3D(1, 0, 0));
-            //markers.push_back(GetPoint3D(slot_mid));
-            //markers_col.push_back(QVector3D(1, 1, 0));
-            //markers.push_back(GetPoint3D(slot_start2));
-            //markers_col.push_back(QVector3D(0, 1, 0));
-
-            k += 2;
-
-        }
-
-    }
-    */
+    }   
 }
 
 bool PlanarSection::GetIntersectionSlotLine(const PlanarSection & other,
@@ -2026,14 +1572,11 @@ void PlanarSection::GetContourIntersections(const PlanarSection & other,
     // now sort them
     if (isecs.size() >= 2) {
         const QVector3D d = isecs[1] - isecs[0];
-        // qDebug() << "PlanarSection::GetContourIntersections() - d length" <<
-        // d.length();
         GLutils::SortPointsAlongDirection3DExtra(d, isecs, isecs_which);
     }
 
     // now remove isecs where there is no alternation
     for (int i = 0; i + 1 < isecs.size(); i += 2) {
-        // for (int i=0; i+1<isecs.size(); ++i) {
         if (isecs_which[i] == isecs_which[i + 1]) {
             isecs.removeAt(i);
             isecs.removeAt(i);
@@ -2046,8 +1589,8 @@ void PlanarSection::GetContourIntersections(const PlanarSection & other,
 
 bool PlanarSection::LinesIntersectContour(const QList<QVector2D> & lines) const
 {
-    for (int c = 0; c < bez_curve.size(); ++c) {
-        const QList<QVector2D> & samples = bez_curve[c].Samples();
+    for (const BezierCurve& c : bez_curve) {
+        const QList<QVector2D> & samples = c.Samples();
         for (int i = 0; i < lines.size(); ++i) {
             const int l = (i + 1) % lines.size();
             for (int j = 0; j < samples.size(); ++j) {
@@ -2112,10 +1655,7 @@ void PlanarSection::ComputeContourLineIntersects(
         QVector2D intersect;
         if (GLutils::LineRayIntersection(samples[ind1], samples[ind2], lp, ld,
                                          intersect)) {
-            // note: we do not add duplicates... e.g. the endpoint of a line
-            // segment was hit if (!intersects.contains(intersect)) {
             intersects.push_back(intersect);
-            //}
         }
     }
 
@@ -2175,8 +1715,6 @@ void PlanarSection::TestConnectedness(QList<PlanarSection> & sections,
                 break;
             }
         }
-
-        // qDebug() << "section" << i << "connected" << sections[i].Connected();
     }
 }
 
@@ -2197,8 +1735,8 @@ bool PlanarSection::CycleAssemblable(const QList<PlanarSection> & sections,
         int_dir[i] = QVector3D::crossProduct(n1, n2).normalized();
     }
 
-    // do pairwise comparison of intersection lines, seeing if two are roughly
-    // parallel
+    // do pairwise comparison of intersection lines,
+    // seeing if two are roughly parallel
     for (int i = 0; i < cycle.size(); ++i) {
         for (int j = i + 1; j < cycle.size(); ++j) {
             const float dot_prod =
@@ -2209,8 +1747,8 @@ bool PlanarSection::CycleAssemblable(const QList<PlanarSection> & sections,
         }
     }
 
-    // didnt find two about-parallel lines of intersection, cycle cannot be
-    // assembled
+    // didnt find two about-parallel lines of intersection,
+    // cycle cannot be assembled
     return false;
 }
 
@@ -2222,8 +1760,8 @@ void PlanarSection::SetQuality(const int i)
 {
     quality_samples = i;
 
-    for (int i = 0; i < bez_curve.size(); ++i) {
-        bez_curve[i].SetSamplesPerSegment(quality_samples);
+    for (BezierCurve& c : bez_curve) {
+        c.SetSamplesPerSegment(quality_samples);
     }
 }
 
@@ -2247,7 +1785,6 @@ bool PlanarSection::SketchEditing() { return editing_sketch; }
 
 bool PlanarSection::CurveClockwise(const int c)
 {
-    // const QList <QVector2D> & pts = bez_curve[c].Points();
     const QList<QVector2D> & pts = bez_curve[c].Samples();
 
     if (pts.size() < 2) {
@@ -2267,8 +1804,6 @@ bool PlanarSection::CurveClockwise(const int c)
 void PlanarSection::SketchSymmetryTest()
 {
     const float magic_ratio = 1.0f;
-    // original value was 6.0f
-    // const float magic_ratio = 6.0f;
 
     // get region1/region2 distances
     float dist_r1 = 0.0f;
@@ -2281,8 +1816,6 @@ void PlanarSection::SketchSymmetryTest()
         dist_r1 = qMin(dist_r1, float(sketch_pts[0][i].x()));
         dist_r2 = qMax(dist_r2, float(sketch_pts[0][i].x()));
     }
-
-    // qDebug() << "dist_r1" << dist_r1 << "dist_r2" << dist_r2;
 
     float sign = 1.0f;  // this stores whether points to preserve are on
                         // positive side (sign=1) or negative side (sign=-1)
@@ -2349,14 +1882,12 @@ void PlanarSection::MirrorControlPoints()
         new_points.last().setX(-new_points.last().x());  // flip it
     }
 
-    new_points.push_back(
-        points[points.size() -
-               2]);  // copy the tangent going into the "start/end" point
+    // copy the tangent going into the "start/end" point
+    new_points.push_back(points[points.size() - 2]);
     new_points.last().setX(-new_points.last().x());
 
-    new_points.push_back(
-        points[points.size() - 2]);  // copy the two final points on the
-                                     // original side to cap it off
+    // copy the two final points on the original side to cap it off
+    new_points.push_back(points[points.size() - 2]);
     new_points.push_back(points[points.size() - 1]);
 
     curve.SetPoints(new_points);
@@ -2446,7 +1977,6 @@ void PlanarSection::DrawSketch()
 
 bool PlanarSection::AddMouseRayIntersect(const int c, const QVector2D & v)
 {
-    // const float min_dist_threshold = 0.025f;
     const float min_dist_threshold = 0.05f;
 
     QVector3D intersect;
@@ -2461,7 +1991,6 @@ bool PlanarSection::AddMouseRayIntersect(const int c, const QVector2D & v)
         }
     }
 
-    // qDebug() << "PlanarSection::AddMouseRayIntersect - " << intersect;
     return result;
 }
 
@@ -2495,8 +2024,6 @@ bool PlanarSection::AddCtrlPointPenPress(const int c, const QVector2D & v)
 
         // Add the last the last 2 points to connect the curve
         bez_points.push_back(last_tangent);
-        // bez_curve[c].AddPoint( bez_curve[c].Point(0) - (bez_curve[c].Point(1)
-        // - bez_curve[c].Point(0) ) );
         bez_points.push_back(bez_points.front());
 
         bez_curve[c].SetPoints(bez_points);
@@ -2507,7 +2034,6 @@ bool PlanarSection::AddCtrlPointPenPress(const int c, const QVector2D & v)
         UpdateCurveTrisSlab();
     }
 
-    // qDebug() << "PlanarSection::AddMouseRayIntersect - " << intersect;
     return result;
 }
 
@@ -2632,31 +2158,26 @@ void PlanarSection::SelectMouseRayIntersect(const QVector2D & v,
 
     if (radial) bez_curve_size = 1;
 
-    bool point_found;
     if (selected_weight < 0) {
-        for (int c = 0; c < bez_curve_size; ++c) {
-            point_found = false;
+        for (int c = 0; c < bez_curve_size; ++c) {            
             bez_curve[c].SelectPoint(int_2d, 0.003f * cam_width);
             if (bez_curve[c].SelectedPoint() >= 0) {
+                // ensure that it's from the first sector when radial
                 if (!radial ||
-                    bez_curve[c].SelectedPoint() <
-                        num_radial_points_per_sector)  // ensure that it's from
-                                                       // the first sector when
-                                                       // radial
-                {
-                    point_found = true;
+                    bez_curve[c].SelectedPoint() < num_radial_points_per_sector)
+                {                    
                     break;
                 }
             }
-            if (!point_found) bez_curve[c].UnselectPoint();
+            bez_curve[c].UnselectPoint();
         }
     }
 }
 
 bool PlanarSection::IsCtrlPointSelected()
 {
-    for (int c = 0; c < bez_curve.size(); ++c) {
-        if (bez_curve[c].SelectedPoint() >= 0) {
+    for (BezierCurve& c : bez_curve) {
+        if (c.SelectedPoint() >= 0) {
             return true;
         }
     }
@@ -2666,9 +2187,9 @@ bool PlanarSection::IsCtrlPointSelected()
 
 int PlanarSection::SelectedCtrlPoint()
 {
-    for (int c = 0; c < bez_curve.size(); ++c) {
-        if (bez_curve[c].SelectedPoint() >= 0) {
-            return bez_curve[c].SelectedPoint();
+    for (BezierCurve& c : bez_curve) {
+        if (c.SelectedPoint() >= 0) {
+            return c.SelectedPoint();
         }
     }
 
@@ -2677,25 +2198,21 @@ int PlanarSection::SelectedCtrlPoint()
 
 void PlanarSection::InsertCtrlPoint()
 {
-    // qDebug() << "PlanarSection::InsertCtrlPoint() " <<
-    // bez_curve.SelectedPoint();
-    for (int c = 0; c < bez_curve.size(); ++c) {
-        if (bez_curve[c].SelectedPoint() >= 0) {
+    for (BezierCurve& c : bez_curve) {
+        if (c.SelectedPoint() >= 0) {
             if (radial &&
-                bez_curve[c].SelectedPoint() < num_radial_points_per_sector) {
-                bez_curve[c].InsertSelectedPoint();
+                c.SelectedPoint() < num_radial_points_per_sector) {
+                c.InsertSelectedPoint();
                 num_radial_points_per_sector += 3;
                 UpdateRadial();
             } else
-                bez_curve[c].InsertSelectedPoint();
+                c.InsertSelectedPoint();
         }
     }
 }
 
 void PlanarSection::DeleteSelectedCtrlPoint()
 {
-    // qDebug() << "PlanarSection::DeleteCtrlPoint()" <<
-    // bez_curve.SelectedPoint();
     for (int c = 0; c < bez_curve.size(); ++c) {
         if (bez_curve[c].SelectedPoint() >= 0) {
             if (c > 0 && bez_curve[c].GetNumControlPoints() <= 7) {
@@ -2722,12 +2239,6 @@ void PlanarSection::DeleteCtrlPoint(int bez_curve_index, int ctrl_point_index)
         qDebug() << "Error - Curve index less than 0";
         return;
     }
-
-    //    if (ctrl_point_index < 0 || ctrl_point_index)
-    //    {
-    //        qDebug() << "Error - Control point index less than 0";
-    //        return;
-    //    }
 
     if (bez_curve[bez_curve_index].GetNumControlPoints() <= 7) {
         if (bez_curve_index > 0) {
@@ -2792,16 +2303,13 @@ void PlanarSection::MoveCtrlPointMouseRayIntersect(const QVector2D & mouse_pos,
 
     QVector2D int_2d = GetPoint2D(intersect);
 
-    for (int c = 0; c < bez_curve.size(); ++c) {
-        if (bez_curve[c].SelectedPoint() >= 0) {
-            if (!radial ||
-                bez_curve[c].SelectedPoint() < num_radial_points_per_sector) {
-                if (radial && bez_curve[c].SelectedPoint() == 0) {
-                    bez_curve[c].MoveSelectedPoint(int_2d, false,
-                                                   equal_lengths);
+    for (BezierCurve& c : bez_curve) {
+        if (c.SelectedPoint() >= 0) {
+            if (!radial || c.SelectedPoint() < num_radial_points_per_sector) {
+                if (radial && c.SelectedPoint() == 0) {
+                    c.MoveSelectedPoint(int_2d, false, equal_lengths);
                 } else {
-                    bez_curve[c].MoveSelectedPoint(int_2d, keep_g1,
-                                                   equal_lengths);
+                    c.MoveSelectedPoint(int_2d, keep_g1, equal_lengths);
                 }
             }
         }
@@ -2815,13 +2323,18 @@ void PlanarSection::MoveCtrlPointMouseRayIntersect(const QVector2D & mouse_pos,
 void PlanarSection::SelectCtrlPoint(const int ctrl_point_index,
                                     const int bez_curve_index)
 {
+    if (bez_curve_index < 0) {
+        qDebug() << "Error - Curve index less than 0";
+        return;
+    }
+
     bez_curve[bez_curve_index].SetSelectedPoint(ctrl_point_index);
 }
 
 void PlanarSection::UnselectCtrlPoint()
 {
-    for (int c = 0; c < bez_curve.size(); ++c) {
-        bez_curve[c].UnselectPoint();
+    for (BezierCurve& c : bez_curve) {
+        c.UnselectPoint();
     }
 }
 
@@ -2833,33 +2346,31 @@ void PlanarSection::SetCtrlPointsAboveXZPlane()
     QVector3D ld_3d =
         QVector3D::crossProduct(n, QVector3D(0, 1, 0)).normalized();
     QVector3D lp_3d = QVector3D(0, 0, 0);
-    (fabsf(n.x()) > fabsf(n.z()))
-        ? lp_3d.setX(QVector3D::dotProduct(n, p) / n.x())
-        : lp_3d.setZ(QVector3D::dotProduct(n, p) / n.z());
+    if (fabsf(n.x()) > fabsf(n.z())) {
+        lp_3d.setX(QVector3D::dotProduct(n, p) / n.x());
+    } else {
+        lp_3d.setZ(QVector3D::dotProduct(n, p) / n.z());
+    }
 
     // line parameters in 2d space defined by two points, lp1 and lp2
     QVector2D lp1 = GetPoint2D(lp_3d);
     QVector2D lp2 = GetPoint2D(lp_3d + ld_3d);
 
-    for (int c = 0; c < bez_curve.size(); ++c) {
-        const QList<QVector2D> & points = bez_curve[c].Points();
+    for (BezierCurve& c : bez_curve) {
+        const QList<QVector2D> & points = c.Points();
 
         for (int i = 0; i < points.size(); ++i) {
             const float dist =
                 GLutils::PointLineSignedDistance(lp1, lp2, points[i]);
 
-            if (dist > 0.0f) {  // this means point is below ground plane in the
-                                // local parameter space
-
+            // is point below ground plane in the local parameter space
+            if (dist > 0.0f) {
                 // set new point location
                 QVector2D norm_2d = (lp2 - lp1).normalized();
                 norm_2d = QVector2D(-norm_2d.y(), norm_2d.x());
 
-                bez_curve[c].SetPoint(
+                c.SetPoint(
                     i, points[i] - norm_2d * (dist - just_touch_delta));
-
-                // qDebug() << points[i] << points[i] - norm_2d * (dist -
-                // just_touch_delta);
             }
         }
     }
@@ -2930,23 +2441,7 @@ void PlanarSection::RotatePlanarSectionY(PlanarSection & new_section) const
     new_section.p = QVector3D(p.z(), p.y(), -p.x());
     new_section.t = QVector3D(t.z(), t.y(), -t.x());
     new_section.n = QVector3D(n.z(), n.y(), -n.x());
-    new_section.b = QVector3D(b.z(), b.y(), -b.x());
-
-    // we take the sketchpts in 3D, mirror them, then reproject onto plane
-    /*
-    for (int i=0; i<new_section.sketch_pts.size(); ++i) {
-        QVector3D v = GetPoint3D(sketch_pts[i]);
-        v.setZ(-v.z());
-        new_section.sketch_pts[i] = new_section.GetPoint2D(v);
-    }
-
-    const QList <QVector2D> & bez_pts = new_section.bez_curve.Points();
-    for (int i=0; i<bez_pts.size(); ++i) {
-        QVector3D v = GetPoint3D(bez_curve.Point(i));
-        v.setZ(-v.z());
-        new_section.bez_curve.SetPoint(i, new_section.GetPoint2D(v));
-    }
-    */
+    new_section.b = QVector3D(b.z(), b.y(), -b.x());   
 }
 
 bool PlanarSection::MouseRayIntersect(const QVector2D & v,
@@ -2973,28 +2468,7 @@ void PlanarSection::DrawTris()
 }
 
 void PlanarSection::DrawSlab()
-{
-    /*
-    if (update_slab_disp_list) {
-
-        if (slab_disp_list > 0) {
-            glDeleteLists(slab_disp_list, 1);
-        }
-
-        slab_disp_list = 0;
-        update_slab_disp_list = false;
-
-    }
-
-    if (slab_disp_list > 0) {
-        glCallList(slab_disp_list);
-    }
-    else {
-
-        slab_disp_list = glGenLists(1);
-        glNewList(slab_disp_list, GL_COMPILE_AND_EXECUTE);
-        */
-
+{    
     glBegin(GL_TRIANGLES);
     for (int i = 0; i < slab_norm.size(); ++i) {
         for (int j = 0; j < 3; ++j) {
@@ -3004,37 +2478,10 @@ void PlanarSection::DrawSlab()
         }
     }
     glEnd();
-
-    /*
-    glEndList();
-
-}
-*/
 }
 
 void PlanarSection::DrawSlabCurves()
-{
-    /*
-    if (update_slabcurves_disp_list) {
-
-        if (slabcurves_disp_list > 0) {
-            glDeleteLists(update_slabcurves_disp_list, 1);
-        }
-
-        slabcurves_disp_list = 0;
-        update_slabcurves_disp_list = false;
-
-    }
-
-    if (slabcurves_disp_list > 0) {
-        glCallList(slabcurves_disp_list);
-    }
-    else {
-
-        slabcurves_disp_list = glGenLists(1);
-        glNewList(slabcurves_disp_list, GL_COMPILE_AND_EXECUTE);
-        */
-
+{    
     const QVector3D n_offset = n * (slab_thickness / 2.0f);
 
     glBegin(GL_LINES);
@@ -3043,8 +2490,6 @@ void PlanarSection::DrawSlabCurves()
 
         for (int j = 0; j < 2; ++j) {
             for (int i = 0; i < samples.size(); ++i) {
-                // const float colour = float(i) / float(samples.size());
-                // glColor3f(colour, 1.0f - colour, 0.0f);
                 const int i2 = (i + 1) % samples.size();
                 QVector3D v1 = p + (t * samples[i].x()) + (b * samples[i].y());
                 QVector3D v2 =
@@ -3064,12 +2509,6 @@ void PlanarSection::DrawSlabCurves()
         }
     }
     glEnd();
-
-    /*
-        glEndList();
-
-    }
-    */
 }
 
 void PlanarSection::ComputeCentroidAndArea()
@@ -3144,7 +2583,6 @@ void PlanarSection::ComputeSlab()
     }
 
     // now the ring
-
     for (int c = 0; c < bez_curve.size(); ++c) {
         const QList<QVector2D> & samples = bez_curve[c].Samples();
 
@@ -3411,46 +2849,7 @@ bool PlanarSection::IsIntersectingSection(const PlanarSection & other) const
     QList<QList<QVector2D> > my_slots_rect;
     this->GetSlots(other, my_slots, my_slots_rect);
 
-    return !(my_slots.empty());
-
-    // NOTE: Below code is BUGGY
-    // test plane parallelism
-    /*
-    QVector2D slot_start, slot_end;
-    if (GetIntersectionSlotLine(other, slot_start, slot_end)) {
-
-        //planes not parallel
-        //test if there is a planar section intersection
-        QList <QVector3D> isecs;
-        QList <bool> isecs_which;
-        GetContourIntersections(other, isecs, isecs_which);
-
-        bool inside_i = false;
-        bool inside_j = false;
-        for (int k=0; k<isecs.size()-3; ++k) {
-
-            //as we move across axis, we go in and out of the planar contours
-            if (isecs_which[k]) {
-                inside_i = !inside_i;
-            }
-            else {
-                inside_j = !inside_j;
-            }
-
-            //we want to make a slot when we are inside one, and we encounter
-    another one if (isecs_which[k] != isecs_which[k+1] && ((inside_i &&
-    !inside_j) || (inside_j && !inside_i))) {
-
-                return true;
-
-            }
-
-        }
-
-    }
-
-    return false;
-    */
+    return !(my_slots.empty());   
 }
 
 void PlanarSection::WidenSlot(const float factor, QList<QVector2D> & slot)
@@ -3535,9 +2934,6 @@ void PlanarSection::GetCurveAroundSection(const PlanarSection & section,
         return;
     }
 
-    // qDebug() << "PlanarSection::GetCurveAroundSection() - slot_start/end" <<
-    // slot_start << slot_end;
-
     GetContourIntersections(section, isecs, isecs_which);
 
     if (isecs.size() < 2) {
@@ -3545,9 +2941,6 @@ void PlanarSection::GetCurveAroundSection(const PlanarSection & section,
                     "GetContourIntersections returning less than 2";
         return;
     }
-
-    // qDebug() << "PlanarSection::GetCurveAroundSection - number of isecs" <<
-    // isecs.size() << isecs_which;
 
     //  1b) Then we test the intersections between Bezier curve and slot lines
     QList<BezierCurvePoint> sec_curve_ints;
@@ -3561,28 +2954,15 @@ void PlanarSection::GetCurveAroundSection(const PlanarSection & section,
         return;
     }
 
-    // qDebug() << "PlanarSection::GetCurveAroundSection - sec_curve_ints" <<
-    // sec_curve_ints.size() << sec_curve_ints.first().point <<
-    // sec_curve_ints.last().point
-    //          << GetPoint3D(sec_curve_ints.first().point) <<
-    //          GetPoint3D(sec_curve_ints.last().point) << section.p;
-
-    // qDebug() << "intersections" << sec_curve_ints.first().segment <<
-    // sec_curve_ints.first().t;
-
     // 2.  Construct a new curve going from section1's intersection to
     // section2's intersection
     //     (note1: we try marching both forward and backward for the subcurve)
     //     (note2: we want the curve in the direction that is shorter)
     BezierCurve sub_curve;
 
-    // qDebug() << "Curve" << sec_curve_ints.first().segment <<
-    // sec_curve_ints.first().segment;
     bez_curve[0].GetSubCurve(sec_curve_ints.first(), sec_curve_ints.first(),
                              curve);  // march forward from 1->2
     curve.UpdateSamples();
-
-    // qDebug() << "Curve length" << curve.Length();
 }
 
 void PlanarSection::GetSectionsAlongCurve(const PlanarSection & start_section,

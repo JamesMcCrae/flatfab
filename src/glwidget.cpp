@@ -69,14 +69,11 @@ GLWidget::GLWidget()
 
     quality_samples = 15;
 
-    // slab_thickness = 0.06f; //this is in distance of units
     slab_thickness = 0.125f;  // this is for 1/8" acrylic
     calibration_factor = 1.0f;
     physics_new_weight_mass = 1.0f;      // in kg
     physics_material_density = 1190.0f;  // in kg/m^3
-    // physics_max_stress = 50000.0f; //in Pa (acrylic is 60 MPa, or 60 million
-    // Pa) physics_max_stress = 60000000.0f; //in Pa (acrylic is 60 MPa, or 60
-    // million Pa)
+    // in Pa (acrylic is 60 MPa, or 60 million Pa)
     physics_max_stress = 6000000.0f;  // this is 1/10 of the max... note that
                                       // red will appear at 30MPa
     physics.SetMaximumStress(physics_max_stress);
@@ -84,17 +81,13 @@ GLWidget::GLWidget()
     template_cut_snap_distance_3d = 0.5f;
 
     section_error_tolerance = 0.015f;
-    // section_error_tolerance = 0.01f;
     section_error_tolerance_template = 0.005f;
 
     animate_until = QDateTime::currentDateTime();
 
     cam_animate_duration = 800.0f;
     cam_animate_angle = 80.0f;
-    // cam_animate_angle = 90.0f;
     cam_lookat_distance = 100.0f;
-
-    // brush_type = BOUNDARY;
 
     state = STATE_NONE;
     last_op = OP_NONE;
@@ -102,21 +95,7 @@ GLWidget::GLWidget()
     update_sections_disp_list = false;
     sections_disp_list = 0;
 
-    /*
-    PlanarDisc first_disc;
-    TNBFrame frame;
-    frame.SetN(vec3(1, 0, 0));
-    frame.SetCentre(vec3(0, 0, 0));
-    first_disc.SetFrame(frame);
-    first_disc.SetActiveEdit(false);
-
-    discs.push_back(first_disc);
-    disc_selected = 0;
-    */
-
     ClearAll();
-
-    // StartAnimation(cam_animate_duration);
 
     default_lookat = QVector3D(0, grid_size / 3, 0);
 
@@ -126,12 +105,6 @@ GLWidget::GLWidget()
     animate_timer.start(0);
 
     connect(&animate_timer, SIGNAL(timeout()), this, SLOT(update()));
-    // LoadTemplateOBJ();
-
-    // initialize the physics thing
-    // physics.SetProblem();
-    // physics.Solve(100,20);
-    // physics.PrintJointForce();
 
     current_tool_state = TOOLSTATE_DEFAULT;
 
@@ -254,7 +227,6 @@ QWidget *GLWidget::GetEditWidget()
     editWidgetLayout->addWidget(deleteButton);
 
     // Copy group
-
     QPushButton *copyButton1 = new QPushButton("Duplicate");
     connect(copyButton1, SIGNAL(clicked()), this, SLOT(CopyDuplicate()));
 
@@ -277,7 +249,6 @@ QWidget *GLWidget::GetEditWidget()
     editWidgetLayout->addRow(copy_groupbox);
 
     // Hole group
-
     QPushButton *holeButton1 = new QPushButton("Add Hole");
     connect(holeButton1, SIGNAL(clicked()), this, SLOT(AddHoleBoundary()));
 
@@ -296,7 +267,6 @@ QWidget *GLWidget::GetEditWidget()
     editWidgetLayout->addRow(hole_groupbox);
 
     // Radial group
-
     QPushButton *radialButton = new QPushButton("Set Radial");
     connect(radialButton, SIGNAL(clicked()), this, SLOT(SetSelectedAsRadial()));
 
@@ -337,7 +307,6 @@ QWidget *GLWidget::GetGenerateWidget()
     QFormLayout *generateWidgetLayout = new QFormLayout();
 
     // Blend group
-
     QPushButton *blendButton = new QPushButton("Blend");
     connect(blendButton, SIGNAL(clicked()), this, SLOT(StartGenerateBlend()));
 
@@ -358,7 +327,6 @@ QWidget *GLWidget::GetGenerateWidget()
     generateWidgetLayout->addRow(blend_groupbox);
 
     // Branch group
-
     QPushButton *setRootButton = new QPushButton("Set Root");
     connect(setRootButton, SIGNAL(clicked()), this,
             SLOT(DoGenerateBranchingSetRoot()));
@@ -385,7 +353,6 @@ QWidget *GLWidget::GetGenerateWidget()
     generateWidgetLayout->addRow(branch_groupbox);
 
     // Grid group
-
     QPushButton *gridButton = new QPushButton("Grid");
     connect(gridButton, SIGNAL(clicked()), this, SLOT(StartGenerateGrid()));
 
@@ -426,7 +393,6 @@ QWidget *GLWidget::GetGenerateWidget()
     generateWidgetLayout->addRow(grid_groupbox);
 
     // Linear group
-
     QPushButton *linearButton = new QPushButton("Linear");
     connect(linearButton, SIGNAL(clicked()), this, SLOT(StartGenerateLinear()));
 
@@ -459,7 +425,6 @@ QWidget *GLWidget::GetGenerateWidget()
     generateWidgetLayout->addRow(linear_groupbox);
 
     // Revolve group
-
     QPushButton *revolveButton = new QPushButton("Revolve");
     connect(revolveButton, SIGNAL(clicked()), this,
             SLOT(StartGenerateRevolve()));
@@ -481,7 +446,6 @@ QWidget *GLWidget::GetGenerateWidget()
     generateWidgetLayout->addRow(revolve_groupbox);
 
     // Slices group
-
     QPushButton *slicesButton = new QPushButton("Slices");
     connect(slicesButton, SIGNAL(clicked()), this, SLOT(StartGenerateSlices()));
 
@@ -540,7 +504,6 @@ QWidget *GLWidget::GetGenerateWidget()
     generateWidgetLayout->addRow(surfacefacet_groupbox);
 
     // Finally, create the tabwidget
-
     genWidget = new QTabWidget();
     genWidget->setMinimumWidth(225);
     genWidget->setLayout(generateWidgetLayout);
@@ -567,7 +530,6 @@ QWidget *GLWidget::GetGuidesWidget()
     thick_spinbox->setDecimals(4);
     thick_spinbox->setSingleStep(0.001);
     thick_spinbox->setValue(slab_thickness);
-    // thick_spinbox->setFocusPolicy(Qt::ClickFocus);
     connect(thick_spinbox, SIGNAL(valueChanged(double)), this,
             SLOT(SetSlabThickness(double)));
 
@@ -742,7 +704,6 @@ QWidget *GLWidget::GetPhysicsWidget()
     physWidgetLayout->addRow(weight_groupbox);
 
     // display checkboxes
-
     deformed_checkbox = new QCheckBox("Deformed");
     deformed_checkbox->setChecked(physics.GetDrawDeformed());
     connect(deformed_checkbox, SIGNAL(toggled(bool)), this,
@@ -891,7 +852,6 @@ QWidget *GLWidget::GetViewWidget()
     viewWidgetLayout->addRow(viewrot_groupbox);
 
     // display checkboxes
-
     show_tnb_frames_checkbox = new QCheckBox("TNB Frame");
     show_tnb_frames_checkbox->setChecked(do_show_tnb_frames);
     connect(show_tnb_frames_checkbox, SIGNAL(toggled(bool)), this,
@@ -946,7 +906,6 @@ QWidget *GLWidget::GetViewWidget()
 // This is needed to allow QPainter to work with standard GL functions
 void GLWidget::paintEvent(QPaintEvent *)
 {
-    // makeCurrent(); //not needed - paintGL does this implicitly
     paintGL();
 
     QPainter painter(this);
@@ -958,8 +917,6 @@ void GLWidget::paintEvent(QPaintEvent *)
 void GLWidget::paintGL()
 {
     // keep animating if still in duration
-    // qDebug() << "GLWidget::paintGL()";
-
     deadzone_radius = 0.025f * cam.CamWidth();
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -973,7 +930,7 @@ void GLWidget::paintGL()
     light_position[3] = 1.0f;
     glLightfv(GL_LIGHT0, GL_POSITION, light_position);
 
-    // this stuff packs nicely into a display list
+    // this packs nicely into a display list
     if (update_sections_disp_list) {
         if (sections_disp_list > 0) {
             glDeleteLists(sections_disp_list, 1);
@@ -1000,25 +957,13 @@ void GLWidget::paintGL()
         glNewList(sections_disp_list, GL_COMPILE_AND_EXECUTE);
 
         glEnable(GL_DEPTH_TEST);
-        // DrawGroundPlane();
 
         if (do_show_shadow) {
             glDisable(GL_DEPTH_TEST);
             glEnable(GL_CULL_FACE);
             glCullFace(GL_BACK);
             glColor3f(0.75f, 0.75f, 0.75f);
-            for (int i = 0; i < sections.size(); ++i) {
-                /*                if(current_tool_state == TOOLSTATE_GENERATE)
-                                {
-                                    if ( !( i == selected ||
-                   (generate_selections.size() > 0 && i ==
-                   generate_selections[0]) || (generate_selections.size() > 1 &&
-                   i == generate_selections[1]) || (generate_selections.size()
-                   == 3 && i == generate_selections[2]) ) ) {
-                                        sections[i].DrawShadow();
-                                    }
-                                }
-                                else */
+            for (int i = 0; i < sections.size(); ++i) {                
                 if (i != selected) {
                     sections[i].DrawShadow();
                 }
@@ -1049,14 +994,6 @@ void GLWidget::paintGL()
         glEndList();
     }
 
-    // debug: show parameters of camera model
-    // glColor3f(1, 0, 0);
-    // GLutils::DrawArrow(QVector3D(0, 0, 0), cam.GetRightVector());
-    // glColor3f(0, 1, 0);
-    // GLutils::DrawArrow(QVector3D(0, 0, 0), cam.Up());
-    // glColor3f(0, 0, 1);
-    // GLutils::DrawArrow(QVector3D(0, 0, 0), cam.ViewDir());
-
     // this stuff changes, not for display list
     if (state == STATE_CURVE || state == STATE_PEN_POINT ||
         state == STATE_PEN_DRAG) {
@@ -1067,8 +1004,6 @@ void GLWidget::paintGL()
         } else {
             active_section.DrawTris();
         }
-
-        // active_section.DrawInputPolyline();
     }
 
     if (current_tool_state == TOOLSTATE_GENERATE) {
@@ -1140,14 +1075,7 @@ void GLWidget::paintGL()
         glPushMatrix();
         glScaled(scale_fac, scale_fac, scale_fac);
         physics.DrawEnhancedGL(scale_fac);
-        glPopMatrix();
-        /*
-        glPushMatrix();
-        glScaled(scale_fac, scale_fac, scale_fac);
-        physics.DrawGL();
-        glPopMatrix();
-        */
-        // physics_solved.DrawGL();
+        glPopMatrix();        
     }
 
     glClear(GL_DEPTH_BUFFER_BIT);
@@ -1156,16 +1084,7 @@ void GLWidget::paintGL()
 
     if (state == STATE_DIMENSIONING_SECOND) {
         DrawDimensionTool();
-    }
-
-    /*
-    glDisable(GL_LIGHTING);
-    if (do_physics_test) {
-        //draw physics thing
-        physics.DrawGL();
-        //physics_solved.DrawGL();
-    }
-    */
+    }   
 
     // draw the transform widget
     if (IsSectionSelected() && current_tool_state == TOOLSTATE_TRANSFORMING) {
@@ -1177,13 +1096,10 @@ void GLWidget::paintGL()
     }
 
     // draw TNB frame
-    if (do_show_tnb_frames) {
-        // if (IsSectionSelected()) {
-        //     sections[selected].DrawTNBFrame();
-        // }
+    if (do_show_tnb_frames) {        
         // draw all TNB frames
-        for (int i = 0; i < sections.size(); ++i) {
-            sections[i].DrawTNBFrame();
+        for (PlanarSection& section : sections) {
+            section.DrawTNBFrame();
         }
     }
 
@@ -1202,10 +1118,7 @@ void GLWidget::paintGL()
 
     } else if (state == STATE_CURVE || state == STATE_PEN_POINT ||
                state == STATE_PEN_DRAG) {
-        // glColor3f(0.3, 0.3, 0.9);
-        // sections.last().DrawSketch();
         glLineWidth(2.0f);
-        // glColor3f(0, 0, 0);
         glColor3f(0, 0, 0.3f);
 
         if (do_local_symmetry) {
@@ -1213,22 +1126,10 @@ void GLWidget::paintGL()
         } else {
             active_section.DrawCurve();
         }
-        // active_section.DrawSketch();
-        // active_section.DrawCurveControlPoints();
 
         if (do_show_templates) {
             DrawTemplateCut(template_cut);
         }
-
-        // draw control points/polygon
-        // glColor3f(1.0, 0.4, 1.0);
-        // sections.last().DrawCurveControlPoints();
-
-        // glEnable(GL_LINE_STIPPLE);
-        // glLineStipple(1, 0x00ff);
-        // glColor3f(0.8, 0.8, 0.8);
-        // sections.last().DrawCurveControlPolygon();
-        // glDisable(GL_LINE_STIPPLE);
 
         glColor3f(0, 0, 0);
         glLineWidth(3.0f);
@@ -1237,24 +1138,14 @@ void GLWidget::paintGL()
 
     } else if (state == STATE_CAM_TRANSLATE) {
     } else if (IsSectionSelected()) {
-        // if (state == STATE_NONE || state == STATE_MANIP_CTRLPOINT) {
         if (current_tool_state == TOOLSTATE_DEFAULT && state != STATE_CURVE &&
             state != STATE_RESKETCH_CURVE && state != STATE_CAM_TRANSLATE &&
             state != STATE_DEADZONE && state != STATE_PEN_POINT &&
             state != STATE_PEN_DRAG) {
             //            glColor3f(1.0, 0.4, 1.0);
             sections[selected].DrawCurveControlPointsHandleStyle(cam.CamWidth(),
-                                                                 cam.Eye());
-
-            //            glEnable(GL_LINE_STIPPLE);
-            //            glLineStipple(1, 0x00ff);
-            //            glColor3f(0.8, 0.8, 0.8);
-            //            sections[selected].DrawCurveControlPolygon();
-            //            glDisable(GL_LINE_STIPPLE);
+                                                                 cam.Eye());           
         }
-
-        // glColor3f(0.3, 0.3, 0.9);
-        // sections.last().DrawSketch();
     }
 
     if (do_show_templates) {
@@ -1266,7 +1157,6 @@ void GLWidget::paintGL()
                                                          cam.Eye());
 
     // grab control point 2D positions
-
     QVector3D slot_start_projected, slot_end_projected;
     if (do_local_symmetry &&
         (state == STATE_CURVE || state == STATE_RESKETCH_CURVE ||
@@ -1311,8 +1201,6 @@ void GLWidget::paintGL()
             glLineWidth(1);
         }
     }
-
-    //    DrawInfo();
 }
 
 void GLWidget::DrawInstructions(QPainter &painter)
@@ -1429,17 +1317,14 @@ void GLWidget::resizeGL(int width, int height)
 
 void GLWidget::mousePressEvent(QMouseEvent *event)
 {
-    /*
-
-    "algorithm"
-
+    /*   
     on click, choose a plane to draw onto...
     a) when there are no planes, make plane params for frontoparallel plane,
-    PROCEED TO STATE CURVE b) when there are planes, attempt to select one i) if
-    selection fails, do nothing ii) otherwise, set that initial point as anchor
-    for slot line, and PROCEED TO STATE SLOT
-
-
+       PROCEED TO STATE CURVE
+    b) when there are planes, attempt to select one
+        i) if selection fails, do nothing
+        ii) otherwise, set that initial point as anchor for slot line,
+            and PROCEED TO STATE SLOT
     */
 
     const bool ctrl_held = ((event->modifiers() & Qt::ControlModifier) > 0);
@@ -1464,8 +1349,6 @@ void GLWidget::mousePressEvent(QMouseEvent *event)
                         QVector3D anchor_3d;
                         sections[selected].MouseRayIntersect(mouse_pos,
                                                              anchor_3d);
-                        //                anchor_point =
-                        //                sections[selected].GetPoint2D(anchor_3d);
                         anchor_point = mouse_pos;
 
                         // figure out which widget element was clicked
@@ -1624,7 +1507,7 @@ void GLWidget::mousePressEvent(QMouseEvent *event)
             state = STATE_NONE;
         }
 
-        // If selectiing sections for the generate tools
+        // If selecting sections for the generate tools
         if (current_tool_state == TOOLSTATE_GENERATE) {
             const int new_select = PickSection(mouse_pos, false);
 
@@ -1697,7 +1580,6 @@ void GLWidget::mouseMoveEvent(QMouseEvent *event)
     QVector2D p(event->x(), height() - event->y());
     p *= devicePixelRatio();
 
-    // qDebug() << "GLWidget::mouseMoveEvent() - state " << state;
     QVector2D mouse_diff = mouse_pos - p;
     mouse_pos = p;
 
@@ -1839,11 +1721,7 @@ void GLWidget::mouseMoveEvent(QMouseEvent *event)
                     recursive_slot_end = p;
 
                     sections[selected].MoveP(recursive_slot_end);
-                    // sections[selected].SetP(recursive_slot_end);
                     sections[selected].UpdateCurveTrisSlab();
-
-                    // qDebug() << sections.size();
-
                 } else {
                     state = STATE_NONE;
                 }
@@ -1925,20 +1803,6 @@ void GLWidget::mouseMoveEvent(QMouseEvent *event)
                         }
                     }
 
-                    // visual debugging
-                    /*
-                    markers2.push_back(vs[0]);
-                    markers2.push_back(vs[1]);
-                    markers2.push_back(vs[2]);
-                    markers2.push_back(vs[3]);
-                    markers2.push_back(cam.ViewDir());
-                    markers_col2.push_back(QVector3D(1,0,0));
-                    markers_col2.push_back(QVector3D(1,1,0));
-                    markers_col2.push_back(QVector3D(0,1,0));
-                    markers_col2.push_back(QVector3D(0,1,1));
-                    markers_col2.push_back(QVector3D(0,0,1));
-                    */
-
                     cam.StartPivot(slot_end, v, vs[best_index],
                                    cam_animate_duration);
                 }
@@ -1946,11 +1810,6 @@ void GLWidget::mouseMoveEvent(QMouseEvent *event)
                 break;
 
             case STATE_CAM_TRANSLATE:
-
-                // if (cam.InterpActive()) {
-                //     cam.UpdatePivotOffset(mouse_pos);
-                // }
-                // cam.Update(mouse_pos);
 
                 break;
 
@@ -2084,8 +1943,6 @@ void GLWidget::mouseMoveEvent(QMouseEvent *event)
                                                        cam.CamWidth());
         }
     }
-
-    // updateGL();
 }
 
 void GLWidget::mouseReleaseEvent(QMouseEvent *event)
@@ -2245,9 +2102,6 @@ void GLWidget::mouseReleaseEvent(QMouseEvent *event)
 
         UpdateAllTests();
     }
-
-    // UpdateDraw();
-    // updateGL();
 }
 
 void GLWidget::wheelEvent(QWheelEvent *event) {
@@ -2484,7 +2338,6 @@ void GLWidget::DoCyclesConnectedTest()
         QList<QList<int> > cycles;
         tree.GetCycles(cycles);
 
-        // qDebug() << cycles;
         // for each cycle, we test if there are any intersection lines which are
         // (about) parallel, which means the cycle is in fact assemblable
         for (int i = 0; i < cycles.size(); ++i) {
@@ -2503,31 +2356,7 @@ void GLWidget::DoCyclesConnectedTest()
         for (int i = 0; i < disc_nodes.size(); ++i) {
             sections[disc_nodes[i]].SetConnected(false);
         }
-    }
-
-    /*
-    //old inefficient code
-    //QList <QList <int> > all_paths;
-    PlanarSection::ComputeCycles(graph, cycles, all_paths);
-    //qDebug() << graph;
-    //qDebug() << "Detected" << cycles.size() << "cycles";
-
-    if (do_cycles_test) {
-        for (int i=0; i<sections.size(); ++i) {
-            sections[i].SetPartOfCycle(false);
-        }
-        for (int i=0; i<cycles.size(); ++i) {
-            for (int j=0; j<cycles[i].size(); ++j) {
-                sections[cycles[i][j]].SetPartOfCycle(true);
-            }
-        }
-    }
-
-    if (do_connected_test) {
-        //test the connectedness
-        PlanarSection::TestConnectedness(sections, all_paths);
-    }
-    */
+    }   
 }
 
 void GLWidget::DoStabilityTest()
@@ -2542,8 +2371,6 @@ void GLWidget::DoStabilityTest()
     centre_of_mass_in_hull = PlanarSection::GetXZPointInsideConvexHull(
         sections_convex_hull, centre_of_mass);
 
-    // markers.push_back(centre_of_mass);
-    // markers_col.push_back(QVector3D(0.75, 0.75, 0.75));
     markers.push_back(QVector3D(centre_of_mass.x(), 0, centre_of_mass.z()));
     markers_col.push_back(QVector3D(0.75, 0.75, 0.75));
 
@@ -2582,8 +2409,8 @@ int GLWidget::PickSection(const QVector2D &mouse_pos,
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     if (only_test_selected && IsSectionSelected()) {
-        // only draw the one plane we are testing, is the user mouse still on
-        // it?
+        // only draw the one plane we are testing,
+        // is the user mouse still on it?
         sections[selected].DrawForPicking(selected);
     } else {
         // draw all planes... which of them do we want?
@@ -2618,10 +2445,7 @@ void GLWidget::SetupPlanarSection(PlanarSection &p)
 void GLWidget::SetMetresPerUnit(const double d)
 {
     metres_per_unit = d;
-    // qDebug() << "GLWidget::SetMetresPerUnit() " << metres_per_unit;
-
     UpdateAllTests();
-    // updateGL();
 }
 
 void GLWidget::ScalePlanarSections(const float s)
@@ -2637,7 +2461,6 @@ void GLWidget::ScalePlanarSections(const float s)
     }
 
     UpdateAllTests();
-    // updateGL();
 }
 
 void GLWidget::SetViewIso1()
@@ -2649,8 +2472,6 @@ void GLWidget::SetViewIso1()
                QVector3D(1, 1, 1).normalized() * cam_lookat_distance);
 
     UpdateTemplateCut();
-
-    // updateGL();
 }
 
 void GLWidget::SetViewIso2()
@@ -2662,8 +2483,6 @@ void GLWidget::SetViewIso2()
                QVector3D(-1, 1, 1).normalized() * cam_lookat_distance);
 
     UpdateTemplateCut();
-
-    // updateGL();
 }
 
 void GLWidget::SetViewIso3()
@@ -2675,8 +2494,6 @@ void GLWidget::SetViewIso3()
                QVector3D(-1, 1, -1).normalized() * cam_lookat_distance);
 
     UpdateTemplateCut();
-
-    // updateGL();
 }
 
 void GLWidget::SetViewIso4()
@@ -2688,8 +2505,6 @@ void GLWidget::SetViewIso4()
                QVector3D(1, 1, -1).normalized() * cam_lookat_distance);
 
     UpdateTemplateCut();
-
-    // updateGL();
 }
 
 void GLWidget::SetViewX()
@@ -2700,8 +2515,6 @@ void GLWidget::SetViewX()
     cam.SetEye(default_lookat + QVector3D(1, 0, 0) * cam_lookat_distance);
 
     UpdateTemplateCut();
-
-    // updateGL();
 }
 
 void GLWidget::SetViewY()
@@ -2712,8 +2525,6 @@ void GLWidget::SetViewY()
     cam.SetEye(default_lookat + QVector3D(0, 1, 0) * cam_lookat_distance);
 
     UpdateTemplateCut();
-
-    // updateGL();
 }
 
 void GLWidget::SetViewZ()
@@ -2724,8 +2535,6 @@ void GLWidget::SetViewZ()
     cam.SetEye(default_lookat + QVector3D(0, 0, 1) * cam_lookat_distance);
 
     UpdateTemplateCut();
-
-    // updateGL();
 }
 
 void GLWidget::SetViewPart()
@@ -2751,56 +2560,46 @@ void GLWidget::SetViewPart()
     }
 
     UpdateTemplateCut();
-
-    // updateGL();
 }
 
 void GLWidget::SetXSymmetry(bool b)
 {
     x_symmetry = b;
-    // updateGL();
 }
 
 void GLWidget::SetYSymmetry(bool b)
 {
     y_symmetry = b;
-    // updateGL();
 }
 
 void GLWidget::SetZSymmetry(bool b)
 {
     z_symmetry = b;
-    // updateGL();
 }
 
 void GLWidget::SetTemplateImageX(const int i)
 {
     template_pos.setX(float(i) / 20.0f);
-    // updateGL();
 }
 
 void GLWidget::SetTemplateImageY(const int i)
 {
     template_pos.setY(float(i) / 20.0f);
-    // updateGL();
 }
 
 void GLWidget::SetTemplateImageRotate(const int i)
 {
     template_rotation = i;
-    // updateGL();
 }
 
 void GLWidget::SetTemplateImageScale(const int i)
 {
     template_scale = float(i) / 20.0f;
-    // updateGL();
 }
 
 void GLWidget::SetTemplateImageFlipX(const bool b)
 {
     template_flipx = b;
-    // updateGL();
 }
 
 bool GLWidget::GetDoMagneticCuts() { return do_magnetic_cuts; }
@@ -3244,7 +3043,6 @@ void GLWidget::DeleteSelected()
     SetSelected(-1);
 
     UpdateAllTests();
-    // updateGL();
 }
 
 void GLWidget::Transform()
@@ -3279,7 +3077,6 @@ void GLWidget::CopyMirrorX()
     sections.push_back(new_section);
 
     UpdateAllTests();
-    // updateGL();
 }
 
 void GLWidget::CopyRotateY()
@@ -3296,7 +3093,6 @@ void GLWidget::CopyRotateY()
     sections.push_back(new_section);
 
     UpdateAllTests();
-    // updateGL();
 }
 
 void GLWidget::CopyMirrorZ()
@@ -3313,7 +3109,6 @@ void GLWidget::CopyMirrorZ()
     sections.push_back(new_section);
 
     UpdateAllTests();
-    // updateGL();
 }
 
 void GLWidget::CopyDuplicate()
@@ -3328,7 +3123,6 @@ void GLWidget::CopyDuplicate()
     sections.push_back(new_section);
 
     UpdateAllTests();
-    // updateGL();
 }
 
 void GLWidget::SnapToMajorAxis()
@@ -3515,8 +3309,6 @@ void GLWidget::LoadTemplateImage()
 
     // bind the texture ID
     glBindTexture(GL_TEXTURE_2D, 0);
-
-    // qDebug() << "texture" << template_image_tex;
 }
 
 void GLWidget::LoadTemplateOBJ()
@@ -3636,7 +3428,6 @@ void GLWidget::LoadTemplateOBJ()
     file.close();
 
     // compute smooth per-face normals
-    // qDebug() << "Computing smooth face normals...";
     QVector<QVector3D> new_norms =
         QVector<QVector3D>(template_verts.size(), QVector3D(0, 0, 0));
     QVector<int> vert_degree = QVector<int>(template_verts.size(), 0);
@@ -3663,7 +3454,6 @@ void GLWidget::LoadTemplateOBJ()
     QVector3D bbox_min, bbox_max;
     GLutils::GetBoundingBox(template_verts, bbox_min, bbox_max);
     const float bbox_diam = (bbox_max - bbox_min).length();
-    // qDebug() << bbox_min << bbox_max << bbox_diam;
     for (int i = 0; i < template_verts.size(); ++i) {
         // translate
         template_verts[i].setX(template_verts[i].x() -
@@ -4123,8 +3913,6 @@ void GLWidget::SavePhysicsOutput()
             QList<QVector2D> my_slots;
             QList<QList<QVector2D> > my_slots_rect;
 
-            // sections[i].GetSlots(sections[j], index, other_index, my_slots,
-            // my_slots_rect);
             sections[i].GetSlots(sections[j], my_slots, my_slots_rect);
 
             if (my_slots.size() >= 2) {
@@ -4142,9 +3930,6 @@ void GLWidget::SavePhysicsOutput()
                 joint_p2_pt2.push_back(
                     sections[j].GetPoint2D(sections[i].GetPoint3D(
                         my_slots[1] - my_slots[0] + my_slots[1])));
-
-                // qDebug() << "adding joint at" << position << "between" << i
-                // << j;
             }
         }
     }
@@ -4314,11 +4099,6 @@ void GLWidget::SaveCalibration()
     }
 
     // Since this is a calibration shape, scale all but the 1st
-    /*
-    for (int i=0; i<sections.size(); ++i) {
-        sections[i].SetSlabThickness(slab_thickness * calibration_factor);
-    }
-    */
     QList<PlanarSection> calib_sections;
 
     int nSecs = (100 - calib_spacing) / calib_increment + 2;
@@ -4388,18 +4168,10 @@ void GLWidget::SaveCalibration()
         ++cury;
     }
 
-    // labels.clear();
-
     QTextStream ofs(&file);
     PlanarSection::SaveToSVG(calib_sections, ofs, metres_per_unit, svg_dpi,
                              1.0f, true, labels);
     file.close();
-
-    /*
-    for (int i=0; i<sections.size(); ++i) {
-        sections[i].SetSlabThickness(slab_thickness);
-    }
-    */
 
     qDebug() << "GLWidget::SaveCalibration(): File " << filename << "saved.";
 
@@ -4574,31 +4346,6 @@ void GLWidget::UpdateMarkers()
     if (do_stability_test) {
         DoStabilityTest();
     }
-
-    // compute/display all plane-plane intersections on contours
-    /*
-    for (int i=0; i<sections.size(); ++i) {
-
-        for (int j=0; j<sections.size(); ++j) {
-
-            if (i == j) {
-                continue;
-            }
-
-            QList <QVector3D> isecs;
-            QList <bool> isecs_which;
-            sections[i].GetContourIntersections(sections[j], isecs,
-    isecs_which);
-
-            for(int k=0; k<isecs.size(); ++k) {
-                markers.push_back(isecs[k]);
-                markers_col.push_back(QVector3D(0.5, 0.5, 1));
-            }
-
-        }
-
-    }
-    */
 }
 
 void GLWidget::DrawMarkers()
@@ -4641,25 +4388,7 @@ void GLWidget::DrawSlot(QVector3D start, QVector3D end)
 }
 
 void GLWidget::DrawDimensionTool()
-{
-    // draw the slot as a dashed line
-    // glDisable(GL_DEPTH_TEST);
-    /*
-    glLineWidth(3.0f);
-    glColor3f(1, 1, 1);
-    glEnable(GL_LINE_STIPPLE);
-    glLineStipple(1, 0x00ff);
-    glBegin(GL_LINES);
-
-    glVertex3f(dimensiontool_start.x(), dimensiontool_start.y(),
-    dimensiontool_start.z()); glVertex3f(dimensiontool_end.x(),
-    dimensiontool_end.y(), dimensiontool_end.z());
-
-    glEnd();
-    glDisable(GL_LINE_STIPPLE);
-    glLineWidth(1.0f);
-    */
-    // glEnable(GL_DEPTH_TEST);
+{    
     glColor3f(1, 1, 1);
     GLutils::DrawSphere(dimensiontool_start, cam.CamWidth() / 100.0f);
     GLutils::DrawSphere(dimensiontool_end, cam.CamWidth() / 100.0f);
@@ -4751,7 +4480,6 @@ void GLWidget::DrawTemplateImage()
 
 void GLWidget::DrawTemplateSurface()
 {
-    // glDisable(GL_DEPTH_TEST);
     glDepthMask(GL_FALSE);
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
@@ -4776,7 +4504,6 @@ void GLWidget::DrawTemplateSurface()
 
     glDisable(GL_BLEND);
     glDisable(GL_CULL_FACE);
-    // glEnable(GL_DEPTH_TEST);
     glDepthMask(GL_TRUE);
 }
 
@@ -4883,41 +4610,7 @@ void GLWidget::ComputeTemplateCut(const QVector3D &n, const QVector3D &p,
         plane_ns.push_back(n);
         plane_ps.push_back(p);
 
-        UpdateMagneticCutSurface(plane_ns, plane_ps);
-
-        /*
-        for (int i=0; i<template_magnetic_verts.size(); ++i) {
-
-            //1.  compute each of the distances
-            QVector <float> distances = QVector <float> (sections.size()+1);
-        //note distances are signed!  (side of plane is stored) float
-        total_dists = 0.0f;
-
-            for (int j=0; j<sections.size(); ++j) {
-                distances[j] = sections[j].GetPointDistance(template_verts[i]);
-                total_dists += fabsf(distances[j]);
-            }
-            distances[sections.size()] = QVector3D::dotProduct(n, p -
-        template_verts[i]); total_dists += fabsf(distances[sections.size()]);
-
-            //2.  compute an offset vector, normalized by distances
-            QVector3D offset(0, 0, 0);
-            for (int j=0; j<distances.size(); ++j) {
-                const float w_j = fabsf(distances[j]) / total_dists;
-                if (j < sections.size()) {
-                    const QVector3D Pi_P = sections[j].N() * distances[j];
-                    offset += Pi_P * w_j;
-                }
-                else {
-                    const QVector3D Pi_P = n * distances[j];
-                    offset += Pi_P * w_j;
-                }
-            }
-
-            template_magnetic_verts[i] += offset;
-
-        }
-        */
+        UpdateMagneticCutSurface(plane_ns, plane_ps);       
     }
 
     for (int i = 0; i < template_faces.size(); i += 3) {
@@ -4943,43 +4636,7 @@ void GLWidget::ComputeTemplateCut(const QVector3D &n, const QVector3D &p,
         } else if (b3 && b1 && int1 != int3) {
             cut_segments.push_back(int3);
             cut_segments.push_back(int1);
-        }
-
-        // JAMES EDIT
-        /*
-        //if ( GetPlaneTriIntersect(planarCut.params, eachTri, eachP1, eachP2,
-        eachE1, eachE2) && (eachP1-eachP2).Length() > 0.00001f ) { if
-        (GetPlaneTriIntersect(planarCut.params, eachTri, eachP1, eachP2, eachE1,
-        eachE2)) {
-
-            //if performing "aesthetic cuts", remove all segments whose
-            //absolute value of dot product of surface and plane cut
-            //is less than the specified threshold
-            if (m_baesthetic) {
-
-                Vector3 & norm = planarCut.params.norm;
-                const Vector3 & surfnorm = facenorms[i];
-
-                if (fabs(norm.Dot(surfnorm)) > m_baestheticthresh) {
-                    continue;
-                }
-            }
-
-            MeshSegment newSegment;
-            newSegment.pt1 = eachP1;
-            newSegment.pt2 = eachP2;
-            newSegment.n = facenorms[i];
-            newSegment.face = i;
-
-            //save edge (edge defined as pair of vert indexes)
-            newSegment.edge1 = MeshEdge(faces[i][eachE1],
-        faces[i][(eachE1+1)%3]); newSegment.edge2 = MeshEdge(faces[i][eachE2],
-        faces[i][(eachE2+1)%3]);
-
-            planarCut.segments.push_back(newSegment);
-
-        }
-        */
+        }       
     }
 }
 
@@ -4988,8 +4645,6 @@ void GLWidget::DrawTemplateCut(const QList<QVector3D> &cut_segments)
     // draw the slot as a dashed line
     glLineWidth(2.0f);
     glColor3f(0.1, 0.5, 0.1);
-    // glEnable(GL_LINE_STIPPLE);
-    // glLineStipple(1, 0x00ff);
     glBegin(GL_LINES);
 
     for (int i = 0; i < cut_segments.size(); ++i) {
@@ -4998,7 +4653,6 @@ void GLWidget::DrawTemplateCut(const QList<QVector3D> &cut_segments)
     }
 
     glEnd();
-    // glDisable(GL_LINE_STIPPLE);
     glLineWidth(1.0f);
 }
 
@@ -5021,19 +4675,8 @@ void GLWidget::QVector3DToArray(const QVector3D &p, double array[3])
 
 void GLWidget::UpdateTemplateCut()
 {
-    // do the template cut stuff
-    /*
-    if (!sections.empty()) {
-        ComputeTemplateCut(sections.last().N(), sections.last().P(),
-    template_cut);
-    }
-    else {
-        ComputeTemplateCut(cam.ViewDir(), QVector3D(0, 0, 0), template_cut);
-    }
-    */
-    // NOTE TODO you changed this
+    // do the template cut stuff    
     if (sections.empty() && state == STATE_NONE) {
-        // active_section = PlanarSection();
         active_section.SetP(cam.LookAt());
         active_section.SetN(-cam.ViewDir());
         active_section.SetT(cam.GetRightVector());
@@ -5140,8 +4783,6 @@ bool GLWidget::ShowGenerate()
 
     switch (gen_state) {
         case GENSTATE_SLICES: {
-            // qDebug() << "GLWidget::ShowGenerate() for GENSTATE_SLICES";
-
             if (template_verts.empty() || template_faces.empty()) {
                 qDebug() << "GLWidget::ShowGenerate() - Template is empty "
                             "(either no vertices or faces), aborting";
@@ -5238,8 +4879,6 @@ bool GLWidget::ShowGenerate()
                         segments_2d.push_back(new_sec.GetPoint2D(segments[k]));
                     }
 
-                    // qDebug() << "segments in 2d" << segments_2d;
-
                     // 2c.2.  Combine the segments together into one or more
                     // curves
                     QList<QList<QVector2D> > curves;
@@ -5254,20 +4893,8 @@ bool GLWidget::ShowGenerate()
                     new_sec.SetCurve(0, bez_curve);
 
                     // 2c.3.  Assign the planar section the computed curves as
-                    // the input polylines
-                    /*
-                    for (int k=0; k<curves.size(); ++k) {
-                        new_sec.SketchSetCurve(k, curves[k]);
-                        new_sec.Update(k, section_error_tolerance);
+                    // the input polylines                    
 
-                        if (k < curves.size()-1) {
-                            new_sec.AddNewCurve();
-                        }
-
-                    }
-                    */
-
-                    // new_sec.CreateCircle(QVector2D(0,0), 1.0f);
                     new_sec.UpdateCurveTrisSlab();
 
                     generated_sections.push_back(new_sec);
@@ -5315,9 +4942,8 @@ bool GLWidget::ShowGenerate()
             }
 
             // 2.  grab the set of curves that should be copied, this involves
-            // getting all children
-            //     of the revolving one's children (relative to tree with root
-            //     at base planar section)
+            //     getting all children of the revolving one's children
+            //     (relative to tree with root at base planar section)
             QVector<QVector<bool> > graph;
             QList<QList<int> > cycles;
             PlanarSection::ComputeIntersectionGraph(sections, graph);
@@ -5450,20 +5076,7 @@ bool GLWidget::ShowGenerate()
                     // sort the intersection points
                     GLutils::SortPointsAlongDirection3D(
                         intersects.last() - intersects.first(),
-                        contour_isecs_3d);
-
-                    // visual debugging
-                    /*
-                    for (int j=0; j<contour_isecs_3d.size(); ++j) {
-                        markers.push_back(contour_isecs_3d[j]);
-                        if (j == 0) {
-                            markers_col.push_back(QVector3D(0, 0, 1));
-                        }
-                        else {
-                            markers_col.push_back(QVector3D(1, 0, 1));
-                        }
-                    }
-                    */
+                        contour_isecs_3d);                   
 
                     // create a new planar section copy here, using the
                     // intersection value... try both, and use the one whose
@@ -5585,17 +5198,7 @@ bool GLWidget::ShowGenerate()
             // 3.  we need to find the interval of section 1's boundary to
             // regularly add sections to
             BezierCurve curve;
-            section1.GetCurveBetweenSections(section2, section3, curve);
-            /*
-            const QList <QVector2D> & samples = curve.Samples();
-            markers2.clear();
-            markers_col2.clear();
-            for (int i=0; i<samples.size(); ++i) {
-                markers2.push_back(section1.GetPoint3D(samples[i]));
-                markers_col2.push_back(QVector3D(float(i)/float(samples.size()),
-            1, 1));
-            }
-            */
+            section1.GetCurveBetweenSections(section2, section3, curve);            
 
             QList<PlanarSection> new_sections;
             section1.GetSectionsAlongCurve(
@@ -5641,14 +5244,10 @@ bool GLWidget::ShowGenerate()
             while (curve2.GetNumControlPoints() <
                    curve3.GetNumControlPoints()) {
                 curve2.SubdivideLongestSegment();
-                // qDebug() << "subdivided curve2 - pts" <<
-                // curve2.GetNumControlPoints();
             }
             while (curve3.GetNumControlPoints() <
                    curve2.GetNumControlPoints()) {
                 curve3.SubdivideLongestSegment();
-                // qDebug() << "subdivided curve3 - pts" <<
-                // curve3.GetNumControlPoints();
             }
 
             //  5b.  now find the control point correspondences (an index offset
@@ -5657,8 +5256,6 @@ bool GLWidget::ShowGenerate()
             bool corresp_forward;
             curve2.GetCurvePointCorrespondence(curve3, corresp_offset,
                                                corresp_forward);
-            // qDebug() << "using correspondence" << corresp_offset <<
-            // corresp_forward;
 
             // 6.  March along and do the blending interpolation
             float theta1 = GLutils::SignedAngleBetweenRad(
@@ -5675,7 +5272,6 @@ bool GLWidget::ShowGenerate()
                     curve3, corresp_offset, corresp_forward, t, blend_curve);
 
                 const float theta_t = theta1 * (1.0f - t) + theta2 * t;
-                // qDebug() << i << theta1 << theta2 << theta_t << t;
 
                 QVector3D rotate_n = GLutils::RotateVector(
                     new_sections[i].N(), section2.T(), -theta_t);
@@ -5736,9 +5332,8 @@ bool GLWidget::ShowGenerate()
             }
 
             // 2.  grab the set of curves that should be copied, this involves
-            // getting all children
-            //     of the revolving one's children (relative to tree with root
-            //     at base planar section)
+            //     getting all children of the revolving one's children
+            //     (relative to tree with root at base planar section)
             QVector<QVector<bool> > graph;
             PlanarSection::ComputeIntersectionGraph(sections, graph);
 
@@ -5758,7 +5353,6 @@ bool GLWidget::ShowGenerate()
             // regularly add sections to
             BezierCurve curve;
             section1.GetCurveAroundSection(section2, curve);
-            // section1.SetCurve(0, curve); //debugging
 
             QList<PlanarSection> new_sections;
             section1.GetSectionsAlongCurve(
@@ -5799,8 +5393,8 @@ bool GLWidget::ShowGenerate()
             const QVector3D oldbasis_b = section2.B();
             const QVector3D oldbasis_p = section2.P();
 
-            for (int i = 1; i < generate_revolve_sections;
-                 ++i) {  // for each section sampled on the boundary...
+            // for each section sampled on the boundary
+            for (int i = 1; i < generate_revolve_sections; ++i) {
 
                 const QVector3D newbasis_t = new_sections[i].T();
                 const QVector3D newbasis_n = GLutils::RotateVector(
@@ -5809,15 +5403,8 @@ bool GLWidget::ShowGenerate()
                     new_sections[i].B(), section2.T(), -theta);
                 const QVector3D newbasis_p = new_sections[i].P();
 
-                // qDebug() << "section2t" << section2.T() << "theta" << theta
-                // << "newsections[i].N" << new_sections[i].N() <<
-                // "newsections[i].B" << new_sections[i].B(); qDebug() << "new
-                // section" << i << "t" << newbasis_t << "n" << newbasis_n <<
-                // "b" << newbasis_b << "p" << newbasis_p;
-
-                for (int j = 0; j < branch.size();
-                     ++j) {  // and for every section which is part of the
-                             // branch...
+                // and for every section which is part of the branch
+                for (int j = 0; j < branch.size(); ++j) {
 
                     PlanarSection &copy_sec = sections[branch[j]];
 
@@ -5868,8 +5455,6 @@ bool GLWidget::ShowGenerate()
                 return false;
             }
 
-            // qDebug() << sections.size() << generate_selections.size() <<
-            // generate_selections[0];
             PlanarSection &section1 = sections[generate_selections[0]];
 
             // TODO: this stuff should eventually be moved into planarsection
@@ -5886,16 +5471,18 @@ bool GLWidget::ShowGenerate()
             QList<QVector2D> split_pts;
             QList<QVector2D> split_dirs;
 
-            for (float x = min_bb.x() + (generate_grid_sizex * offset);
-                 x <= max_bb.x(); x += generate_grid_sizex) {
+            float x = min_bb.x() + (generate_grid_sizex * offset);
+            while (x <= max_bb.x()) {
                 split_pts.push_back(QVector2D(x, 0));
                 split_dirs.push_back(QVector2D(0, 1));
+                x += generate_grid_sizex;
             }
 
-            for (float y = min_bb.y() + (generate_grid_sizey * offset);
-                 y <= max_bb.y(); y += generate_grid_sizey) {
+            float y = min_bb.y() + (generate_grid_sizey * offset);
+            while (y <= max_bb.y()) {
                 split_pts.push_back(QVector2D(0, y));
                 split_dirs.push_back(QVector2D(1, 0));
+                y += generate_grid_sizey;
             }
 
             // iterate through all cuts
@@ -5927,12 +5514,12 @@ bool GLWidget::ShowGenerate()
             // connected to at least 2 other planes
 
             QList<PlanarSection> staple_sections;
+
             // sections with normal which is vertical (wrt to the grid plane)
-            for (float x = min_bb.x() + (generate_grid_sizex * (1.0f + offset));
-                 x <= max_bb.x(); x += generate_grid_sizex) {
-                for (float y =
-                         min_bb.y() + (generate_grid_sizey * (0.5 + offset));
-                     y <= max_bb.y(); y += generate_grid_sizey) {
+            x = min_bb.x() + (generate_grid_sizex * (1.0f + offset));
+            while (x <= max_bb.x()) {
+                y = min_bb.y() + (generate_grid_sizey * (0.5 + offset));
+                while (y <= max_bb.y()) {
                     PlanarSection staple;
                     SetupPlanarSection(staple);
                     staple.SetP(section1.GetPoint3D(QVector2D(x, y)));
@@ -5941,15 +5528,16 @@ bool GLWidget::ShowGenerate()
                     staple.SetB(section1.T());
                     staple.CreateSquare(generate_grid_staplesize);
                     staple_sections.push_back(staple);
+                    y += generate_grid_sizey;
                 }
+                x += generate_grid_sizex;
             }
 
             // sections with normal which is horizontal (wrt to the grid plane)
-            for (float y = min_bb.y() + (generate_grid_sizey * (1.0f + offset));
-                 y <= max_bb.y(); y += generate_grid_sizey) {
-                for (float x =
-                         min_bb.x() + (generate_grid_sizex * (0.5 + offset));
-                     x <= max_bb.x(); x += generate_grid_sizex) {
+            y = min_bb.y() + (generate_grid_sizey * (1.0f + offset));
+            while (y <= max_bb.y()) {
+                x = min_bb.x() + (generate_grid_sizex * (0.5 + offset));
+                while (x <= max_bb.x()) {
                     PlanarSection staple;
                     SetupPlanarSection(staple);
                     staple.SetP(section1.GetPoint3D(QVector2D(x, y)));
@@ -5958,7 +5546,9 @@ bool GLWidget::ShowGenerate()
                     staple.SetB(section1.N());
                     staple.CreateSquare(generate_grid_staplesize);
                     staple_sections.push_back(staple);
+                    x += generate_grid_sizex;
                 }
+                y += generate_grid_sizey;
             }
 
             // for all staple sections now ensure they intersect at least 2 of
@@ -5975,8 +5565,6 @@ bool GLWidget::ShowGenerate()
                 }
 
                 // if less than 2, remove this staple
-                // qDebug() << i << "intersects" << num_staple_split_ints <<
-                // "sections";
                 if (num_staple_split_ints < 2) {
                     staple_sections.removeAt(i);
                     --i;
@@ -5991,7 +5579,6 @@ bool GLWidget::ShowGenerate()
             break;
     }
 
-    // UpdateAllTests();
     UpdateDraw();
     return true;
 }
@@ -6040,8 +5627,6 @@ void GLWidget::StartGenerateRevolve()
 
 void GLWidget::StartGenerateSlices()
 {
-    // sideWidget->setCurrentIndex(1);
-
     if (current_tool_state == TOOLSTATE_GENERATE) {
         CancelGenerate();
     }
@@ -6091,8 +5676,6 @@ void GLWidget::DoGenerateBranchingSetRoot()
 
 void GLWidget::DoGenerateBranching()
 {
-    // sideWidget->setCurrentIndex(1);
-
     if (sections.size() < 2) {
         return;
     }
@@ -6114,9 +5697,6 @@ void GLWidget::DoGenerateBranching()
         }
     }
 
-    // qDebug() << "Recursing one level: " << sections.size() << "sections -> "
-    // << sections.size() * num_kids + 1 << "sections";
-
     for (int i = 1; i < intersectors.size(); ++i) {
         // only add subtrees for immediate children of root node
         if (!intersectors[i]) {
@@ -6124,11 +5704,6 @@ void GLWidget::DoGenerateBranching()
         }
 
         QList<PlanarSection> *sections_to_use = &sections;
-
-        // randomly do stuff
-        // if (qrand() % 100 < 50) {
-        //     sections_to_use = &last_sections;
-        // }
 
         // copy all of these sections to form subtree at child's TNB frame,
         // incorporating transformation from parent's to child's TNB frame
@@ -6172,8 +5747,6 @@ void GLWidget::DoGenerateBranching()
     last_sections = sections;
     sections = new_sections;
 
-    // qDebug() << "Done.  Sections:" << sections.size();
-
     UpdateAllTests();
     UpdateDraw();
 }
@@ -6201,27 +5774,22 @@ void GLWidget::DoPhysicsTest()
 
     physics.ClearProblem();
 
-    // TODO/NOTE: physics expects everything in m (metres)
+    // NOTE: physics expects everything in m (metres)
 
     // first add each rigid body
-    // double total_mass = 0.0;
     for (int i = 0; i < sections.size(); ++i) {
         QVector3D mass_cent = sections[i].GetCentroid3D();  // centre of mass
-        // double mass = fabsf(sections[i].SignedArea()) *
-        // sections[i].SlabThickness();
         double mass =
             physics_material_density *
             fabs(sections[i].SignedArea() * metres_per_unit * metres_per_unit) *
             sections[i].SlabThickness() * metres_per_unit;
-
-        // total_mass += mass;
 
         double mass_cent_array[3];
         mass_cent_array[0] = mass_cent.x() * metres_per_unit;
         mass_cent_array[1] = mass_cent.y() * metres_per_unit;
         mass_cent_array[2] = mass_cent.z() * metres_per_unit;
 
-        QList<QVector3D> contact_pts;  // contact points
+        QList<QVector3D> contact_pts;
         sections[i].GetXZPlanePoints(contact_pts);
 
         std::vector<double> contact_pts_stlvector;
@@ -6256,8 +5824,6 @@ void GLWidget::DoPhysicsTest()
             physics.AddWeightToRigidBody(mass_pos, mass_force);
         }
     }
-
-    // qDebug() << "Total weight of model: " << total_mass << " kg";
 
     // then add each "plate" (each plate corresponds to a rigid body)
     for (int i = 0; i < sections.size(); ++i) {
@@ -6299,14 +5865,9 @@ void GLWidget::DoPhysicsTest()
             QList<QVector2D> my_slots;
             QList<QList<QVector2D> > my_slots_rect;
 
-            // sections[i].GetSlots(sections[j], index, other_index, my_slots,
-            // my_slots_rect);
             sections[i].GetSlots(sections[j], my_slots, my_slots_rect);
 
             if (my_slots.size() >= 2) {
-                // QVector3D position = sections[i].GetPoint3D((my_slots[0] +
-                // my_slots[1]) * 0.5);
-
                 double position_array[3];
                 double jp0[4];
                 double jp1[4];
@@ -6335,12 +5896,6 @@ void GLWidget::DoPhysicsTest()
                 jp1[3] = p1_pt2.y() * metres_per_unit;
 
                 physics.AddJoint(position_array, jp0, jp1, i, j);
-                // qDebug() << "adding joint at" << position << "between" << i
-                // << j;
-
-            } else {
-                // qDebug() << "tested" << i << j << "size was" <<
-                // my_slots.size();
             }
         }
     }
@@ -6410,17 +5965,15 @@ void GLWidget::SetPhysicsMaterialDensity(const double d)
     physics_material_density = d;
 
     UpdateAllTests();
-    // updateGL();
 }
 
 void GLWidget::SetPhysicsMaximumStress(const double d)
 {
-    physics_max_stress =
-        d * 1000000.0;  // conversion to MPa (millions of Pascals)
+    // conversion to MPa (millions of Pascals)
+    physics_max_stress = d * 1000000.0;
     physics.SetMaximumStress(physics_max_stress);
 
     UpdateAllTests();
-    // updateGL();
 }
 
 void GLWidget::DoGenerateMakeCircle()
@@ -6494,7 +6047,6 @@ void GLWidget::DoGenerateMakeRadialHole()
 
 void GLWidget::DoGenerateSurfaceFacets()
 {
-    // qDebug() << "GLWidget::DoGenerateSurfaceFacets()";
     if (template_verts.empty() || template_faces.empty()) {
         return;
     }
@@ -6505,7 +6057,6 @@ void GLWidget::DoGenerateSurfaceFacets()
 
     // 1.  iterate over each face, making a planar face
     for (int i = 0; i < template_poly_faces.size(); ++i) {
-        // qDebug() << "1.  Processing polyface" << i;
         PlanarSection new_section;
         SetupPlanarSection(new_section);
 
@@ -6524,9 +6075,6 @@ void GLWidget::DoGenerateSurfaceFacets()
         new_section.SetT(new_t);
         new_section.SetN(new_n);
         new_section.SetB(new_b);
-
-        // qDebug() << "Adding basis for polyface" << i << "with lengths" <<
-        // new_n.length() << new_t.length() << new_b.length();
 
         // 1b. Set up the section's 3D point (centroid of the poly verts)
         QVector3D new_p(0, 0, 0);
@@ -6554,20 +6102,12 @@ void GLWidget::DoGenerateSurfaceFacets()
             // adjacent faces don't intersect, this is dependent on the
             // slab_thickness)
             if (generate_surfacefacets_teeth) {
-                // TODO: prevent intersections between adjacent sections
-                //                const float len_v0 = v0.length();
-                //                const float len_v1 = v1.length();
-                //                v0 *= (len_v0 - slab_thickness * 0.5f) /
-                //                len_v0; v1 *= (len_v1 - slab_thickness * 0.5f)
-                //                / len_v1;
-
+                // TODO: prevent intersections between adjacent sections  
                 float edge_len = (v1 - v0).length();
                 const QVector2D x = (v1 - v0).normalized();
                 const QVector2D y(-x.y(), x.x());
 
                 int teethpairs = int(edge_len / slab_thickness / 8.0f);
-                // const int teethpairs = 3; //TODO: the "ideal" toothpair
-                // should be a function of edge length and material thickness
 
                 QVector2D v0_2 = v0;
                 QVector2D v1_2 = v1;
@@ -6651,8 +6191,6 @@ void GLWidget::DoGenerateSurfaceFacets()
         }
 
         // 1d.  Push the new planar section back
-        // new_section.Scale(generate_branching_scalechild,
-        // generate_branching_scalechild);
         new_section.UpdateCurveTrisSlab();
         sections.push_back(new_section);
     }
@@ -6665,7 +6203,6 @@ void GLWidget::DoGenerateSurfaceFacets()
         // 2.  iterate over each edge, adding a circular-shaped section at the
         // midpoint
         for (int i = 0; i < template_poly_faces.size(); ++i) {
-            // qDebug() << "2.  Processing polyface" << i;
             const QList<int> &face = template_poly_faces[i];
 
             for (int j = 0; j < face.size(); ++j) {
@@ -6674,14 +6211,10 @@ void GLWidget::DoGenerateSurfaceFacets()
 
                 // 2a.  ensure we only do this edge once
                 QPair<int, int> edge_key(qMin(i0, i1), qMax(i0, i1));
-                // qDebug() << "Considering face" << i << "edge" << j << "with
-                // key" << edge_key;
                 if (edge_processed[edge_key]) {
                     continue;
-                    // qDebug() << "Already processed.";
                 } else {
                     edge_processed[edge_key] = true;
-                    // qDebug() << "Processing for first time.";
                 }
 
                 // 2b.  compute centroid point
@@ -6702,11 +6235,8 @@ void GLWidget::DoGenerateSurfaceFacets()
                 new_section.SetP(new_p);
 
                 // 2c.  create a disc-shaped piece for the boundary curve
-                // new_section.CreateCircle(QVector2D(0,0), 1.0f);
                 new_section.CreateCircle(QVector2D(0, 0),
                                          slab_thickness * 4.0f);
-                // new_section.UpdateCurveTrisSlab(); //CreateCircle() updates
-                // curvetrisslab
                 sections.push_back(new_section);
             }
         }
@@ -6749,8 +6279,8 @@ void GLWidget::ToggleDrawMoments()
 void GLWidget::ToggleDrawTemplates()
 {
     do_show_templates = !do_show_templates;
-    toggleTemplatesButton->setChecked(
-        do_show_templates);  // keeps the menu option and button synced
+    // keeps the menu option and button synced
+    toggleTemplatesButton->setChecked(do_show_templates);
 }
 
 void GLWidget::ToggleShowTNBFrames()
