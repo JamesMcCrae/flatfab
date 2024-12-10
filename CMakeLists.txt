@@ -9,7 +9,7 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-find_package(Qt5 COMPONENTS Core Gui OpenGL Widgets Network WebEngineWidgets REQUIRED)
+find_package(Qt5 COMPONENTS Core Gui OpenGL Widgets Network REQUIRED)
 
 find_package(Eigen3 REQUIRED NO_MODULE)
 find_package(OpenGL REQUIRED)
@@ -78,7 +78,6 @@ target_link_libraries(${PROJECT_NAME}
     Qt5::OpenGL
     Qt5::Widgets
     Qt5::Network
-    Qt5::WebEngineWidgets
     OpenGL::GL
     ${GLU_LIBRARY})
 
