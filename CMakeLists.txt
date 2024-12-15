@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.10)
 cmake_policy(SET CMP0072 NEW)
-project(FlatFab VERSION 0.8.1 LANGUAGES CXX)
+project(FlatFab VERSION 0.8.4 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -15,7 +15,7 @@ find_package(Eigen3 REQUIRED NO_MODULE)
 find_package(OpenGL REQUIRED)
 find_library(GLU_LIBRARY GLU REQUIRED)
 
-include_directories(include ${EIGEN3_INCLUDE_DIR})
+configure_file(${CMAKE_SOURCE_DIR}/include/version.h.in ${CMAKE_BINARY_DIR}/version.h @ONLY)
 
 set(SOURCES
     src/main.cpp
@@ -60,6 +60,7 @@ set(HEADERS
     include/tree.h
     include/transformwidget.h
     include/triangulate2.h
+    include/version.h
 )
 
 # Add resources
@@ -70,6 +71,11 @@ add_executable(${PROJECT_NAME}
     ${SOURCES}
     ${HEADERS}
     ${RESOURCES})
+
+target_include_directories(${PROJECT_NAME} PRIVATE
+    include
+    ${CMAKE_BINARY_DIR} 
+    ${EIGEN3_INCLUDE_DIR})
 
 # Link libraries
 target_link_libraries(${PROJECT_NAME} 
