@@ -542,28 +542,7 @@ void MainWindow::createActions()
     testStabilityAct->setCheckable(true);
     testStabilityAct->setChecked(glWidget.GetDoStabilityTest());
     connect(testStabilityAct, SIGNAL(triggered()), this,
-            SLOT(ToggleStabilityTest()));
-
-    multisample0Act = new QAction(tr("No Multisamping"), this);
-    multisample0Act->setStatusTip(tr("Show stability of the model."));
-    multisample0Act->setCheckable(true);
-    multisample0Act->setChecked(glWidget.GetDoStabilityTest());
-    connect(multisample0Act, SIGNAL(triggered()), this,
-            SLOT(SetMultisampling0()));
-
-    multisample4Act = new QAction(tr("4x Multisamping"), this);
-    multisample4Act->setStatusTip(tr("Show stability of the model."));
-    multisample4Act->setCheckable(true);
-    multisample4Act->setChecked(glWidget.GetDoStabilityTest());
-    connect(multisample4Act, SIGNAL(triggered()), this,
-            SLOT(SetMultisampling4()));
-
-    multisample16Act = new QAction(tr("16x Multisamping"), this);
-    multisample16Act->setStatusTip(tr("Show stability of the model."));
-    multisample16Act->setCheckable(true);
-    multisample16Act->setChecked(glWidget.GetDoStabilityTest());
-    connect(multisample16Act, SIGNAL(triggered()), this,
-            SLOT(SetMultisampling16()));
+            SLOT(ToggleStabilityTest()));   
 
     // generate menu actions
     generateBranchingSetRootAct =

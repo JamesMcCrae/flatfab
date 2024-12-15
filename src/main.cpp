@@ -2,7 +2,10 @@
 #include <QApplication>
 
 int main(int argc, char *argv[])
-{
+{    
+    QApplication a(argc, argv);
+
+    // Setting up Multi-sampling
     int aa_samples = 16;
 
     if (argc > 1) {
@@ -17,9 +20,6 @@ int main(int argc, char *argv[])
         }
     }
 
-    QApplication a(argc, argv);
-
-    // Setting up Multi-sampling
     QGLFormat glf = QGLFormat::defaultFormat();
     glf.setSampleBuffers(aa_samples > 0);
     glf.setSamples(aa_samples);

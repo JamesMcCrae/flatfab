@@ -164,10 +164,7 @@ private:
     QAction *viewTemplatesAct;
     QAction *testCyclesAct;
     QAction *testConnectedAct;
-    QAction *testStabilityAct;
-    QAction *multisample0Act;
-    QAction *multisample4Act;
-    QAction *multisample16Act;
+    QAction *testStabilityAct;    
 
     QMenu *generateMenu;
     QAction *generateBranchingSetRootAct;
