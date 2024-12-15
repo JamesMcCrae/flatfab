@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>edu.toronto.dgp.FlatFab</id>
+  
+  <name>FlatFab</name>
+  <summary>flatfab is software that helps you design and fabricate 3D objects. We imagine in 3D but ideate and draw in 2D. flatfab seamlessly does both. </summary>
+  
+  <metadata_license>CC-BY-SA-4.0</metadata_license>
+  <project_license>GPL-3.0-or-later</project_license>
+  
+  <description>
+    <p>
+      flatfab marries digital modeling and traditional craftsmanship. 3D printing in new-age materials is great for small complex objects, but prohibitive in time and money for anything bigger than your fist. flatfab enables designers and hobbyists to use their own skills working with common tools and materials, anything that is reasonably flat and can be cut: paper, plastic, wood, steel, even stone.
+    </p>
+    <p>
+      The flatfab way - Create your design fluidly, using connected planar parts - Print your design as 2D curves, ready to cut - Cut your design, with a digital cutter or by hand - Pack it flat, if you need to transport it - Assemble the parts together, there are no tools required!
+    </p>
+  </description>
+  
+  <launchable type="desktop-id">edu.toronto.dgp.FlatFab.desktop</launchable>
+  <screenshots>
+    <screenshot type="default">
+      <image>https://www.dgp.toronto.edu/~mccrae/projects/flatfitfab/gallery-images/ff_software_win2.jpg</image>
+    </screenshot>
+    <screenshot>
+      <image>https://www.dgp.toronto.edu/~mccrae/projects/flatfitfab/gallery-images/ff_software_win1.jpg</image>
+    </screenshot>
+    <screenshot>
+      <image>https://www.dgp.toronto.edu/~mccrae/projects/flatfitfab/gallery-images/elephant_fab.jpg</image>
+    </screenshot>
+  </screenshots>
+
+  <releases>
+    <release version="0.8.4" date="2024-12-09" />
+  </releases>
+</component>
