@@ -1,8 +1,9 @@
 #include "mainwindow.h"
+#include "version.h"
 
 MainWindow::MainWindow()
 {
-    window_title = "FlatFab 0.8.4";
+    window_title = QString("FlatFab ") + PROJECT_VERSION;
     UpdateWindowTitle();
     createActions();
     createMenus();
