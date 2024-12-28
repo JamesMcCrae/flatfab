@@ -19,8 +19,8 @@ Build
 You need Qt5 (tested on Ubuntu 24.10 with QtCreator 13; any previous release should work as well)
 
 - install `libeigen3-dev` and `libglu1-mesa-dev`
-- open `FlatFab.pro` from QtCreator
-- press Build and enjoy!
+- from the project directory, run `cmake` and then `make`
+- run the app `./FlatFab` and enjoy!
 
 #### Flatpak
 
